@@ -1,178 +1,272 @@
+// Template: Official Governance Log PBL (ilm-inspired Minimalist Academic Style)
+// Strictly aligned with Polinema Jobsheet 5 & Proposal PBL
+// Zero signatures, zero blank evaluation boxes, typography-first, no em dashes
+
 #let pbl_logbook(
   week_number: 5,
-  period: "22 September – 26 September 2026",
+  period: "21 Sep 2026 - 27 Sep 2026",
   sprint_name: "Sprint 1: Core Infrastructure",
   checkpoint_target: "Checkpoint 2 (Minggu ke-8)",
-  project_title: "VALENIA (Verifikasi Antrian & Layanan Navigasi Interaktif Aplikasi Poliklinik)",
+  project_title: "VALENIA (Verifikasi Antrian & Layanan Navigasi Interaktif Poliklinik)",
   institution: "POLITEKNIK NEGERI MALANG",
   department: "JURUSAN TEKNOLOGI INFORMASI",
   study_program: "PROGRAM STUDI D-IV TEKNIK INFORMATIKA",
   class_name: "TI-2H",
   academic_year: "2026/2027",
-  activities: (),
-  evaluations: (),
   supervisor_name: "Titis Wahyudi, S.Kom., M.Kom.",
   supervisor_nip: "-",
+  repository: "https://github.com/hafidzrafi/valenia",
+  decisions: (),
+  activities: (),
+  evaluations: (),
   body
 ) = {
-  set document(title: "Logbook PBL Minggu " + str(week_number) + " - VALENIA", author: "Tim PBL VALENIA")
+  // Document Configuration
+  set document(title: "Governance Log PBL Minggu " + str(week_number) + " - VALENIA", author: "Tim PBL VALENIA")
   set page(
     paper: "a4",
-    margin: (top: 2.5cm, bottom: 2.5cm, left: 2.5cm, right: 2.5cm),
-    header: align(right)[
-      #text(size: 8pt, fill: rgb("#64748b"))[
-        Logbook Mingguan PBL | #project_title | Minggu ke-#week_number
-      ]
-    ],
+    margin: (x: 2cm, top: 1.8cm, bottom: 1.8cm),
+    header: context {
+      if counter(page).get().first() > 1 {
+        grid(
+          columns: (1fr, auto),
+          align(left)[#text(size: 8pt, fill: rgb("#64748b"))[VALENIA • Governance Log PBL (Minggu ke-#week_number)]],
+          align(right)[#text(size: 8pt, fill: rgb("#94a3b8"))[#sprint_name]]
+        )
+        v(-2pt)
+        line(length: 100%, stroke: 0.4pt + rgb("#e2e8f0"))
+      }
+    },
     footer: context {
       let page_num = counter(page).get().first()
       let total_pages = counter(page).final().first()
-      align(center)[
-        #text(size: 9pt, fill: rgb("#64748b"))[
-          Halaman #page_num dari #total_pages
-        ]
-      ]
+      grid(
+        columns: (1fr, auto),
+        align(left)[#text(size: 8pt, fill: rgb("#94a3b8"))[Repositori: #link(repository)[#repository.replace("https://", "")]]],
+        align(right)[#text(size: 8pt, fill: rgb("#64748b"))[Halaman #page_num / #total_pages]]
+      )
     }
   )
-  
-  set text(font: "Arial", size: 11pt, lang: "id")
-  set par(justify: true, leading: 0.8em)
-  
-  align(center)[
-    #text(size: 14pt, weight: "bold")[LOGBOOK MINGGUAN PROJECT BASED LEARNING (PBL)] \
-    #v(2pt)
-    #text(size: 12pt, weight: "bold")[#project_title] \
-    #v(2pt)
-    #text(size: 10pt)[
-      #study_program | #department | #institution \
-      Tahun Akademik #academic_year
+
+  set text(font: "Arial", size: 9pt, fill: rgb("#0f172a"), lang: "id")
+  set par(justify: true, leading: 0.75em)
+
+  show link: it => {
+    set text(rgb("#2563eb"))
+    it
+  }
+
+  // -------------------------------------------------------------
+  // HEADER (ilm Minimalist Header)
+  // -------------------------------------------------------------
+  grid(
+    columns: (38pt, 1fr),
+    gutter: 10pt,
+    align: (center + horizon, left + horizon),
+    image("assets/logo.png", width: 36pt),
+    [
+      #text(size: 7.5pt, weight: "medium", fill: rgb("#64748b"), tracking: 0.5pt)[
+        #upper(institution) • #upper(department)
+      ] \
+      #v(1.5pt)
+      #text(size: 13.5pt, weight: "bold", fill: rgb("#0f172a"))[GOVERNANCE LOG - VALENIA] \
+      #v(0.5pt)
+      #text(size: 8.5pt, fill: rgb("#334155"))[#project_title]
     ]
-  ]
-  
-  v(8pt)
-  line(length: 100%, stroke: 1pt + rgb("#0f172a"))
-  v(6pt)
-  
-  table(
-    columns: (auto, 10pt, 1fr, auto, 10pt, 1fr),
-    stroke: none,
-    inset: 3pt,
-    [Minggu Ke], [:], [*Minggu ke-#week_number*],
-    [Target CP], [:], [#checkpoint_target],
-    [Periode], [:], [#period],
-    [Sprint Aktif], [:], [#sprint_name],
-    [Kelas], [:], [#class_name],
-    [Dosen Pembimbing], [:], [#supervisor_name]
   )
-  
-  v(10pt)
-  text(size: 11pt, weight: "bold")[1. Susunan Tim Pengembang]
+
   v(4pt)
-  
-  table(
-    columns: (30pt, 1fr, 100pt, 110pt),
-    stroke: 0.5pt + rgb("#94a3b8"),
-    fill: (col, row) => if row == 0 { rgb("#f1f5f9") } else { none },
-    inset: 6pt,
-    align: (col, row) => if row == 0 { center + horizon } else { left + horizon },
-    
-    [*No*], [*Nama Mahasiswa*], [*NIM*], [*Peran Utama*],
-    [1], [Raditya Mahatma Ghosi], [254107020102], [Ketua Tim / Lead Developer],
-    [2], [Mohammad Hafidz Rafi' Rabbani], [254107020084], [Technical PM / QA],
-    [3], [Galuh Pramudya Ananta], [254107020127], [UI/UX Designer / Frontend],
-    [4], [Findi Finanda Aszahra], [254107020016], [Sekretaris / Dokumentator]
+  line(length: 100%, stroke: 0.6pt + rgb("#0f172a"))
+  v(4pt)
+
+  // -------------------------------------------------------------
+  // METADATA ROW
+  // -------------------------------------------------------------
+  grid(
+    columns: (1fr, 1fr, 1.2fr),
+    column-gutter: 12pt,
+    row-gutter: 3pt,
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Sprint Aktif] \
+      #text(size: 8.5pt, weight: "bold", fill: rgb("#0f172a"))[#sprint_name]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Rentang Periode] \
+      #text(size: 8.5pt, weight: "medium", fill: rgb("#0f172a"))[#period]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Target Milestone] \
+      #text(size: 8.5pt, weight: "medium", fill: rgb("#0f172a"))[#checkpoint_target]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Dosen Pembimbing] \
+      #text(size: 8.5pt, weight: "medium", fill: rgb("#0f172a"))[#supervisor_name]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Kelas & Kelompok] \
+      #text(size: 8.5pt, weight: "medium", fill: rgb("#0f172a"))[#class_name / Tim 1]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[Tahun Akademik] \
+      #text(size: 8.5pt, weight: "medium", fill: rgb("#0f172a"))[#academic_year]
+    ],
   )
-  
-  v(12pt)
-  text(size: 11pt, weight: "bold")[2. Rekapitulasi Aktivitas & Luaran Kerja]
+
   v(4pt)
-  
+  line(length: 100%, stroke: 0.4pt + rgb("#e2e8f0"))
+  v(4pt)
+
+  // -------------------------------------------------------------
+  // TEAM ROSTER (Proposal PBL Aligned)
+  // -------------------------------------------------------------
+  text(size: 9pt, weight: "bold", fill: rgb("#0f172a"))[Susunan Tim Pengembang (Kelompok 1)]
+  v(2.5pt)
+
+  grid(
+    columns: (1.1fr, 0.9fr, 1.1fr, 1.1fr),
+    column-gutter: 8pt,
+    [
+      #text(size: 8pt, weight: "bold")[Raditya Mahatma G.] \
+      #text(size: 7pt, fill: rgb("#64748b"))[Ketua Tim & Pengembang Utama]
+    ],
+    [
+      #text(size: 8pt, weight: "bold")[Mohammad Hafidz R. R.] \
+      #text(size: 7pt, fill: rgb("#64748b"))[QA / Penguji]
+    ],
+    [
+      #text(size: 8pt, weight: "bold")[Galuh Pramudya A.] \
+      #text(size: 7pt, fill: rgb("#64748b"))[Analis / Desainer]
+    ],
+    [
+      #text(size: 8pt, weight: "bold")[Findi Finanda A.] \
+      #text(size: 7pt, fill: rgb("#64748b"))[Sekretaris / Dokumentator]
+    ],
+  )
+
+  v(4pt)
+  line(length: 100%, stroke: 0.4pt + rgb("#e2e8f0"))
+  v(5pt)
+
+  // -------------------------------------------------------------
+  // TABEL 1: LOG KEPUTUSAN TATA KELOLA PROYEK
+  // -------------------------------------------------------------
+  grid(
+    columns: (1fr, auto),
+    align: (left + horizon, right + horizon),
+    [
+      #text(size: 9pt, weight: "bold", fill: rgb("#0f172a"))[1. Log Keputusan Tata Kelola Proyek]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[#decisions.len() keputusan tercatat]
+    ]
+  )
+  v(2.5pt)
+
+  if decisions.len() > 0 {
+    table(
+      columns: (65pt, 110pt, 1fr),
+      stroke: (x, y) => if y == 0 {
+        (bottom: 0.8pt + rgb("#0f172a"), top: 0.8pt + rgb("#0f172a"))
+      } else {
+        (bottom: 0.4pt + rgb("#e2e8f0"))
+      },
+      fill: none,
+      inset: (x: 4pt, y: 3.5pt),
+      align: (col, row) => (
+        if row == 0 { center + horizon }
+        else if col == 0 { center + horizon }
+        else { left + horizon }
+      ),
+      table.header(
+        [#text(size: 8pt, weight: "bold")[Tanggal]],
+        [#text(size: 8pt, weight: "bold")[Pengambil Keputusan]],
+        [#text(size: 8pt, weight: "bold")[Keputusan & Alasan]],
+      ),
+      ..decisions.map(dec => (
+        [#text(size: 7.5pt)[#dec.date]],
+        [#text(size: 7.5pt, weight: "medium")[#dec.decision_maker]],
+        [
+          #text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#dec.decision]
+          #if "rationale" in dec and dec.rationale != "" and dec.rationale != "-" [
+            \ #text(size: 7pt, fill: rgb("#475569"))[#dec.rationale]
+          ]
+        ],
+      )).flatten()
+    )
+  } else {
+    rect(
+      stroke: 0.4pt + rgb("#e2e8f0"),
+      fill: rgb("#fafafa"),
+      width: 100%,
+      inset: (x: 6pt, y: 4pt),
+      [
+        #text(style: "italic", size: 7.5pt, fill: rgb("#64748b"))[Belum ada keputusan tata kelola yang dicatat pada periode ini.]
+      ]
+    )
+  }
+
+  v(5pt)
+
+  // -------------------------------------------------------------
+  // TABEL 2: REKAPITULASI AKTIVITAS PENGERJAAN
+  // -------------------------------------------------------------
+  let total_hours = activities.map(a => a.hours).sum(default: 0)
+
+  grid(
+    columns: (1fr, auto),
+    align: (left + horizon, right + horizon),
+    [
+      #text(size: 9pt, weight: "bold", fill: rgb("#0f172a"))[2. Rekapitulasi Aktivitas Pengerjaan]
+    ],
+    [
+      #text(size: 7.5pt, fill: rgb("#64748b"))[#activities.len() aktivitas • #total_hours jam kerja]
+    ]
+  )
+  v(2.5pt)
+
   if activities.len() > 0 {
     table(
-      columns: (65pt, 80pt, 1fr, 85pt, 35pt, 90pt),
-      stroke: 0.5pt + rgb("#94a3b8"),
-      fill: (col, row) => if row == 0 { rgb("#f1f5f9") } else { none },
-      inset: 5pt,
+      columns: (58pt, 52pt, 1fr, 72pt, 28pt),
+      stroke: (x, y) => if y == 0 {
+        (bottom: 0.8pt + rgb("#0f172a"), top: 0.8pt + rgb("#0f172a"))
+      } else {
+        (bottom: 0.4pt + rgb("#e2e8f0"))
+      },
+      fill: none,
+      inset: (x: 4pt, y: 3.5pt),
       align: (col, row) => (
         if row == 0 { center + horizon }
         else if col == 0 or col == 4 { center + horizon }
         else { left + horizon }
       ),
-      
-      [*Tanggal*],
-      [*Pelaksana*],
-      [*Uraian Aktivitas & Luaran*],
-      [*Bukti / Link*],
-      [*Jam*],
-      [*Kendala & Solusi*],
-      
+      table.header(
+        [#text(size: 8pt, weight: "bold")[Tanggal]],
+        [#text(size: 8pt, weight: "bold")[Pelaksana]],
+        [#text(size: 8pt, weight: "bold")[Uraian Aktivitas]],
+        [#text(size: 8pt, weight: "bold")[Tautan Bukti]],
+        [#text(size: 8pt, weight: "bold")[Jam]],
+      ),
       ..activities.map(act => (
-        act.date,
-        act.member,
-        [
-          *#act.task* \
-          #text(size: 9pt, fill: rgb("#334155"))[#act.deliverable]
-        ],
+        [#text(size: 7.5pt)[#act.date]],
+        [#text(size: 7.5pt, weight: "medium")[#act.member]],
+        [#text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#act.task]],
         if "link" in act and act.link != "" {
-          text(size: 8.5pt)[#link(act.link)[#act.at("evidence_label", default: "Link")]]
+          text(size: 7pt, font: "DejaVu Sans Mono")[#link(act.link)[#act.at("evidence_label", default: "Link")]]
         } else {
-          text(size: 8.5pt)[#act.at("evidence_label", default: "-")]
+          text(size: 7pt, fill: rgb("#94a3b8"))[-]
         },
-        str(act.hours),
-        text(size: 8.5pt)[
-          #if "issue" in act and act.issue != "" [
-            *K:* #act.issue \
-            *S:* #act.solution
-          ] else [
-            -
-          ]
-        ]
+        [#text(size: 7.5pt)[#act.hours h]],
       )).flatten()
     )
   } else {
-    text(style: "italic", fill: rgb("#64748b"))[Belum ada entri aktivitas pada minggu ini.]
+    rect(
+      stroke: 0.4pt + rgb("#e2e8f0"),
+      fill: rgb("#fafafa"),
+      width: 100%,
+      inset: (x: 6pt, y: 4pt),
+      [
+        #text(style: "italic", size: 7.5pt, fill: rgb("#64748b"))[Belum ada aktivitas tercatat pada minggu ini.]
+      ]
+    )
   }
-  
-  if body != none {
-    v(12pt)
-    text(size: 11pt, weight: "bold")[3. Catatan Kemajuan & Rencana Lanjutan]
-    v(4pt)
-    body
-  }
-  
-  v(12pt)
-  text(size: 11pt, weight: "bold")[#if body != none [4] else [3]. Catatan & Evaluasi Dosen Fasilitator / Pembimbing]
-  v(4pt)
-  
-  table(
-    columns: (1fr),
-    stroke: 0.5pt + rgb("#94a3b8"),
-    inset: 10pt,
-    if evaluations.len() > 0 {
-      evaluations.join("\n\n")
-    } else {
-      text(style: "italic", fill: rgb("#94a3b8"))[Catatan evaluasi mingguan diisi saat sesi asistensi bersama dosen pembimbing.]
-    }
-  )
-  
-  v(16pt)
-  
-  grid(
-    columns: (1fr, 1fr),
-    align: center,
-    [
-      Mengetahui, \
-      Dosen Pembimbing / Fasilitator
-      #v(45pt)
-      *#supervisor_name* \
-      NIP. #supervisor_nip
-    ],
-    [
-      Malang, #period.split("–").last().trim() \
-      Ketua Tim PBL VALENIA
-      #v(45pt)
-      *Raditya Mahatma Ghosi* \
-      NIM. 254107020102
-    ]
-  )
 }
