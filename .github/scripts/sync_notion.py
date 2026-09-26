@@ -130,7 +130,9 @@ def update_notion_task(
     is_pr_rejected: bool = False,
 ) -> None:
     page_id = page.get("id")
-    status_obj = page.get("properties", {}).get("Status", {}).get("status")
+    props = page.get("properties") or {}
+    status_prop = props.get("Status") or {}
+    status_obj = status_prop.get("status") if isinstance(status_prop, dict) else {}
     current_status = status_obj.get("name", "") if isinstance(status_obj, dict) else ""
 
     # If already Done and target is not Done, do not modify status or commit link
@@ -164,7 +166,14 @@ def update_notion_task(
         return
 
     call_notion_api(f"/pages/{page_id}", token, method="PATCH", payload={"properties": properties})
-    logger.info("Successfully updated page %s in Notion (status: '%s')", page_id, status_name)
+    if "Status" in properties:
+        logger.info("Successfully updated page %s in Notion (status: '%s')", page_id, status_name)
+    else:
+        logger.info(
+            "Successfully updated page %s in Notion (link updated, status preserved as '%s')",
+            page_id,
+            current_status,
+        )
 
 
 def parse_github_event(event_path: str) -> tuple[list[str], str, str, bool]:
@@ -197,7 +206,7 @@ def parse_github_event(event_path: str) -> tuple[list[str], str, str, bool]:
             if tid not in target_tasks:
                 target_tasks.append(tid)
 
-        if action in ("opened", "reopened", "edited"):
+        if action in ("opened", "reopened", "edited", "synchronize"):
             status_target = "In review"
         elif action == "closed":
             if is_merged:
@@ -217,10 +226,11 @@ def parse_github_event(event_path: str) -> tuple[list[str], str, str, bool]:
 
         ref_tasks = extract_task_ids_from_ref(ref)
 
-        messages = [head_commit.get("message", "")]
+        head_msg = head_commit.get("message")
+        messages = [head_msg] if isinstance(head_msg, str) and head_msg else []
         for c in event.get("commits", []):
             msg = c.get("message")
-            if msg:
+            if isinstance(msg, str) and msg:
                 messages.append(msg)
         combined_text = " ".join(messages)
         commit_tasks = extract_task_ids_from_commit(combined_text)
@@ -238,11 +248,11 @@ def parse_github_event(event_path: str) -> tuple[list[str], str, str, bool]:
 
 
 def main() -> int:
-    token = os.environ.get("NOTION_TOKEN")
+    token = os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_API_KEY")
     database_id = os.environ.get("NOTION_TASKS_DB_ID")
 
     if not token:
-        logger.error("Missing NOTION_TOKEN environment variable")
+        logger.error("Missing NOTION_TOKEN or NOTION_API_KEY environment variable")
         return 1
 
     if not database_id:
@@ -268,6 +278,7 @@ def main() -> int:
         return 0
 
     logger.info("Identified task IDs: %s. Setting status to '%s'", task_ids, status_target)
+    failed_updates = 0
     for task_id in task_ids:
         try:
             page = find_notion_page_by_task_id(database_id, token, task_id)
@@ -281,6 +292,10 @@ def main() -> int:
                 )
         except (urllib.error.HTTPError, urllib.error.URLError) as err:
             logger.error("Failed to update task %s in Notion: %s", task_id, err)
+            failed_updates += 1
+
+    if failed_updates > 0:
+        return 1
 
     return 0
 
