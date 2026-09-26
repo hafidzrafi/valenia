@@ -267,6 +267,47 @@ def normalize_decision_to_entry(page: dict) -> dict:
     }
 
 
+def extract_sprint_number_from_title(title: str) -> int | None:
+    """Extract integer sprint number from sprint title (e.g. 'Sprint 1: Core' -> 1)."""
+    if not title:
+        return None
+    match = re.search(r"Sprint\s*(\d+)", title, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def fetch_active_sprint(sprints_db_id: str, token: str) -> tuple[dict | None, int]:
+    """Query Sprints DB to find the sprint with Status 'Active' and extract its number."""
+    payload = {
+        "page_size": 10,
+        "filter": {
+            "property": "Status",
+            "status": {
+                "equals": "Active",
+            },
+        },
+    }
+    res = call_notion_api(f"/databases/{sprints_db_id}/query", token, method="POST", payload=payload)
+    results = res.get("results", [])
+    if not results:
+        sprint = fetch_sprint_by_number(sprints_db_id, token, None)
+        if sprint:
+            props = sprint.get("properties") or {}
+            title_list = (props.get("Sprint Name") or {}).get("title") or []
+            title = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)])
+            num = extract_sprint_number_from_title(title) or 1
+            return sprint, num
+        return None, 1
+
+    sprint = results[0]
+    props = sprint.get("properties") or {}
+    title_list = (props.get("Sprint Name") or {}).get("title") or []
+    title = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)])
+    num = extract_sprint_number_from_title(title) or 1
+    return sprint, num
+
+
 def fetch_sprint_by_number(sprints_db_id: str, token: str, sprint_number: int | None = None) -> dict | None:
     """Query Sprints DB to find a sprint by number or active status with cursor pagination."""
     all_sprints: list[dict] = []
@@ -371,13 +412,67 @@ def fetch_governance_decisions(db_id: str | None, token: str, sprint_id: str | N
 SEMESTER_START_DATE = datetime(2026, 8, 24)  # Polinema Semester 3 start (Monday Week 1)
 
 
+def calculate_academic_week(
+    reference_date: datetime | None = None,
+    sprint_number: int | None = None,
+) -> int:
+    """Calculate academic week number for 2-week sprint cadence and academic calendar.
+
+    Polinema Semester 3 calendar structure:
+    - Semester Start: 2026-08-24 (Monday, Week 1).
+    - Weeks 1-4: Pre-sprint / Proposal / Inception -> Checkpoint 1 (Minggu ke-4).
+    - Weeks 5-16: 6 Sprints (2 weeks per sprint):
+        * Sprint 1: Weeks 5 - 6
+        * Sprint 2: Weeks 7 - 8   -> Checkpoint 2 (Minggu ke-8)
+        * Sprint 3: Weeks 9 - 10
+        * Sprint 4: Weeks 11 - 12 -> Checkpoint 3 (Minggu ke-12)
+        * Sprint 5: Weeks 13 - 14
+        * Sprint 6: Weeks 15 - 16 -> Checkpoint 4 (Minggu ke-16)
+
+    Resolution Logic:
+    1. If a sprint_number is given:
+       - The sprint covers [sprint_start_week, sprint_end_week] where:
+         sprint_start_week = (sprint_number - 1) * 2 + 5
+         sprint_end_week = sprint_start_week + 1
+       - If reference_date is provided (or current date if reference_date is None):
+         Check if the calendar week falls within [sprint_start_week, sprint_end_week].
+         If it does, return that exact calendar week (e.g. Week 5 or Week 6 for Sprint 1).
+         If it falls outside (e.g. historical/future sprint query), default to sprint_start_week.
+    2. If no sprint_number is given:
+       - Return current calendar week derived from SEMESTER_START_DATE.
+    """
+    ref = reference_date or datetime.now()
+    delta_days = (ref - SEMESTER_START_DATE).days
+    calendar_week = max(1, min(16, (delta_days // 7) + 1))
+
+    if sprint_number is not None and sprint_number >= 1:
+        sprint_start_week = (sprint_number - 1) * 2 + 5
+        sprint_end_week = sprint_start_week + 1
+        if sprint_start_week <= calendar_week <= sprint_end_week:
+            return calendar_week
+        return sprint_start_week
+
+    return calendar_week
+
+
+def derive_checkpoint_target(week_number: int) -> str:
+    """Derive official checkpoint milestone from academic week number."""
+    if week_number <= 4:
+        return "Checkpoint 1 (Minggu ke-4)"
+    if week_number <= 8:
+        return "Checkpoint 2 (Minggu ke-8)"
+    if week_number <= 12:
+        return "Checkpoint 3 (Minggu ke-12)"
+    return "Checkpoint 4 (Minggu ke-16)"
+
+
 def build_sprint_payload(
     sprint_page: dict,
     task_pages: list[dict],
     week_number: int = 5,
     checkpoint_target: str = "Checkpoint 2 (Minggu ke-8)",
     decisions: list[dict] | None = None,
-    strict_week: bool = False,
+    strict_week: bool = True,
 ) -> dict:
     """Build structured data payload for logbook report."""
     props = sprint_page.get("properties") or {} if isinstance(sprint_page, dict) else {}
@@ -498,6 +593,8 @@ def main() -> int:
     parser.add_argument("--week", type=int, default=None, help="Academic week number (default: auto-calculate from sprint)")
     parser.add_argument("--checkpoint", type=str, default=None, help="Target milestone (default: auto-derived from week)")
     parser.add_argument("--governance-db", type=str, default=None, help="Notion Governance Log database ID (default: from env NOTION_GOVERNANCE_DB_ID)")
+    parser.add_argument("--strict-week", action="store_true", default=True, help="Filter tasks strictly by academic week window (default: True)")
+    parser.add_argument("--no-strict-week", dest="strict_week", action="store_false", help="Disable strict academic week filtering")
     parser.add_argument("--pdf-name", type=str, default=None, help="Custom PDF output filename (default: logbook-week-XX.pdf)")
     parser.add_argument("--all-tasks", action="store_true", help="Include non-Done tasks")
     parser.add_argument("--no-compile", action="store_true", help="Skip PDF compilation")
@@ -528,23 +625,22 @@ def main() -> int:
         return 1
 
 
-    if args.sprint is None:
-        logger.error("--sprint argument is required")
-        return 1
-
     try:
-        sprint = fetch_sprint_by_number(sprints_db, token, args.sprint)
-        sprint_num = args.sprint
+        if args.sprint is not None:
+            sprint = fetch_sprint_by_number(sprints_db, token, args.sprint)
+            sprint_num = args.sprint
+        else:
+            sprint, sprint_num = fetch_active_sprint(sprints_db, token)
     except (urllib.error.HTTPError, urllib.error.URLError) as err:
         logger.error("Failed to query sprint from Notion: %s", err)
         return 1
 
     if not sprint:
-        logger.error("Sprint %d not found in Notion", sprint_num)
+        logger.error("No active or matching sprint found in Notion")
         return 1
 
-    week_num = args.week or sprint_num
-    checkpoint = args.checkpoint or f"CP-{min(4, max(1, (week_num + 3) // 4))}"
+    week_num = args.week if args.week is not None else calculate_academic_week(sprint_number=sprint_num)
+    checkpoint = args.checkpoint if args.checkpoint is not None else derive_checkpoint_target(week_num)
 
     try:
         tasks = fetch_tasks_for_sprint(tasks_db, token, sprint["id"], only_done=not args.all_tasks)
@@ -567,7 +663,7 @@ def main() -> int:
         week_number=week_num,
         checkpoint_target=checkpoint,
         decisions=decisions,
-        strict_week=False,
+        strict_week=args.strict_week,
     )
     out_dir = f"logbook/sprint-{sprint_num:02d}"
     json_path, typ_path = generate_logbook_files(payload, out_dir)
