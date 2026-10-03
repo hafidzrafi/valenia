@@ -26,7 +26,8 @@ composer.phar
 *.swo
 *~
 
-# Typst compiled output & caches
+# Typst compiled output & runtime generated sprints
+logbook/sprint-*/
 logbook/**/*.pdf
 .typst-cache/
 

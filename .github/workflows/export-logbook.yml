@@ -1,0 +1,80 @@
+name: Export Sprint Logbook
+
+on:
+  workflow_dispatch:
+    inputs:
+      sprint:
+        description: "Sprint number to export (leave empty to auto-detect Active Sprint)"
+        required: false
+        type: string
+      week:
+        description: "Academic week number (leave empty to auto-calculate)"
+        required: false
+        type: string
+      all_tasks:
+        description: "Include non-Done tasks"
+        required: false
+        default: false
+        type: boolean
+
+  schedule:
+    # Run every Sunday at 16:59 UTC (23:59 WIB) before Monday academic checkpoint
+    - cron: '59 16 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  export-logbook:
+    name: Export and Compile Logbook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v5
+        with:
+          typst-version: '0.15.1'
+
+      - name: Export Logbook from Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          NOTION_SPRINTS_DB_ID: ${{ secrets.NOTION_SPRINTS_DB_ID }}
+          NOTION_GOVERNANCE_DB_ID: ${{ secrets.NOTION_GOVERNANCE_DB_ID }}
+          NOTION_LOGBOOK_DB_ID: ${{ secrets.NOTION_LOGBOOK_DB_ID }}
+          INPUT_SPRINT: ${{ inputs.sprint }}
+          INPUT_WEEK: ${{ inputs.week }}
+          INPUT_ALL_TASKS: ${{ inputs.all_tasks }}
+        run: |
+          ARGS=()
+          if [ -n "$INPUT_SPRINT" ]; then
+            ARGS+=(--sprint "$INPUT_SPRINT")
+          fi
+          if [ -n "$INPUT_WEEK" ]; then
+            ARGS+=(--week "$INPUT_WEEK")
+          fi
+          if [ "$INPUT_ALL_TASKS" = "true" ]; then
+            ARGS+=(--all-tasks)
+          fi
+          if [ -n "$NOTION_GOVERNANCE_DB_ID" ]; then
+            ARGS+=(--governance-db "$NOTION_GOVERNANCE_DB_ID")
+          fi
+          if [ -n "$NOTION_LOGBOOK_DB_ID" ]; then
+            ARGS+=(--logbook-db "$NOTION_LOGBOOK_DB_ID" --upload-notion)
+          fi
+          python3 .github/scripts/export_logbook.py "${ARGS[@]}"
+
+      - name: Upload Logbook PDF Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: logbook-pdf-export
+          path: logbook/sprint-*/logbook-*.pdf
+          retention-days: 30
+          if-no-files-found: error

@@ -1,0 +1,895 @@
+#!/usr/bin/env python3
+"""
+Logbook automation tool for VALENIA PBL project.
+Extracts task data per sprint from Notion, maps to structured JSON,
+and builds Typst PDF logbook reports.
+"""
+
+import argparse
+from datetime import datetime, timedelta
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+import uuid
+
+from sync_notion import call_notion_api, logger
+
+MEMBER_MAP = {
+    "raditya": "Raditya",
+    "findi": "Findi",
+    "galuh": "Galuh",
+    "hafidz": "Hafidz",
+    "rafi": "Hafidz",
+    "hapiss": "Hafidz",
+}
+
+
+def resolve_member_name(people_list: list[dict]) -> str:
+    """Normalize assignee name from Notion people property, supporting multiple assignees."""
+    if not people_list or not isinstance(people_list, list):
+        return "Unassigned"
+    resolved: list[str] = []
+    for person in people_list:
+        if not isinstance(person, dict):
+            continue
+        raw_val = person.get("name")
+        if not isinstance(raw_val, str):
+            continue
+        raw_name = raw_val.strip()
+        if not raw_name:
+            continue
+        lower_name = raw_name.lower()
+        matched = raw_name
+        for key, mapped in MEMBER_MAP.items():
+            if key in lower_name:
+                matched = mapped
+                break
+        if matched not in resolved:
+            resolved.append(matched)
+
+    return ", ".join(resolved) if resolved else "Unassigned"
+
+
+def format_evidence_link(url: str | None) -> tuple[str, str]:
+    """Parse evidence URL to extract clickable link and readable label."""
+    if not url:
+        return "", "-"
+    url = url.strip()
+    url_lower = url.lower()
+    if not (url_lower.startswith("https://") or url_lower.startswith("http://")):
+        return "", "-"
+    pr_match = re.search(r"github\.com/[^/]+/[^/]+/pull/(\d+)", url, re.IGNORECASE)
+    if pr_match:
+        return url, f"PR #{pr_match.group(1)}"
+    commit_match = re.search(r"github\.com/[^/]+/[^/]+/commit/([a-f0-9]{7})", url, re.IGNORECASE)
+    if commit_match:
+        return url, f"Commit {commit_match.group(1)}"
+    if "figma.com" in url_lower:
+        return url, "Figma Design"
+    if "notion.so" in url_lower:
+        return url, "Notion Doc"
+    return url, "Tautan Bukti"
+
+
+def estimate_hours(
+    priority_name: str | None,
+    notes_text: str | None,
+    explicit_hours: int | None = None,
+) -> int:
+    """Estimate work hours from explicit Est. Hours property, notes override, or priority tier."""
+    if explicit_hours is not None:
+        return max(1, explicit_hours)
+
+    if notes_text:
+        match = re.search(r"\[hours:\s*(-?\d+)\]", notes_text, re.IGNORECASE)
+        if match:
+            h = int(match.group(1))
+            return max(1, h)
+
+    p_lower = (priority_name or "").lower()
+    if "tier 1" in p_lower or "must" in p_lower:
+        return 4
+    if "tier 2" in p_lower or "should" in p_lower:
+        return 3
+    if "tier 3" in p_lower or "could" in p_lower:
+        return 2
+
+    return 2
+
+
+def format_date(date_str: str | None) -> str:
+    """Format ISO date string to Indonesian short date e.g. '24 Sep 2026'."""
+    if not date_str or not isinstance(date_str, str) or not date_str.strip():
+        return "-"
+    try:
+        clean_date = date_str.split("T")[0].strip()
+        dt = datetime.strptime(clean_date, "%Y-%m-%d")
+        months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+        return f"{dt.day} {months[dt.month - 1]} {dt.year}"
+    except (ValueError, TypeError, AttributeError):
+        return date_str.strip()
+
+
+def normalize_task_to_activity(
+    page: dict,
+    week_start: datetime | None = None,
+    week_end: datetime | None = None,
+) -> dict:
+    """Normalize Notion task page to logbook activity dictionary."""
+    props = page.get("properties") or {}
+    id_obj = props.get("ID") or {}
+    uid = (id_obj.get("unique_id") or {}).get("number") if isinstance(id_obj, dict) else None
+    task_num = f"VALENIA-{uid:02d}" if uid is not None else "VALENIA-XX"
+
+    name_obj = props.get("Task Name") or {}
+    title_list = name_obj.get("title") or [] if isinstance(name_obj, dict) else []
+    raw_title = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)]).strip()
+    task_label = f"{task_num}: {raw_title}".replace("—", "-").replace("–", "-")
+
+    # Notion Tasks DB uses 'Assignee' for people property, with 'Person' as fallback
+    assignee_obj = props.get("Assignee") or props.get("Person") or {}
+    people = assignee_obj.get("people") or [] if isinstance(assignee_obj, dict) else []
+    member = resolve_member_name(people)
+
+    link_obj = props.get("PR / Commit Link") or {}
+    link_url = link_obj.get("url") if isinstance(link_obj, dict) else None
+    link, label = format_evidence_link(link_url)
+
+    notes_obj = props.get("Notes") or {}
+    notes_list = notes_obj.get("rich_text") or [] if isinstance(notes_obj, dict) else []
+    notes = "".join([(t.get("plain_text") or "") for t in notes_list if isinstance(t, dict)]).strip() or raw_title
+    notes = notes.replace("—", "-").replace("–", "-")
+
+    status_obj = props.get("Status") or {}
+    status_name = None
+    if isinstance(status_obj, dict):
+        status_name = (status_obj.get("status") or {}).get("name") or (status_obj.get("select") or {}).get("name")
+
+    deadline_obj = props.get("Deadline") or {}
+    date_val = deadline_obj.get("date") or {} if isinstance(deadline_obj, dict) else {}
+    raw_date = date_val.get("start") if isinstance(date_val, dict) else None
+
+    # Date Window Guard:
+    # If the task is marked Done and its Deadline falls outside [week_start, week_end],
+    # fallback to the actual completion date (last_edited_time).
+    if raw_date and (week_start is not None or week_end is not None):
+        is_done = (status_name == "Done") or (status_name is None)
+        if is_done:
+            try:
+                clean_date_str = raw_date[:10]
+                deadline_dt = datetime.strptime(clean_date_str, "%Y-%m-%d")
+                is_outside = False
+                if week_end is not None:
+                    end_boundary = datetime(week_end.year, week_end.month, week_end.day, 23, 59, 59)
+                    if deadline_dt > end_boundary:
+                        is_outside = True
+                if week_start is not None:
+                    start_boundary = datetime(week_start.year, week_start.month, week_start.day, 0, 0, 0)
+                    if deadline_dt < start_boundary:
+                        is_outside = True
+
+                if is_outside:
+                    raw_date = page.get("last_edited_time") or raw_date
+            except (ValueError, TypeError):
+                pass
+
+    if not raw_date:
+        raw_date = page.get("last_edited_time")
+    formatted_date = format_date(raw_date)
+
+    # Est. Hours extraction from Notion property (supporting select and number types)
+    explicit_hours = None
+    est_prop = props.get("Est. Hours") or props.get("Hours") or props.get("Jam") or {}
+    if isinstance(est_prop, dict):
+        p_type = est_prop.get("type")
+        if p_type == "select":
+            sel_obj = est_prop.get("select") or {}
+            sel_name = sel_obj.get("name") if isinstance(sel_obj, dict) else None
+            if sel_name:
+                try:
+                    explicit_hours = int(sel_name.strip())
+                except ValueError:
+                    pass
+        elif p_type == "number":
+            num_val = est_prop.get("number")
+            if num_val is not None and isinstance(num_val, (int, float)):
+                explicit_hours = int(round(num_val))
+        else:
+            sel_obj = est_prop.get("select")
+            if isinstance(sel_obj, dict) and sel_obj.get("name"):
+                try:
+                    explicit_hours = int(sel_obj["name"].strip())
+                except ValueError:
+                    pass
+            num_val = est_prop.get("number")
+            if num_val is not None and isinstance(num_val, (int, float)):
+                explicit_hours = int(round(num_val))
+
+    priority_obj = props.get("Priority") or {}
+    priority_select = priority_obj.get("select") or {} if isinstance(priority_obj, dict) else {}
+    priority_name = priority_select.get("name") if isinstance(priority_select, dict) else None
+    hours = estimate_hours(priority_name, notes, explicit_hours=explicit_hours)
+
+    return {
+        "date": formatted_date,
+        "member": member,
+        "task": task_label,
+        "deliverable": notes,
+        "link": link,
+        "evidence_label": label,
+        "hours": hours,
+        "issue": "-",
+        "solution": "-",
+        "raw_date": raw_date[:10] if raw_date else None,
+    }
+
+
+def normalize_decision_to_entry(page: dict) -> dict:
+    """Normalize Notion Governance Log page to structured decision entry."""
+    props = page.get("properties") or {}
+
+    # 1. Decision Title (Keputusan / Title / Name)
+    title_obj = props.get("Keputusan") or props.get("Title") or props.get("Name") or {}
+    title_list = title_obj.get("title") or [] if isinstance(title_obj, dict) else []
+    decision_text = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)]).strip() or "-"
+    decision_text = decision_text.replace("—", "-").replace("–", "-")
+
+    # 2. Date (Date / Tanggal)
+    date_obj = props.get("Date") or props.get("Tanggal") or {}
+    date_val = date_obj.get("date") or {} if isinstance(date_obj, dict) else {}
+    raw_date = date_val.get("start") if isinstance(date_val, dict) else None
+    if not raw_date:
+        raw_date = page.get("last_edited_time") or page.get("created_time")
+    formatted_date = format_date(raw_date)
+
+    # 3. Decision Maker (Person / Pengambil Keputusan / Assignee / People)
+    person_obj = props.get("Person") or props.get("Pengambil Keputusan") or props.get("Assignee") or props.get("People") or {}
+    people_list = person_obj.get("people") or [] if isinstance(person_obj, dict) else []
+    decision_maker = resolve_member_name(people_list)
+
+    # 4. Rationale (Alasan / Text / Reason / Rationale)
+    text_obj = props.get("Alasan") or props.get("Text") or props.get("Reason") or props.get("Rationale") or {}
+    text_list = text_obj.get("rich_text") or [] if isinstance(text_obj, dict) else []
+    rationale_text = "".join([(t.get("plain_text") or "") for t in text_list if isinstance(t, dict)]).strip() or "-"
+    rationale_text = rationale_text.replace("—", "-").replace("–", "-")
+
+    return {
+        "decision": decision_text,
+        "date": formatted_date,
+        "decision_maker": decision_maker,
+        "rationale": rationale_text,
+        "raw_date": raw_date[:10] if raw_date else None,
+    }
+
+
+def extract_sprint_number_from_title(title: str) -> int | None:
+    """Extract integer sprint number from sprint title (e.g. 'Sprint 1: Core' -> 1)."""
+    if not title:
+        return None
+    match = re.search(r"Sprint\s*(\d+)", title, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def fetch_active_sprint(sprints_db_id: str, token: str) -> tuple[dict | None, int]:
+    """Query Sprints DB to find the sprint with Status 'Active' and extract its number."""
+    payload = {
+        "page_size": 10,
+        "filter": {
+            "property": "Status",
+            "status": {
+                "equals": "Active",
+            },
+        },
+    }
+    res = call_notion_api(f"/databases/{sprints_db_id}/query", token, method="POST", payload=payload)
+    results = res.get("results", [])
+    if not results:
+        sprint = fetch_sprint_by_number(sprints_db_id, token, None)
+        if sprint:
+            props = sprint.get("properties") or {}
+            title_list = (props.get("Sprint Name") or {}).get("title") or []
+            title = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)])
+            num = extract_sprint_number_from_title(title) or 1
+            return sprint, num
+        return None, 1
+
+    sprint = results[0]
+    props = sprint.get("properties") or {}
+    title_list = (props.get("Sprint Name") or {}).get("title") or []
+    title = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)])
+    num = extract_sprint_number_from_title(title) or 1
+    return sprint, num
+
+
+def fetch_sprint_by_number(sprints_db_id: str, token: str, sprint_number: int | None = None) -> dict | None:
+    """Query Sprints DB to find a sprint by number or active status with cursor pagination."""
+    all_sprints: list[dict] = []
+    has_more = True
+    next_cursor = None
+    payload: dict = {"page_size": 100}
+
+    while has_more:
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
+        res = call_notion_api(f"/databases/{sprints_db_id}/query", token, method="POST", payload=payload)
+        all_sprints.extend(res.get("results", []))
+        has_more = res.get("has_more", False)
+        next_cursor = res.get("next_cursor")
+
+    if not all_sprints:
+        return None
+
+    if sprint_number is None:
+        for s in all_sprints:
+            props = s.get("properties") or {} if isinstance(s, dict) else {}
+            status_obj = (props.get("Status") or {}).get("status") or {} if isinstance(props.get("Status"), dict) else {}
+            if status_obj.get("name") == "Active":
+                return s
+        return all_sprints[0]
+
+    pattern = rf"\b{sprint_number}\b"
+    for s in all_sprints:
+        props = s.get("properties") or {} if isinstance(s, dict) else {}
+        name_obj = props.get("Sprint Name") or {}
+        title_list = name_obj.get("title") or [] if isinstance(name_obj, dict) else []
+        title_text = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)])
+        if re.search(pattern, title_text):
+            return s
+    return None
+
+
+def fetch_tasks_for_sprint(tasks_db_id: str, token: str, sprint_page_id: str, only_done: bool = True) -> list[dict]:
+    """Query Tasks DB for tasks belonging to a sprint with automatic cursor pagination."""
+    filter_conditions = [
+        {
+            "property": "🏃 Sprints",
+            "relation": {"contains": sprint_page_id},
+        }
+    ]
+    if only_done:
+        filter_conditions.append({
+            "property": "Status",
+            "status": {"equals": "Done"},
+        })
+
+    payload = {
+        "page_size": 100,
+        "filter": {"and": filter_conditions} if len(filter_conditions) > 1 else filter_conditions[0],
+    }
+
+    all_tasks = []
+    has_more = True
+    next_cursor = None
+
+    while has_more:
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
+        res = call_notion_api(f"/databases/{tasks_db_id}/query", token, method="POST", payload=payload)
+        all_tasks.extend(res.get("results", []))
+        has_more = res.get("has_more", False)
+        next_cursor = res.get("next_cursor")
+    return all_tasks
+
+
+def fetch_governance_decisions(db_id: str | None, token: str, sprint_id: str | None = None) -> list[dict]:
+    """Query Governance Log database from Notion with optional sprint filter."""
+    if not db_id or not token:
+        return []
+
+    payload: dict = {
+        "page_size": 100,
+        "sorts": [{"property": "Date", "direction": "ascending"}],
+    }
+    all_decisions: list[dict] = []
+    has_more = True
+    next_cursor = None
+
+    while has_more:
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
+        try:
+            res = call_notion_api(f"/databases/{db_id}/query", token, method="POST", payload=payload)
+            all_decisions.extend(res.get("results", []))
+            has_more = res.get("has_more", False)
+            next_cursor = res.get("next_cursor")
+        except (urllib.error.HTTPError, urllib.error.URLError) as err:
+            logger.warning("Failed to query Governance Log database %s from Notion: %s", db_id, err)
+            break
+        except Exception as err:
+            logger.warning("Unexpected error querying Governance Log: %s", err)
+            break
+
+    return all_decisions
+
+
+SEMESTER_START_DATE = datetime(2026, 8, 24)  # Polinema Semester 3 start (Monday Week 1)
+
+
+def calculate_academic_week(
+    reference_date: datetime | None = None,
+    sprint_number: int | None = None,
+) -> int:
+    """Calculate academic week number for 2-week sprint cadence and academic calendar.
+
+    Polinema Semester 3 calendar structure:
+    - Semester Start: 2026-08-24 (Monday, Week 1).
+    - Weeks 1-4: Pre-sprint / Proposal / Inception -> Checkpoint 1 (Minggu ke-4).
+    - Weeks 5-16: 6 Sprints (2 weeks per sprint):
+        * Sprint 1: Weeks 5 - 6
+        * Sprint 2: Weeks 7 - 8   -> Checkpoint 2 (Minggu ke-8)
+        * Sprint 3: Weeks 9 - 10
+        * Sprint 4: Weeks 11 - 12 -> Checkpoint 3 (Minggu ke-12)
+        * Sprint 5: Weeks 13 - 14
+        * Sprint 6: Weeks 15 - 16 -> Checkpoint 4 (Minggu ke-16)
+
+    Resolution Logic:
+    1. If a sprint_number is given:
+       - The sprint covers [sprint_start_week, sprint_end_week] where:
+         sprint_start_week = (sprint_number - 1) * 2 + 5
+         sprint_end_week = sprint_start_week + 1
+       - If reference_date is provided (or current date if reference_date is None):
+         Check if the calendar week falls within [sprint_start_week, sprint_end_week].
+         If it does, return that exact calendar week (e.g. Week 5 or Week 6 for Sprint 1).
+         If it falls outside (e.g. historical/future sprint query), default to sprint_start_week.
+    2. If no sprint_number is given:
+       - Return current calendar week derived from SEMESTER_START_DATE.
+    """
+    ref = reference_date or datetime.now()
+    delta_days = (ref - SEMESTER_START_DATE).days
+    calendar_week = max(1, min(16, (delta_days // 7) + 1))
+
+    if sprint_number is not None and sprint_number >= 1:
+        sprint_start_week = (sprint_number - 1) * 2 + 5
+        sprint_end_week = sprint_start_week + 1
+        if sprint_start_week <= calendar_week <= sprint_end_week:
+            return calendar_week
+        return sprint_start_week
+
+    return calendar_week
+
+
+def derive_checkpoint_target(week_number: int) -> str:
+    """Derive official checkpoint milestone from academic week number."""
+    if week_number <= 4:
+        return "Checkpoint 1 (Minggu ke-4)"
+    if week_number <= 8:
+        return "Checkpoint 2 (Minggu ke-8)"
+    if week_number <= 12:
+        return "Checkpoint 3 (Minggu ke-12)"
+    return "Checkpoint 4 (Minggu ke-16)"
+
+
+def build_sprint_payload(
+    sprint_page: dict,
+    task_pages: list[dict],
+    week_number: int = 5,
+    checkpoint_target: str = "Checkpoint 2 (Minggu ke-8)",
+    decisions: list[dict] | None = None,
+    strict_week: bool = True,
+) -> dict:
+    """Build structured data payload for logbook report."""
+    props = sprint_page.get("properties") or {} if isinstance(sprint_page, dict) else {}
+    name_obj = props.get("Sprint Name") or {}
+    title_list = name_obj.get("title") or [] if isinstance(name_obj, dict) else []
+    sprint_name = "".join([(t.get("plain_text") or "") for t in title_list if isinstance(t, dict)]).strip() or "Sprint Aktif"
+    sprint_name = sprint_name.replace("—", "-").replace("–", "-")
+
+    checkpoint_clean = checkpoint_target.replace("—", "-").replace("–", "-")
+
+    week_start = SEMESTER_START_DATE + timedelta(weeks=week_number - 1)
+    week_end = week_start + timedelta(days=6)
+
+    if strict_week:
+        period = f"{format_date(week_start.strftime('%Y-%m-%d'))} - {format_date(week_end.strftime('%Y-%m-%d'))}"
+    else:
+        dates_obj = props.get("Date Range") or props.get("Dates") or {}
+        dates = dates_obj.get("date") if isinstance(dates_obj, dict) else {}
+        if isinstance(dates, dict) and dates.get("start") and dates.get("end"):
+            period = f"{format_date(dates['start'])} - {format_date(dates['end'])}"
+        elif isinstance(dates, dict) and dates.get("start"):
+            period = f"{format_date(dates['start'])} - Selesai"
+        else:
+            period = f"{format_date(week_start.strftime('%Y-%m-%d'))} - {format_date(week_end.strftime('%Y-%m-%d'))}"
+
+    w_start_date = week_start.date()
+    w_end_date = week_end.date()
+
+    activities = []
+    for task in task_pages:
+        act = normalize_task_to_activity(task, week_start=week_start, week_end=week_end)
+        if strict_week:
+            raw_date = act.get("raw_date")
+            if raw_date:
+                try:
+                    task_dt = datetime.strptime(raw_date[:10], "%Y-%m-%d").date()
+                    if not (w_start_date <= task_dt <= w_end_date):
+                        continue
+                except (ValueError, TypeError):
+                    continue
+            else:
+                continue
+        activities.append(act)
+
+    normalized_decisions = []
+    for d in (decisions or []):
+        dec_entry = normalize_decision_to_entry(d)
+        if strict_week and dec_entry.get("raw_date"):
+            try:
+                dec_dt = datetime.strptime(dec_entry["raw_date"][:10], "%Y-%m-%d").date()
+                if not (w_start_date <= dec_dt <= w_end_date):
+                    continue
+            except (ValueError, TypeError):
+                pass
+        normalized_decisions.append(dec_entry)
+
+    return {
+        "week_number": week_number,
+        "period": period,
+        "sprint_name": sprint_name,
+        "checkpoint_target": checkpoint_clean,
+        "decisions": normalized_decisions,
+        "activities": activities,
+        "evaluations": [],
+    }
+
+
+def generate_logbook_files(payload: dict, output_dir: str) -> tuple[str, str]:
+    """Generate data.json and main.typ inside output_dir."""
+    target_path = Path(output_dir)
+    target_path.mkdir(parents=True, exist_ok=True)
+    json_path = target_path / "data.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    typ_content = """#import "../_template/logbook.typ": pbl_logbook
+#let data = json("data.json")
+
+#show: pbl_logbook.with(
+  week_number: data.week_number,
+  period: data.period,
+  sprint_name: data.sprint_name,
+  checkpoint_target: data.checkpoint_target,
+  decisions: data.at("decisions", default: ()),
+  activities: data.activities,
+  evaluations: data.evaluations,
+)
+"""
+    typ_path = target_path / "main.typ"
+    with open(typ_path, "w", encoding="utf-8") as f:
+        f.write(typ_content)
+
+    return str(json_path), str(typ_path)
+
+
+def compile_typst(main_typ_path: str, output_pdf_path: str) -> bool:
+    """Compile Typst document with root sandboxing (--root .)."""
+    try:
+        cmd = ["typst", "compile", "--root", ".", main_typ_path, output_pdf_path]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if res.returncode != 0:
+            logger.error("Typst compilation failed: %s", res.stderr.strip())
+            return False
+        logger.info("Successfully compiled %s to %s", main_typ_path, output_pdf_path)
+        return True
+    except subprocess.TimeoutExpired:
+        logger.error("Typst compilation timed out after 60 seconds")
+        return False
+    except FileNotFoundError:
+        logger.warning("Typst CLI not found in PATH. Skipping PDF compilation.")
+        return False
+
+
+def create_notion_file_upload(filename: str, token: str) -> tuple[str, str]:
+    """Step 1 of Notion file upload: create file upload object.
+
+    Returns (upload_id, upload_url).
+    """
+    url = "https://api.notion.com/v1/file_uploads"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    payload = json.dumps({
+        "filename": filename,
+        "content_type": "application/pdf",
+    }).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="POST")
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data["id"], data["upload_url"]
+
+
+def send_notion_file_bytes(upload_url: str, file_path: str, token: str) -> bool:
+    """Step 2 of Notion file upload: send file bytes via multipart/form-data."""
+    boundary = uuid.uuid4().hex
+    path = Path(file_path)
+    filename = path.name
+
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
+        f"Content-Type: application/pdf\r\n\r\n"
+    ).encode("utf-8") + file_bytes + f"\r\n--{boundary}--\r\n".encode("utf-8")
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+    }
+    req = urllib.request.Request(upload_url, headers=headers, data=body, method="POST")
+    with urllib.request.urlopen(req) as resp:
+        return resp.status in (200, 201, 204)
+
+
+def attach_file_to_notion_page(
+    page_id: str,
+    upload_id: str,
+    filename: str,
+    token: str,
+    property_name: str = "Files & media",
+    mark_done: bool = True,
+) -> bool:
+    """Step 3 of Notion file upload: attach uploaded file to page property."""
+    url = f"https://api.notion.com/v1/pages/{page_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    props: dict = {
+        property_name: {
+            "files": [
+                {
+                    "name": filename,
+                    "type": "file_upload",
+                    "file_upload": {
+                        "id": upload_id,
+                    },
+                }
+            ]
+        }
+    }
+    if mark_done:
+        props["Status"] = {"status": {"name": "Done"}}
+
+    payload = json.dumps({"properties": props}).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status == 200
+    except urllib.error.HTTPError as err:
+        if mark_done:
+            logger.warning(
+                "Failed to update status on page %s (%s). Retrying with file property only.",
+                page_id,
+                err,
+            )
+            return attach_file_to_notion_page(
+                page_id=page_id,
+                upload_id=upload_id,
+                filename=filename,
+                token=token,
+                property_name=property_name,
+                mark_done=False,
+            )
+        raise
+
+
+def find_logbook_page_id(logbook_db_id: str, week_number: int, token: str) -> str | None:
+    """Find page ID in Logbook database matching 'Minggu ke-{week_number}'."""
+    payload = {
+        "filter": {
+            "property": "Week",
+            "title": {
+                "equals": f"Minggu ke-{week_number}",
+            },
+        },
+    }
+    res = call_notion_api(f"/databases/{logbook_db_id}/query", token, method="POST", payload=payload)
+    results = res.get("results", [])
+    if results:
+        return results[0]["id"]
+    return None
+
+
+def advance_next_week_status(logbook_db_id: str, current_week: int, token: str) -> bool:
+    """Set next academic week's status to 'In progress' in Notion Logbook database."""
+    next_week = current_week + 1
+    if next_week > 16:
+        return False
+
+    next_page_id = find_logbook_page_id(logbook_db_id, next_week, token)
+    if not next_page_id:
+        logger.info("No Logbook row found for next week (Minggu ke-%d)", next_week)
+        return False
+
+    url = f"https://api.notion.com/v1/pages/{next_page_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    payload = json.dumps({
+        "properties": {
+            "Status": {
+                "status": {
+                    "name": "In progress",
+                }
+            }
+        }
+    }).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            if resp.status == 200:
+                logger.info("Successfully advanced Minggu ke-%d status to 'In progress'", next_week)
+                return True
+            return False
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.warning("Failed to advance Minggu ke-%d status to 'In progress': %s", next_week, err)
+        return False
+
+
+def upload_pdf_to_notion_logbook(
+    logbook_db_id: str,
+    week_number: int,
+    pdf_path: str,
+    token: str,
+) -> bool:
+    """Orchestrate 3-step upload and attachment of PDF to Notion Logbook database row."""
+    path = Path(pdf_path)
+    if not path.exists():
+        logger.error("PDF file %s does not exist for upload", pdf_path)
+        return False
+
+    page_id = find_logbook_page_id(logbook_db_id, week_number, token)
+    if not page_id:
+        logger.error("No Logbook row found in Notion for 'Minggu ke-%d'", week_number)
+        return False
+
+    logger.info("Found Logbook page %s for Minggu ke-%d. Initiating 3-step file upload...", page_id, week_number)
+    try:
+        upload_id, upload_url = create_notion_file_upload(path.name, token)
+        logger.info("Step 1/3: Created file upload object ID %s", upload_id)
+
+        send_notion_file_bytes(upload_url, str(path), token)
+        logger.info("Step 2/3: Uploaded file bytes to Notion")
+
+        attach_file_to_notion_page(page_id, upload_id, path.name, token)
+        logger.info("Step 3/3: Successfully attached %s to Minggu ke-%d page in Notion", path.name, week_number)
+
+        # Advance next week status to In progress
+        advance_next_week_status(logbook_db_id, week_number, token)
+
+        return True
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.error("Failed to upload/attach PDF to Notion Logbook: %s", err)
+        return False
+    except Exception as err:
+        logger.error("Unexpected error during Notion file upload: %s", err)
+        return False
+
+
+def main() -> int:
+    """CLI entry point for exporting sprint logbook."""
+    parser = argparse.ArgumentParser(description="Export Notion Sprint to Typst Logbook")
+    parser.add_argument("--sprint", type=int, default=None, help="Sprint number to export (default: auto-detect Active Sprint)")
+    parser.add_argument("--week", type=int, default=None, help="Academic week number (default: auto-calculate from sprint)")
+    parser.add_argument("--checkpoint", type=str, default=None, help="Target milestone (default: auto-derived from week)")
+    parser.add_argument("--governance-db", type=str, default=None, help="Notion Governance Log database ID (default: from env NOTION_GOVERNANCE_DB_ID)")
+    parser.add_argument("--logbook-db", type=str, default=None, help="Notion Logbook database ID (default: from env NOTION_LOGBOOK_DB_ID)")
+    parser.add_argument("--upload-notion", action="store_true", help="Upload compiled PDF to Notion Logbook database")
+    parser.add_argument("--strict-week", action="store_true", default=True, help="Filter tasks strictly by academic week window (default: True)")
+    parser.add_argument("--no-strict-week", dest="strict_week", action="store_false", help="Disable strict academic week filtering")
+    parser.add_argument("--pdf-name", type=str, default=None, help="Custom PDF output filename (default: logbook-week-XX.pdf)")
+    parser.add_argument("--all-tasks", action="store_true", help="Include non-Done tasks")
+    parser.add_argument("--no-compile", action="store_true", help="Skip PDF compilation")
+    args = parser.parse_args()
+
+    if args.sprint is not None and args.sprint < 1:
+        logger.error("--sprint must be a positive integer (>= 1), got %d", args.sprint)
+        return 1
+    if args.week is not None and args.week < 1:
+        logger.error("--week must be a positive integer (>= 1), got %d", args.week)
+        return 1
+
+    token = os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_API_KEY")
+    tasks_db = os.environ.get("NOTION_TASKS_DB_ID")
+    sprints_db = os.environ.get("NOTION_SPRINTS_DB_ID")
+    gov_db = args.governance_db or os.environ.get("NOTION_GOVERNANCE_DB_ID")
+    logbook_db = args.logbook_db or os.environ.get("NOTION_LOGBOOK_DB_ID")
+
+    if not token:
+        logger.error("Missing NOTION_TOKEN or NOTION_API_KEY environment variable")
+        return 1
+
+    if not tasks_db:
+        logger.error("Missing NOTION_TASKS_DB_ID environment variable")
+        return 1
+
+    if not sprints_db:
+        logger.error("Missing NOTION_SPRINTS_DB_ID environment variable")
+        return 1
+
+    if args.upload_notion and not logbook_db:
+        logger.error("Missing Notion Logbook database ID for upload (pass --logbook-db or set NOTION_LOGBOOK_DB_ID)")
+        return 1
+
+    try:
+        if args.sprint is not None:
+            sprint = fetch_sprint_by_number(sprints_db, token, args.sprint)
+            sprint_num = args.sprint
+        else:
+            sprint, sprint_num = fetch_active_sprint(sprints_db, token)
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.error("Failed to query sprint from Notion: %s", err)
+        return 1
+
+    if not sprint:
+        logger.error("No active or matching sprint found in Notion")
+        return 1
+
+    week_num = args.week if args.week is not None else calculate_academic_week(sprint_number=sprint_num)
+    checkpoint = args.checkpoint if args.checkpoint is not None else derive_checkpoint_target(week_num)
+
+    try:
+        tasks = fetch_tasks_for_sprint(tasks_db, token, sprint["id"], only_done=not args.all_tasks)
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.error("Failed to query tasks for sprint %d from Notion: %s", sprint_num, err)
+        return 1
+
+    logger.info("Fetched %d tasks for sprint %d (Week %d)", len(tasks), sprint_num, week_num)
+
+    try:
+        decisions = fetch_governance_decisions(gov_db, token)
+        logger.info("Fetched %d governance decisions", len(decisions))
+    except Exception as err:
+        logger.warning("Failed to query governance decisions: %s", err)
+        decisions = []
+
+    payload = build_sprint_payload(
+        sprint,
+        tasks,
+        week_number=week_num,
+        checkpoint_target=checkpoint,
+        decisions=decisions,
+        strict_week=args.strict_week,
+    )
+    out_dir = f"logbook/sprint-{sprint_num:02d}"
+    json_path, typ_path = generate_logbook_files(payload, out_dir)
+    logger.info("Generated %s and %s", json_path, typ_path)
+
+    pdf_filename = args.pdf_name or f"logbook-week-{week_num:02d}.pdf"
+    pdf_path = f"{out_dir}/{pdf_filename}"
+    if not args.no_compile:
+        success = compile_typst(typ_path, pdf_path)
+        if not success:
+            logger.error("PDF compilation failed for %s", pdf_path)
+            return 1
+
+    if args.upload_notion and not args.no_compile:
+        upload_ok = upload_pdf_to_notion_logbook(logbook_db, week_num, pdf_path, token)
+        if not upload_ok:
+            logger.error("Failed to upload PDF %s to Notion Logbook database", pdf_path)
+            return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+
+
