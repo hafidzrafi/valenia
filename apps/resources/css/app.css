@@ -1,7 +1,7 @@
 @import "tailwindcss" source(none);
 
 /* Scan server-rendered PHP for utility classes */
-@source "../../src";
+@source "../../app";
 
 /* Optional design tokens (Tailwind v4 @theme) */
 @theme {
