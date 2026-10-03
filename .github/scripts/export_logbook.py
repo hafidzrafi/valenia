@@ -399,11 +399,8 @@ def fetch_governance_decisions(db_id: str | None, token: str, sprint_id: str | N
             all_decisions.extend(res.get("results", []))
             has_more = res.get("has_more", False)
             next_cursor = res.get("next_cursor")
-        except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError) as err:
             logger.warning("Failed to query Governance Log database %s from Notion: %s", db_id, err)
-            break
-        except Exception as err:
-            logger.warning("Unexpected error querying Governance Log: %s", err)
             break
 
     return all_decisions
@@ -602,7 +599,7 @@ def create_notion_file_upload(filename: str, token: str) -> tuple[str, str]:
         "content_type": "application/pdf",
     }).encode("utf-8")
     req = urllib.request.Request(url, headers=headers, data=payload, method="POST")
-    with urllib.request.urlopen(req) as resp:
+    with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read().decode("utf-8"))
         return data["id"], data["upload_url"]
 
@@ -628,7 +625,7 @@ def send_notion_file_bytes(upload_url: str, file_path: str, token: str) -> bool:
         "Content-Type": f"multipart/form-data; boundary={boundary}",
     }
     req = urllib.request.Request(upload_url, headers=headers, data=body, method="POST")
-    with urllib.request.urlopen(req) as resp:
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.status in (200, 201, 204)
 
 
@@ -666,7 +663,7 @@ def attach_file_to_notion_page(
     payload = json.dumps({"properties": props}).encode("utf-8")
     req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return resp.status == 200
     except urllib.error.HTTPError as err:
         if mark_done:
@@ -711,7 +708,7 @@ def advance_next_week_status(logbook_db_id: str, current_week: int, token: str) 
 
     next_page_id = find_logbook_page_id(logbook_db_id, next_week, token)
     if not next_page_id:
-        logger.info("No Logbook row found for next week (Minggu ke-%d)", next_week)
+        logger.info("No Logbook row found for target week (Week %d / 'Minggu ke-%d')", next_week, next_week)
         return False
 
     url = f"https://api.notion.com/v1/pages/{next_page_id}"
@@ -731,13 +728,13 @@ def advance_next_week_status(logbook_db_id: str, current_week: int, token: str) 
     }).encode("utf-8")
     req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             if resp.status == 200:
-                logger.info("Successfully advanced Minggu ke-%d status to 'In progress'", next_week)
+                logger.info("Successfully advanced Week %d status to 'In progress'", next_week)
                 return True
             return False
     except (urllib.error.HTTPError, urllib.error.URLError) as err:
-        logger.warning("Failed to advance Minggu ke-%d status to 'In progress': %s", next_week, err)
+        logger.warning("Failed to advance Week %d status to 'In progress': %s", next_week, err)
         return False
 
 
@@ -755,10 +752,10 @@ def upload_pdf_to_notion_logbook(
 
     page_id = find_logbook_page_id(logbook_db_id, week_number, token)
     if not page_id:
-        logger.error("No Logbook row found in Notion for 'Minggu ke-%d'", week_number)
+        logger.error("No Logbook row found in Notion for Week %d ('Minggu ke-%d')", week_number, week_number)
         return False
 
-    logger.info("Found Logbook page %s for Minggu ke-%d. Initiating 3-step file upload...", page_id, week_number)
+    logger.info("Found Logbook page %s for Week %d ('Minggu ke-%d'). Initiating 3-step file upload...", page_id, week_number, week_number)
     try:
         upload_id, upload_url = create_notion_file_upload(path.name, token)
         logger.info("Step 1/3: Created file upload object ID %s", upload_id)
@@ -767,17 +764,14 @@ def upload_pdf_to_notion_logbook(
         logger.info("Step 2/3: Uploaded file bytes to Notion")
 
         attach_file_to_notion_page(page_id, upload_id, path.name, token)
-        logger.info("Step 3/3: Successfully attached %s to Minggu ke-%d page in Notion", path.name, week_number)
+        logger.info("Step 3/3: Successfully attached %s to Week %d page in Notion", path.name, week_number)
 
         # Advance next week status to In progress
         advance_next_week_status(logbook_db_id, week_number, token)
 
         return True
-    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError, OSError) as err:
         logger.error("Failed to upload/attach PDF to Notion Logbook: %s", err)
-        return False
-    except Exception as err:
-        logger.error("Unexpected error during Notion file upload: %s", err)
         return False
 
 
@@ -854,7 +848,7 @@ def main() -> int:
     try:
         decisions = fetch_governance_decisions(gov_db, token)
         logger.info("Fetched %d governance decisions", len(decisions))
-    except Exception as err:
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, KeyError) as err:
         logger.warning("Failed to query governance decisions: %s", err)
         decisions = []
 

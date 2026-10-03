@@ -906,6 +906,64 @@ class TestNotionFileUpload(unittest.TestCase):
         ok = export_logbook.advance_next_week_status("logbook-db", 5, "token")
         self.assertFalse(ok)
 
+    @patch("export_logbook.find_logbook_page_id", return_value="page-week-5")
+    @patch("export_logbook.create_notion_file_upload")
+    def test_upload_pdf_to_notion_logbook_network_error_returns_false(self, mock_create, mock_find):
+        import tempfile
+        from urllib.error import URLError
+        mock_create.side_effect = URLError("Connection timed out")
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+            tmp.write(b"%PDF-1.4 test")
+            tmp.flush()
+            ok = export_logbook.upload_pdf_to_notion_logbook("logbook-db", 5, tmp.name, "token")
+            self.assertFalse(ok)
+
+    @patch("export_logbook.find_logbook_page_id", return_value="page-week-5")
+    @patch("export_logbook.create_notion_file_upload")
+    def test_upload_pdf_to_notion_logbook_json_decode_error_returns_false(self, mock_create, mock_find):
+        import tempfile
+        import json
+        mock_create.side_effect = json.JSONDecodeError("Expecting value", "doc", 0)
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+            tmp.write(b"%PDF-1.4 test")
+            tmp.flush()
+            ok = export_logbook.upload_pdf_to_notion_logbook("logbook-db", 5, tmp.name, "token")
+            self.assertFalse(ok)
+
+    @patch("urllib.request.urlopen")
+    def test_create_notion_file_upload_passes_timeout(self, mock_urlopen):
+        import io
+        fake_response = io.BytesIO(b'{"id": "up-1", "upload_url": "https://upload.url"}')
+        fake_response.status = 200
+        mock_urlopen.return_value.__enter__.return_value = fake_response
+
+        export_logbook.create_notion_file_upload("test.pdf", "token")
+        self.assertEqual(mock_urlopen.call_args.kwargs.get("timeout"), 30)
+
+    @patch("urllib.request.urlopen")
+    def test_send_notion_file_bytes_passes_timeout(self, mock_urlopen):
+        import tempfile
+        import io
+        fake_response = io.BytesIO(b'{"status": "ok"}')
+        fake_response.status = 200
+        mock_urlopen.return_value.__enter__.return_value = fake_response
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+            tmp.write(b"%PDF-1.4 test")
+            tmp.flush()
+            export_logbook.send_notion_file_bytes("https://upload.url", tmp.name, "token")
+            self.assertEqual(mock_urlopen.call_args.kwargs.get("timeout"), 30)
+
+    @patch("urllib.request.urlopen")
+    def test_attach_file_to_notion_page_passes_timeout(self, mock_urlopen):
+        import io
+        fake_response = io.BytesIO(b'{"id": "p-1"}')
+        fake_response.status = 200
+        mock_urlopen.return_value.__enter__.return_value = fake_response
+
+        export_logbook.attach_file_to_notion_page("p-1", "up-1", "test.pdf", "token")
+        self.assertEqual(mock_urlopen.call_args.kwargs.get("timeout"), 30)
+
 
 class TestCliLogbookUpload(unittest.TestCase):
     @patch.dict(os.environ, DEFAULT_CLI_ENV, clear=True)
