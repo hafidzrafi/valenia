@@ -586,6 +586,201 @@ def compile_typst(main_typ_path: str, output_pdf_path: str) -> bool:
         return False
 
 
+def create_notion_file_upload(filename: str, token: str) -> tuple[str, str]:
+    """Step 1 of Notion file upload: create file upload object.
+
+    Returns (upload_id, upload_url).
+    """
+    url = "https://api.notion.com/v1/file_uploads"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    payload = json.dumps({
+        "filename": filename,
+        "content_type": "application/pdf",
+    }).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="POST")
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data["id"], data["upload_url"]
+
+
+def send_notion_file_bytes(upload_url: str, file_path: str, token: str) -> bool:
+    """Step 2 of Notion file upload: send file bytes via multipart/form-data."""
+    boundary = uuid.uuid4().hex
+    path = Path(file_path)
+    filename = path.name
+
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
+        f"Content-Type: application/pdf\r\n\r\n"
+    ).encode("utf-8") + file_bytes + f"\r\n--{boundary}--\r\n".encode("utf-8")
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+    }
+    req = urllib.request.Request(upload_url, headers=headers, data=body, method="POST")
+    with urllib.request.urlopen(req) as resp:
+        return resp.status in (200, 201, 204)
+
+
+def attach_file_to_notion_page(
+    page_id: str,
+    upload_id: str,
+    filename: str,
+    token: str,
+    property_name: str = "Files & media",
+    mark_done: bool = True,
+) -> bool:
+    """Step 3 of Notion file upload: attach uploaded file to page property."""
+    url = f"https://api.notion.com/v1/pages/{page_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    props: dict = {
+        property_name: {
+            "files": [
+                {
+                    "name": filename,
+                    "type": "file_upload",
+                    "file_upload": {
+                        "id": upload_id,
+                    },
+                }
+            ]
+        }
+    }
+    if mark_done:
+        props["Status"] = {"status": {"name": "Done"}}
+
+    payload = json.dumps({"properties": props}).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status == 200
+    except urllib.error.HTTPError as err:
+        if mark_done:
+            logger.warning(
+                "Failed to update status on page %s (%s). Retrying with file property only.",
+                page_id,
+                err,
+            )
+            return attach_file_to_notion_page(
+                page_id=page_id,
+                upload_id=upload_id,
+                filename=filename,
+                token=token,
+                property_name=property_name,
+                mark_done=False,
+            )
+        raise
+
+
+def find_logbook_page_id(logbook_db_id: str, week_number: int, token: str) -> str | None:
+    """Find page ID in Logbook database matching 'Minggu ke-{week_number}'."""
+    payload = {
+        "filter": {
+            "property": "Week",
+            "title": {
+                "equals": f"Minggu ke-{week_number}",
+            },
+        },
+    }
+    res = call_notion_api(f"/databases/{logbook_db_id}/query", token, method="POST", payload=payload)
+    results = res.get("results", [])
+    if results:
+        return results[0]["id"]
+    return None
+
+
+def advance_next_week_status(logbook_db_id: str, current_week: int, token: str) -> bool:
+    """Set next academic week's status to 'In progress' in Notion Logbook database."""
+    next_week = current_week + 1
+    if next_week > 16:
+        return False
+
+    next_page_id = find_logbook_page_id(logbook_db_id, next_week, token)
+    if not next_page_id:
+        logger.info("No Logbook row found for next week (Minggu ke-%d)", next_week)
+        return False
+
+    url = f"https://api.notion.com/v1/pages/{next_page_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+    }
+    payload = json.dumps({
+        "properties": {
+            "Status": {
+                "status": {
+                    "name": "In progress",
+                }
+            }
+        }
+    }).encode("utf-8")
+    req = urllib.request.Request(url, headers=headers, data=payload, method="PATCH")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            if resp.status == 200:
+                logger.info("Successfully advanced Minggu ke-%d status to 'In progress'", next_week)
+                return True
+            return False
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.warning("Failed to advance Minggu ke-%d status to 'In progress': %s", next_week, err)
+        return False
+
+
+def upload_pdf_to_notion_logbook(
+    logbook_db_id: str,
+    week_number: int,
+    pdf_path: str,
+    token: str,
+) -> bool:
+    """Orchestrate 3-step upload and attachment of PDF to Notion Logbook database row."""
+    path = Path(pdf_path)
+    if not path.exists():
+        logger.error("PDF file %s does not exist for upload", pdf_path)
+        return False
+
+    page_id = find_logbook_page_id(logbook_db_id, week_number, token)
+    if not page_id:
+        logger.error("No Logbook row found in Notion for 'Minggu ke-%d'", week_number)
+        return False
+
+    logger.info("Found Logbook page %s for Minggu ke-%d. Initiating 3-step file upload...", page_id, week_number)
+    try:
+        upload_id, upload_url = create_notion_file_upload(path.name, token)
+        logger.info("Step 1/3: Created file upload object ID %s", upload_id)
+
+        send_notion_file_bytes(upload_url, str(path), token)
+        logger.info("Step 2/3: Uploaded file bytes to Notion")
+
+        attach_file_to_notion_page(page_id, upload_id, path.name, token)
+        logger.info("Step 3/3: Successfully attached %s to Minggu ke-%d page in Notion", path.name, week_number)
+
+        # Advance next week status to In progress
+        advance_next_week_status(logbook_db_id, week_number, token)
+
+        return True
+    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+        logger.error("Failed to upload/attach PDF to Notion Logbook: %s", err)
+        return False
+    except Exception as err:
+        logger.error("Unexpected error during Notion file upload: %s", err)
+        return False
+
+
 def main() -> int:
     """CLI entry point for exporting sprint logbook."""
     parser = argparse.ArgumentParser(description="Export Notion Sprint to Typst Logbook")
@@ -593,6 +788,8 @@ def main() -> int:
     parser.add_argument("--week", type=int, default=None, help="Academic week number (default: auto-calculate from sprint)")
     parser.add_argument("--checkpoint", type=str, default=None, help="Target milestone (default: auto-derived from week)")
     parser.add_argument("--governance-db", type=str, default=None, help="Notion Governance Log database ID (default: from env NOTION_GOVERNANCE_DB_ID)")
+    parser.add_argument("--logbook-db", type=str, default=None, help="Notion Logbook database ID (default: from env NOTION_LOGBOOK_DB_ID)")
+    parser.add_argument("--upload-notion", action="store_true", help="Upload compiled PDF to Notion Logbook database")
     parser.add_argument("--strict-week", action="store_true", default=True, help="Filter tasks strictly by academic week window (default: True)")
     parser.add_argument("--no-strict-week", dest="strict_week", action="store_false", help="Disable strict academic week filtering")
     parser.add_argument("--pdf-name", type=str, default=None, help="Custom PDF output filename (default: logbook-week-XX.pdf)")
@@ -611,6 +808,7 @@ def main() -> int:
     tasks_db = os.environ.get("NOTION_TASKS_DB_ID")
     sprints_db = os.environ.get("NOTION_SPRINTS_DB_ID")
     gov_db = args.governance_db or os.environ.get("NOTION_GOVERNANCE_DB_ID")
+    logbook_db = args.logbook_db or os.environ.get("NOTION_LOGBOOK_DB_ID")
 
     if not token:
         logger.error("Missing NOTION_TOKEN or NOTION_API_KEY environment variable")
@@ -624,6 +822,9 @@ def main() -> int:
         logger.error("Missing NOTION_SPRINTS_DB_ID environment variable")
         return 1
 
+    if args.upload_notion and not logbook_db:
+        logger.error("Missing Notion Logbook database ID for upload (pass --logbook-db or set NOTION_LOGBOOK_DB_ID)")
+        return 1
 
     try:
         if args.sprint is not None:
@@ -677,6 +878,11 @@ def main() -> int:
             logger.error("PDF compilation failed for %s", pdf_path)
             return 1
 
+    if args.upload_notion and not args.no_compile:
+        upload_ok = upload_pdf_to_notion_logbook(logbook_db, week_num, pdf_path, token)
+        if not upload_ok:
+            logger.error("Failed to upload PDF %s to Notion Logbook database", pdf_path)
+            return 1
 
     return 0
 
