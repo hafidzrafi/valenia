@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Serve existing files/directories as-is; route everything else to the front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
