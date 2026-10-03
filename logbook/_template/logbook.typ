@@ -183,10 +183,10 @@
         [#text(size: 8pt, weight: "bold")[Keputusan & Alasan]],
       ),
       ..decisions.map(dec => (
-        [#text(size: 7.5pt)[#dec.date]],
-        [#text(size: 7.5pt, weight: "medium")[#dec.decision_maker]],
+        [#text(size: 7.5pt)[#dec.at("date", default: "-")]],
+        [#text(size: 7.5pt, weight: "medium")[#dec.at("decision_maker", default: "-")]],
         [
-          #text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#dec.decision]
+          #text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#dec.at("decision", default: "-")]
           #if "rationale" in dec and dec.rationale != "" and dec.rationale != "-" [
             \ #text(size: 7pt, fill: rgb("#475569"))[#dec.rationale]
           ]
@@ -210,7 +210,7 @@
   // -------------------------------------------------------------
   // TABEL 2: REKAPITULASI AKTIVITAS PENGERJAAN
   // -------------------------------------------------------------
-  let total_hours = activities.map(a => a.hours).sum(default: 0)
+  let total_hours = activities.map(a => a.at("hours", default: 0)).sum(default: 0)
 
   grid(
     columns: (1fr, auto),
@@ -247,15 +247,15 @@
         [#text(size: 8pt, weight: "bold")[Jam]],
       ),
       ..activities.map(act => (
-        [#text(size: 7.5pt)[#act.date]],
-        [#text(size: 7.5pt, weight: "medium")[#act.member]],
-        [#text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#act.task]],
+        [#text(size: 7.5pt)[#act.at("date", default: "-")]],
+        [#text(size: 7.5pt, weight: "medium")[#act.at("member", default: act.at("assignee", default: "-"))]],
+        [#text(size: 8pt, weight: "bold", fill: rgb("#0f172a"))[#act.at("task", default: "-")]],
         if "link" in act and act.link != "" {
           text(size: 7pt, font: "DejaVu Sans Mono")[#link(act.link)[#act.at("evidence_label", default: "Link")]]
         } else {
           text(size: 7pt, fill: rgb("#94a3b8"))[-]
         },
-        [#text(size: 7.5pt)[#act.hours h]],
+        [#text(size: 7.5pt)[#act.at("hours", default: 0) h]],
       )).flatten()
     )
   } else {
