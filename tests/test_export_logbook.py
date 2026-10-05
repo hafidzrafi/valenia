@@ -482,7 +482,128 @@ class TestPayloadBuilder(unittest.TestCase):
         self.assertEqual(payload["activities"][0]["task"], "VALENIA-17: Frontend Init")
         self.assertEqual(payload["period"], "28 Sep 2026 - 4 Okt 2026")
 
+    def test_build_sprint_payload_sorts_activities_chronologically(self):
+        sprint = {"properties": {"Sprint Name": {"title": [{"plain_text": "Sprint 1"}]}}}
+        # Week 6: 2026-09-28 to 2026-10-04
+        task_oct_4 = {
+            "properties": {
+                "ID": {"unique_id": {"number": 23}},
+                "Task Name": {"title": [{"plain_text": "Refactor Architecture"}]},
+                "Deadline": {"date": {"start": "2026-10-04"}},
+            }
+        }
+        task_oct_2 = {
+            "properties": {
+                "ID": {"unique_id": {"number": 18}},
+                "Task Name": {"title": [{"plain_text": "Setup Authentication"}]},
+                "Deadline": {"date": {"start": "2026-10-02"}},
+            }
+        }
+        task_sep_29_b = {
+            "properties": {
+                "ID": {"unique_id": {"number": 17}},
+                "Task Name": {"title": [{"plain_text": "Frontend Init"}]},
+                "Deadline": {"date": {"start": "2026-09-29"}},
+            }
+        }
+        task_sep_29_a = {
+            "properties": {
+                "ID": {"unique_id": {"number": 16}},
+                "Task Name": {"title": [{"plain_text": "Component Library"}]},
+                "Deadline": {"date": {"start": "2026-09-29"}},
+            }
+        }
+        # Pass tasks in random/reverse order
+        payload = export_logbook.build_sprint_payload(
+            sprint,
+            [task_oct_4, task_oct_2, task_sep_29_b, task_sep_29_a],
+            week_number=6,
+            strict_week=True,
+        )
+        activity_tasks = [act["task"] for act in payload["activities"]]
+        activity_dates = [act["raw_date"] for act in payload["activities"]]
 
+        self.assertEqual(
+            activity_tasks,
+            [
+                "VALENIA-16: Component Library",
+                "VALENIA-17: Frontend Init",
+                "VALENIA-18: Setup Authentication",
+                "VALENIA-23: Refactor Architecture",
+            ],
+        )
+        self.assertEqual(
+            activity_dates,
+            ["2026-09-29", "2026-09-29", "2026-10-02", "2026-10-04"],
+        )
+
+    def test_build_sprint_payload_sorts_decisions_chronologically(self):
+        sprint = {"properties": {"Sprint Name": {"title": [{"plain_text": "Sprint 1"}]}}}
+        # Week 5: 2026-09-21 to 2026-09-27
+        dec_sep_26 = {
+            "properties": {
+                "Keputusan": {"title": [{"plain_text": "Adopsi Typst"}]},
+                "Date": {"date": {"start": "2026-09-26"}},
+            }
+        }
+        dec_sep_21 = {
+            "properties": {
+                "Keputusan": {"title": [{"plain_text": "Pemilihan Stack PHP Native"}]},
+                "Date": {"date": {"start": "2026-09-21"}},
+            }
+        }
+        dec_sep_23 = {
+            "properties": {
+                "Keputusan": {"title": [{"plain_text": "Struktur Database PostgreSQL"}]},
+                "Date": {"date": {"start": "2026-09-23"}},
+            }
+        }
+        payload = export_logbook.build_sprint_payload(
+            sprint,
+            [],
+            week_number=5,
+            decisions=[dec_sep_26, dec_sep_21, dec_sep_23],
+            strict_week=True,
+        )
+        decision_titles = [d["decision"] for d in payload["decisions"]]
+        decision_dates = [d["raw_date"] for d in payload["decisions"]]
+
+        self.assertEqual(
+            decision_titles,
+            [
+                "Pemilihan Stack PHP Native",
+                "Struktur Database PostgreSQL",
+                "Adopsi Typst",
+            ],
+        )
+        self.assertEqual(
+            decision_dates,
+            ["2026-09-21", "2026-09-23", "2026-09-26"],
+        )
+
+    def test_build_sprint_payload_sorts_safely_when_dates_are_none_or_missing(self):
+        sprint = {"properties": {"Sprint Name": {"title": [{"plain_text": "Sprint 1"}]}}}
+        task_with_date = {
+            "properties": {
+                "ID": {"unique_id": {"number": 1}},
+                "Task Name": {"title": [{"plain_text": "Task With Date"}]},
+                "Deadline": {"date": {"start": "2026-09-22"}},
+            }
+        }
+        task_without_date = {
+            "properties": {
+                "ID": {"unique_id": {"number": 2}},
+                "Task Name": {"title": [{"plain_text": "Task No Date"}]},
+            }
+        }
+        # In non-strict mode, both are kept
+        payload = export_logbook.build_sprint_payload(
+            sprint,
+            [task_with_date, task_without_date],
+            week_number=5,
+            strict_week=False,
+        )
+        self.assertEqual(len(payload["activities"]), 2)
 
 
 class TestLogbookFileGenerator(unittest.TestCase):

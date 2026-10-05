@@ -13,7 +13,7 @@
   study_program: "PROGRAM STUDI D-IV TEKNIK INFORMATIKA",
   class_name: "TI-2H",
   academic_year: "2026/2027",
-  supervisor_name: "Titis Wahyudi, S.Kom., M.Kom.",
+  supervisor_name: "Titis Octary Satrio, S.ST., M.MT.",
   supervisor_nip: "-",
   repository: "https://github.com/hafidzrafi/valenia",
   decisions: (),
@@ -85,7 +85,7 @@
   grid(
     columns: (1fr, 1fr, 1.2fr),
     column-gutter: 12pt,
-    row-gutter: 3pt,
+    row-gutter: 12pt,
     [
       #text(size: 7.5pt, fill: rgb("#64748b"))[Sprint Aktif] \
       #text(size: 8.5pt, weight: "bold", fill: rgb("#0f172a"))[#sprint_name]
@@ -171,7 +171,7 @@
         (bottom: 0.4pt + rgb("#e2e8f0"))
       },
       fill: none,
-      inset: (x: 4pt, y: 3.5pt),
+      inset: (x: 4pt, y: 7pt),
       align: (col, row) => (
         if row == 0 { center + horizon }
         else if col == 0 { center + horizon }
@@ -198,7 +198,7 @@
       stroke: 0.4pt + rgb("#e2e8f0"),
       fill: rgb("#fafafa"),
       width: 100%,
-      inset: (x: 6pt, y: 4pt),
+      inset: (x: 6pt, y: 7pt),
       [
         #text(style: "italic", size: 7.5pt, fill: rgb("#64748b"))[Belum ada keputusan tata kelola yang dicatat pada periode ini.]
       ]
@@ -233,7 +233,7 @@
         (bottom: 0.4pt + rgb("#e2e8f0"))
       },
       fill: none,
-      inset: (x: 4pt, y: 3.5pt),
+      inset: (x: 4pt, y: 7pt),
       align: (col, row) => (
         if row == 0 { center + horizon }
         else if col == 0 or col == 4 { center + horizon }
@@ -263,7 +263,7 @@
       stroke: 0.4pt + rgb("#e2e8f0"),
       fill: rgb("#fafafa"),
       width: 100%,
-      inset: (x: 6pt, y: 4pt),
+      inset: (x: 6pt, y: 7pt),
       [
         #text(style: "italic", size: 7.5pt, fill: rgb("#64748b"))[Belum ada aktivitas tercatat pada minggu ini.]
       ]
