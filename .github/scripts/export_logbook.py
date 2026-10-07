@@ -526,6 +526,10 @@ def build_sprint_payload(
                 pass
         normalized_decisions.append(dec_entry)
 
+    # Sort activities and governance decisions chronologically ascending by date
+    activities.sort(key=lambda a: (str(a.get("raw_date") or ""), str(a.get("task") or "")))
+    normalized_decisions.sort(key=lambda d: (str(d.get("raw_date") or ""), str(d.get("decision") or "")))
+
     return {
         "week_number": week_number,
         "period": period,
