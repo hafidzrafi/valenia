@@ -47,25 +47,32 @@ composer install
 npm install
 npm run css:build
 
-# 3) run with the PHP built-in server (SQLite is used automatically if DB_DSN is empty)
+# 3) run with the PHP built-in server (requires a reachable PostgreSQL per DB_DSN)
 php -S localhost:8000 -t public public/index.php
 ```
 
-Open <http://localhost:8000>. Demonstrator routes: `/`, `/sandbox`,
-`/admin` (requires the `X-Demo-User: admin` header).
+Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
+(requires the `X-Demo-User: admin` header).
 
 ### Environment variables
 
-Copy `.env.example` (if present) to `.env`:
+Copy `.env.example` to `.env`:
 
 - `DB_DSN`: PostgreSQL DSN, e.g. `pgsql:host=db;port=5432;dbname=valenia`.
-  If empty, the app uses SQLite at `database/app.sqlite`.
+  Required — the former SQLite fallback was removed.
 - `DB_USER`, `DB_PASSWORD`: PostgreSQL credentials.
+- `APP_ENV`: `development` or `production` (guards `migrate.php fresh`).
 
 ## Migrations
 
+PostgreSQL migrations live in `database/migrations/` and are applied in lexical
+order, tracked in the `schema_migrations` table with a checksum per file.
+
 ```bash
-php database/migrate.php
+php database/migrate.php up        # apply pending migrations (default)
+php database/migrate.php status    # show applied / pending
+php database/migrate.php rollback  # revert the last migration (*.down.sql)
+php database/migrate.php fresh     # drop + re-apply everything (dev only)
 ```
 
 ## Notes

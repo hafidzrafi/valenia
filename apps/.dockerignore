@@ -1,0 +1,22 @@
+# Build context is the VALENIA app directory.
+# Keep the image lean and free of host-only / secret files.
+
+# Version control
+.git
+.gitignore
+
+# Secrets — never bake these into an image
+.env
+.env.*
+
+# Host dependencies (reinstalled in the image via composer)
+vendor/
+node_modules/
+
+# Built front-end assets (produced by the CSS build step)
+public/assets/
+
+# Local data, logs, caches
+database/*.sqlite
+*.log
+.DS_Store
