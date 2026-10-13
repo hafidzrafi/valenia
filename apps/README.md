@@ -37,7 +37,11 @@ return [
 
 ## Running (development)
 
-### With Docker Compose (Recommended)
+Choose one of the two setups below depending on whether you use Docker.
+
+### Option 1: With Docker
+
+#### 1. Build assets and start containers
 
 ```bash
 cd apps/
@@ -49,55 +53,75 @@ npm run css:build
 # 2) Start containers (Caddy, PHP-FPM, PostgreSQL, Adminer)
 docker compose up -d --build
 
-# 3) Install dependencies and run migrations
+# 3) Install dependencies
 docker compose exec app composer install
-docker compose exec app php database/migrate.php up
 ```
 
 - Application: <http://localhost:8080>
 - Adminer (Database UI): <http://localhost:8081>
 
-### Without Docker (local PHP CLI)
+*Note: Environment variables default automatically in `docker-compose.yaml`; creating `.env` is optional unless overriding credentials.*
+
+#### 2. Migrations (Docker)
 
 ```bash
-cd apps/
-
-# 1) PHP dependencies (optional; only for .env and tooling)
-composer install
-
-# 2) Tailwind CSS assets
-npm install
-npm run css:build
-
-# 3) run with the PHP built-in server (requires a reachable PostgreSQL per DB_DSN)
-php -S localhost:8000 -t public public/index.php
-```
-
-Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
-(requires the `X-Demo-User: admin` header).
-
-### Environment variables
-
-When running with Docker Compose, environment variables default automatically in `docker-compose.yaml` (creating `.env` is optional unless overriding defaults).
-
-When running locally without Docker, copy `.env.example` to `.env`:
-
-- `DB_DSN`: PostgreSQL DSN, e.g. `pgsql:host=localhost;port=5432;dbname=valenia` (use `host=db` inside Docker).
-- `DB_USER`, `DB_PASSWORD`: PostgreSQL credentials (`valenia`).
-- `APP_ENV`: `development` or `production` (guards `migrate.php fresh`).
-
-## Migrations
-
-PostgreSQL migrations live in `database/migrations/` and are applied in lexical
-order, tracked in the `schema_migrations` table with a checksum per file.
-
-```bash
-# Inside container:
 docker compose exec app php database/migrate.php up        # apply pending migrations
 docker compose exec app php database/migrate.php status    # show applied / pending
 docker compose exec app php database/migrate.php rollback  # revert the last migration (*.down.sql)
 docker compose exec app php database/migrate.php fresh     # drop + re-apply everything (dev only)
 ```
+
+---
+
+### Option 2: Without Docker (local PHP CLI)
+
+Requires local PHP 8.4+ with `pdo_pgsql` extension enabled and a reachable PostgreSQL instance.
+
+#### 1. Install dependencies and build assets
+
+```bash
+cd apps/
+
+# 1) PHP dependencies
+composer install
+
+# 2) Tailwind CSS assets
+npm install
+npm run css:build
+```
+
+#### 2. Configure environment variables
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Adjust variables for your local PostgreSQL:
+
+- `DB_DSN`: `pgsql:host=localhost;port=5432;dbname=valenia`
+- `DB_USER`: `valenia`
+- `DB_PASSWORD`: `valenia`
+- `APP_ENV`: `development`
+
+#### 3. Migrations (local)
+
+```bash
+php database/migrate.php up        # apply pending migrations
+php database/migrate.php status    # show applied / pending
+php database/migrate.php rollback  # revert the last migration (*.down.sql)
+php database/migrate.php fresh     # drop + re-apply everything (dev only)
+```
+
+#### 4. Start local web server
+
+```bash
+php -S localhost:8000 -t public public/index.php
+```
+
+Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
+(requires the `X-Demo-User: admin` header).
 
 ## Notes
 
