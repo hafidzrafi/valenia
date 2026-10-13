@@ -20,3 +20,7 @@ public/assets/
 database/*.sqlite
 *.log
 .DS_Store
+
+# Editor & IDE directories
+.idea/
+.vscode/
