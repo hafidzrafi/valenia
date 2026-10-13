@@ -50,7 +50,7 @@ cd apps/
 npm install
 npm run css:build
 
-# 2) Start containers (Caddy, PHP-FPM, PostgreSQL, Adminer)
+# 2) Start containers (Caddy, PHP-FPM, PostgreSQL)
 docker compose up -d --build
 
 # 3) Install dependencies
@@ -58,7 +58,6 @@ docker compose exec app composer install
 ```
 
 - Application: <http://localhost:8080>
-- Adminer (Database UI): <http://localhost:8081>
 
 *Note: Environment variables default automatically in `docker-compose.yaml`; creating `.env` is optional unless overriding credentials.*
 
