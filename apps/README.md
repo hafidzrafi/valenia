@@ -37,6 +37,28 @@ return [
 
 ## Running (development)
 
+### With Docker Compose (Recommended)
+
+```bash
+cd apps/
+
+# 1) Build Tailwind CSS assets (generates public/assets/app.css)
+npm install
+npm run css:build
+
+# 2) Start containers (Caddy, PHP-FPM, PostgreSQL, Adminer)
+docker compose up -d --build
+
+# 3) Install dependencies and run migrations
+docker compose exec app composer install
+docker compose exec app php database/migrate.php up
+```
+
+- Application: <http://localhost:8080>
+- Adminer (Database UI): <http://localhost:8081>
+
+### Without Docker (local PHP CLI)
+
 ```bash
 cd apps/
 
@@ -56,11 +78,12 @@ Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
 
 ### Environment variables
 
-Copy `.env.example` to `.env`:
+When running with Docker Compose, environment variables default automatically in `docker-compose.yaml` (creating `.env` is optional unless overriding defaults).
 
-- `DB_DSN`: PostgreSQL DSN, e.g. `pgsql:host=db;port=5432;dbname=valenia`.
-  Required — the former SQLite fallback was removed.
-- `DB_USER`, `DB_PASSWORD`: PostgreSQL credentials.
+When running locally without Docker, copy `.env.example` to `.env`:
+
+- `DB_DSN`: PostgreSQL DSN, e.g. `pgsql:host=localhost;port=5432;dbname=valenia` (use `host=db` inside Docker).
+- `DB_USER`, `DB_PASSWORD`: PostgreSQL credentials (`valenia`).
 - `APP_ENV`: `development` or `production` (guards `migrate.php fresh`).
 
 ## Migrations
@@ -69,10 +92,11 @@ PostgreSQL migrations live in `database/migrations/` and are applied in lexical
 order, tracked in the `schema_migrations` table with a checksum per file.
 
 ```bash
-php database/migrate.php up        # apply pending migrations (default)
-php database/migrate.php status    # show applied / pending
-php database/migrate.php rollback  # revert the last migration (*.down.sql)
-php database/migrate.php fresh     # drop + re-apply everything (dev only)
+# Inside container:
+docker compose exec app php database/migrate.php up        # apply pending migrations
+docker compose exec app php database/migrate.php status    # show applied / pending
+docker compose exec app php database/migrate.php rollback  # revert the last migration (*.down.sql)
+docker compose exec app php database/migrate.php fresh     # drop + re-apply everything (dev only)
 ```
 
 ## Notes
