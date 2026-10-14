@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
-
+/* plugin for corner smoothing*/
+@plugin "tailwind-corner-smoothing";
 /* Scan server-rendered PHP for utility classes */
 @source "../../app";
 
