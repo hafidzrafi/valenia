@@ -26,12 +26,12 @@
             <div class="size-16 relative overflow-hidden flex items-center justify-center">
                 <img src="/images/valenia-logo.svg" alt="Logo VALENIA" class="w-full h-full object-contain" />
             </div>
-            <span class="text-teal-500 text-2xl font-light font-stretch:expanded font-['SF_Pro_Display'] tracking-wider">
+            <span class="text-teal-500 text-2xl font-light font-display tracking-wider" style="font-stretch: expanded">
                 VALENIA
             </span>
         </div>
         <div class="flex items-center gap-12">
-            <nav class="flex items-center gap-12 text-black text-base font-['SF_Pro_Display']">
+            <nav class="flex items-center gap-12 text-black text-base font-display">
                 <a href="/" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
 
                 <!-- Dropdown Layanan -->
@@ -69,7 +69,7 @@
             </nav>
 
             <!-- Tombol Kontak -->
-            <a href="#" class="px-10 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-['SF_Pro_Display'] rounded-full transition-colors">
+            <a href="#" class="px-10 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-display rounded-full transition-colors">
                 Kontak
             </a>
         </div>
