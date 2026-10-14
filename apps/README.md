@@ -119,8 +119,9 @@ php database/migrate.php fresh     # drop + re-apply everything (dev only)
 php -S localhost:8000 -t public public/index.php
 ```
 
-Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
-(requires the `X-Demo-User: admin` header).
+Open <http://localhost:8000>. Routes: `/` (public), `/login` (staff sign-in),
+`/admin` and below (requires login as admin; the seeded admin from
+`php database/seed.php` forces a password change on first login).
 
 ## Notes
 
