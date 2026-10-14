@@ -1,20 +1,29 @@
+<?php
+/**
+ * Landing page (VALENIA-29) — standalone full page.
+ *
+ * Rendered raw (not through layout.php) from app/routes/_index.php, because the
+ * design is its own full-bleed document (background image + glass navbar).
+ *
+ * @var string $title
+ */
+?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VALENIA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title><?= e($title ?? 'VALENIA') ?></title>
+    <link rel="stylesheet" href="/assets/app.css">
 </head>
 
-<body class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed" style="background-image: url('../assets/img/background.png');">
-
+<body class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed" style="background-image: url('/images/background.png');">
 
     <div class="w-[1200px] mx-auto mt-6 h-20 px-8 py-4 bg-gradient-to-br from-white/90 to-white/60 rounded-[64px] shadow-[6px_7px_7.099999904632568px_0px_rgba(0,0,0,0.25)] outline outline-4 outline-offset-[-4px] outline-white backdrop-blur-xl flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="size-16 relative overflow-hidden  flex items-center justify-center">
-                <img src="../assets/src/valenia logo-01.svg" alt="Logo Perusahaan" class="w-full h-full object-contain" />
+            <div class="size-16 relative overflow-hidden flex items-center justify-center">
+                <img src="/images/valenia-logo.svg" alt="Logo VALENIA" class="w-full h-full object-contain" />
             </div>
             <span class="text-teal-500 text-2xl font-light font-stretch:expanded font-['SF_Pro_Display'] tracking-wider">
                 VALENIA
@@ -22,7 +31,7 @@
         </div>
         <div class="flex items-center gap-12">
             <nav class="flex items-center gap-12 text-black text-base font-['SF_Pro_Display']">
-                <a href="../index.php" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
+                <a href="/" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
 
                 <!-- Dropdown Layanan -->
                 <div class="relative group mx-10">
