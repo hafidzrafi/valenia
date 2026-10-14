@@ -16,7 +16,6 @@
 <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
     <nav class="mx-auto max-w-2xl flex gap-4 p-4 text-sm">
         <a href="/">Beranda</a>
-        <a href="/sandbox">Sandbox</a>
         <a href="/admin">Admin</a>
     </nav>
     <main class="mx-auto max-w-2xl p-4">

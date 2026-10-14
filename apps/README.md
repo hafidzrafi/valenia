@@ -37,36 +37,90 @@ return [
 
 ## Running (development)
 
+Choose one of the two setups below depending on whether you use Docker.
+
+### Option 1: With Docker
+
+#### 1. Build assets and start containers
+
 ```bash
 cd apps/
 
-# 1) PHP dependencies (optional; only for .env and tooling)
+# 1) Build Tailwind CSS assets (generates public/assets/app.css)
+npm install
+npm run css:build
+
+# 2) Start containers (Caddy, PHP-FPM, PostgreSQL)
+docker compose up -d --build
+
+# 3) Install dependencies
+docker compose exec app composer install
+```
+
+- Application: <http://localhost:8080>
+
+*Note: Environment variables default automatically in `docker-compose.yaml`; creating `.env` is optional unless overriding credentials.*
+
+#### 2. Migrations (Docker)
+
+```bash
+docker compose exec app php database/migrate.php up        # apply pending migrations
+docker compose exec app php database/migrate.php status    # show applied / pending
+docker compose exec app php database/migrate.php rollback  # revert the last migration (*.down.sql)
+docker compose exec app php database/migrate.php fresh     # drop + re-apply everything (dev only)
+```
+
+---
+
+### Option 2: Without Docker (local PHP CLI)
+
+Requires local PHP 8.4+ with `pdo_pgsql` extension enabled and a reachable PostgreSQL instance.
+
+#### 1. Install dependencies and build assets
+
+```bash
+cd apps/
+
+# 1) PHP dependencies
 composer install
 
 # 2) Tailwind CSS assets
 npm install
 npm run css:build
+```
 
-# 3) run with the PHP built-in server (SQLite is used automatically if DB_DSN is empty)
+#### 2. Configure environment variables
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Adjust variables for your local PostgreSQL:
+
+- `DB_DSN`: `pgsql:host=localhost;port=5432;dbname=valenia`
+- `DB_USER`: `valenia`
+- `DB_PASSWORD`: `valenia`
+- `APP_ENV`: `development`
+
+#### 3. Migrations (local)
+
+```bash
+php database/migrate.php up        # apply pending migrations
+php database/migrate.php status    # show applied / pending
+php database/migrate.php rollback  # revert the last migration (*.down.sql)
+php database/migrate.php fresh     # drop + re-apply everything (dev only)
+```
+
+#### 4. Start local web server
+
+```bash
 php -S localhost:8000 -t public public/index.php
 ```
 
-Open <http://localhost:8000>. Demonstrator routes: `/`, `/sandbox`,
-`/admin` (requires the `X-Demo-User: admin` header).
-
-### Environment variables
-
-Copy `.env.example` (if present) to `.env`:
-
-- `DB_DSN`: PostgreSQL DSN, e.g. `pgsql:host=db;port=5432;dbname=valenia`.
-  If empty, the app uses SQLite at `database/app.sqlite`.
-- `DB_USER`, `DB_PASSWORD`: PostgreSQL credentials.
-
-## Migrations
-
-```bash
-php database/migrate.php
-```
+Open <http://localhost:8000>. Demonstrator routes: `/` and `/admin`
+(requires the `X-Demo-User: admin` header).
 
 ## Notes
 
