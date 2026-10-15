@@ -15,13 +15,14 @@ $heroDesc = ("anjay YAWAWI LALILULELOOOOO~");
 
 ob_start();
 ?>
+<?php include __DIR__ . '/../components/background-img.php'; ?>
 <?php include __DIR__ . '/../components/header.php';  ?>
 <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
 <body>
 
 
-    <div class="w-full h-127 relative overflow-hidden bg-teal-500">
+    <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
         <div
             x-data="{ shown: false }"
             x-init="
@@ -53,7 +54,7 @@ ob_start();
         </div>
     </div>
 
-    <div class="relative top-20 w-full max-w-[58rem] mx-auto p-6 md:p-10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="relative top-20 w-full max-w-[58rem] mx-auto p-6 md:p-10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15">
 
 
         <div class="flex-1 text-left z-10">
@@ -71,11 +72,8 @@ ob_start();
                     class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
                     style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
                     <div class="flex flex-col items-center self-stretch gap-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                            fill="#000" viewBox="0 0 256 256">
-                            <path d="M232,104a8,8,0,0,0,8-8V64a16,16,0,0,0-16-16H32A16,16,0,0,0,16,64V96a8,8,0,0,0,8,8,24,24,0,0,1,0,48,8,8,0,0,0-8,8v32a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V160a8,8,0,0,0-8-8,24,24,0,0,1,0-48ZM32,167.2a40,40,0,0,0,0-78.4V64H88V192H32Zm192,0V192H104V64H224V88.8a40,40,0,0,0,0,78.4Z" />
-                        </svg>
 
+                        <i class="ph ph-ticket text-500 text-[40px]"></i>
                         <div class="flex flex-col items-start self-stretch gap-2">
                             <p class="w-full text-[15px] font-medium text-center text-black">
                                 Antrean Online
@@ -92,10 +90,7 @@ ob_start();
                     class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
                     style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
                     <div class="flex flex-col items-center self-stretch gap-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                            fill="#000" viewBox="0 0 256 256">
-                            <path d="M232,136.66A104.12,104.12,0,1,1,119.34,24,8,8,0,0,1,120.66,40,88.12,88.12,0,1,0,216,135.34,8,8,0,0,1,232,136.66ZM120,72v56a8,8,0,0,0,8,8h56a8,8,0,0,0,0-16H136V72a8,8,0,0,0-16,0Zm40-24a12,12,0,1,0-12-12A12,12,0,0,0,160,48Zm36,24a12,12,0,1,0-12-12A12,12,0,0,0,196,72Zm24,36a12,12,0,1,0-12-12A12,12,0,0,0,220,108Z" />
-                        </svg>
+                        <i class="ph ph-clock-countdown text-500 text-[40px]"></i>
 
                         <div class="flex flex-col items-start self-stretch gap-2">
                             <p class="w-full text-[15px] font-medium text-center text-black">
@@ -113,10 +108,7 @@ ob_start();
                     class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
                     style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
                     <div class="flex flex-col items-center self-stretch gap-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                            fill="#000" viewBox="0 0 256 256">
-                            <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z" />
-                        </svg>
+                        <i class="ph ph-calendar-blank text-500 text-[40px]"></i>
 
                         <div class="flex flex-col items-start self-stretch gap-2">
                             <p class="w-full text-[15px] font-medium text-center text-black">
@@ -129,18 +121,94 @@ ob_start();
                     </div>
                 </div>
             </div>
-
-
-
         </div>
 
+        <div
+            x-data="{
+    showVideo: false,
+    trigger() {
+      this.showVideo = true;
+      
+      // Forces Alpine to wait until the video DOM wrapper is ready
+      this.$nextTick(() => {
+        const video = this.$refs.reactionVideo;
+        if (video) {
+          video.currentTime = 0;
+          video.playbackRate = 4;
+          video.play().catch(err => console.log('Video playback interrupted:', err));
+        }
+      });
 
-        <div class="relative w-72 shrink-0 z-10">
-            <img src="/images/shade.svg" class="w-full h-auto object-cover" alt="mascot">
+      setTimeout(() => { this.showVideo = false }, 1000);
+    }
+  }"
+            @click="trigger"
+            class="relative w-72 shrink-0 z-10 transition-all transform hover:scale-105 active:scale-95 cursor-pointer">
+
+            <img src="/images/shade.webp" class="w-full h-auto object-cover" alt="mascot">
+
+            <div
+                x-show="showVideo"
+                x-transition.opacity
+                class="absolute inset-0 flex items-center justify-center bg-transparent pointer-events-none">
+
+                <video
+                    x-ref="reactionVideo"
+                    class="w-full h-auto object-contain"
+                    playsinline>
+                    <source src="/images/hearts.webm" type="video/webm">
+                </video>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="mt-50 w-full h-127 relative flex flex-col flex-shrink-0 items-center">
+        <h2 class="grow-0 shrink-0 w-[40%] absolute  text-[64px]  text-center font-bold text-white">
+            Pantau Antrean Real Time
+        </h2>
+        <div class="transform absolute scale-65 mt-50">
+            <?php include __DIR__ . '/../components/live-antrean.php' ?>
         </div>
 
     </div>
 
+
+    <div class="mt-32 top-32 w-full h-32 relative flex flex-col items-center">
+        <div class="absolute w-full text-center">
+            <h2 class="mb-4 text-4xl font-bold text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
+                Pilih Layanan Kesehatan Anda
+            </h2>
+            <p class=" text-lg text-white opacity-90">
+                Pilih layanan sesuai keluhan
+            </p>
+        </div>
+        <div class="absolute scale-120 -mt-10   ">
+            <?php include __DIR__ . '/../components/3-card.php' ?>
+        </div>
+    </div>
+
+    <div class="flex flex-col relative w-full mt-140 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-20">
+        <div class="flex justify-start items-center relative gap-[200px]">
+            <!-- Card Section -->
+            <div class="cards perspective-normal">
+                <div class="card w-70 h-62.5 -translate-y-20 translate-x-5 bg-[url(/images/placeholder.jpg)] bg-cover bg-center border-2 border-[#555555] smooth-corners-lg rounded-[32px] relative transform-style preserve-3d will-change-transform transition-transform duration-500 hover:translateZ-[10px] hover:rotate-x-[20deg] hover:rotate-y-[20deg] hover:outline-2 hover:outline-teal-500">
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="flex flex-col items-end w-[580px] h-full space-y-4">
+                <h2 class="w-full text-8xl font-black text-right text-white">
+                    Tentang Kami
+                </h2>
+                <p class="w-full text-lg text-right text-white pb-40">
+                    Poli dimakan Valenia raja Ipsum Loh yah, Poli dimakan Valenia raja Ipsum Loh yah, Poli dimakan Valenia raja Ipsum Loh yah,
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <?php include __DIR__ . '/../components/footer.php' ?>
 
     <?php
     $content = ob_get_clean();
