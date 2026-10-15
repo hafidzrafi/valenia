@@ -29,7 +29,7 @@ $showCta = $showCta ?? true;
         <?php if ($showCta): ?>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <?php if ($ctaPrimaryText): ?>
-                    <a href="<?= $ctaPrimaryLink; ?>" class="bg-teal-500 smooth-corners-lg hover:bg-teal-700 text-white px-8 py-4 rounded-3xl font-bold text-lg transition-all transform hover:scale-105">
+                    <a href="<?= $ctaPrimaryLink; ?>" class="bg-teal-500 smooth-corners-lg  hover:bg-teal-700 text-white px-8 py-4 rounded-3xl font-bold text-lg transition-all transform hover:scale-105">
                         <?= $ctaPrimaryText; ?>
                     </a>
                 <?php endif; ?>
