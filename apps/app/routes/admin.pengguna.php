@@ -71,9 +71,12 @@ return [
                     return $fail('Gunakan halaman Ganti Sandi untuk akun sendiri.');
                 }
 
-                $temp = reset_user_password($id, $me);
+                $password = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
+                $result = reset_user_password($id, $password, $me);
 
-                return $done('Kata sandi direset. Sandi sementara: ' . $temp);
+                return $result['ok']
+                    ? $done('Kata sandi direset. Pengguna wajib menggantinya saat login berikutnya.')
+                    : $fail((string) $result['error']);
             }
 
             return $fail('Aksi tidak dikenal.');

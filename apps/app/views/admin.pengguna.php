@@ -62,6 +62,8 @@
                         <input type="hidden" name="_token" value="<?= e($token) ?>">
                         <input type="hidden" name="aksi" value="reset">
                         <input type="hidden" name="id" value="<?= e((string) $row['id']) ?>">
+                        <input type="password" name="password" placeholder="Sandi sementara (min. 8)" required
+                               class="border border-slate-300 rounded px-1 py-0.5">
                         <button type="submit" class="underline">Reset sandi</button>
                     </form>
                 </td>

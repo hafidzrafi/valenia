@@ -534,10 +534,16 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
     return true;
 }
 
-/** Reset a password to a fresh temporary one. Returns the temp password. */
-function reset_user_password(string $userId, string $actorId): string
+/**
+ * Reset a password to one supplied by the admin. Returns ['ok' => bool, 'error' => ?string].
+ * The account must change the password on the next login.
+ */
+function reset_user_password(string $userId, string $newPassword, string $actorId): array
 {
-    $temp = substr(bin2hex(random_bytes(6)), 0, 10);
+    if (strlen($newPassword) < AUTH_PASSWORD_MIN_LENGTH) {
+        return ['ok' => false, 'error' => 'Kata sandi minimal 8 karakter.'];
+    }
+
     $pdo = db();
     $pdo->beginTransaction();
 
@@ -548,7 +554,8 @@ function reset_user_password(string $userId, string $actorId): string
 
         if (!is_array($cred)) {
             $pdo->rollBack();
-            throw new RuntimeException('Kredensial tidak ditemukan.');
+
+            return ['ok' => false, 'error' => 'Kredensial tidak ditemukan.'];
         }
 
         $pdo->prepare(
@@ -556,7 +563,7 @@ function reset_user_password(string $userId, string $actorId): string
              SET password_hash = :hash, must_change_password = TRUE,
                  failed_attempts = 0, locked_until = NULL, updated_at = now()
              WHERE id = :id'
-        )->execute(['hash' => hash_password($temp), 'id' => $cred['id']]);
+        )->execute(['hash' => hash_password($newPassword), 'id' => $cred['id']]);
         audit_log('credentials', (string) $cred['id'], 'UPDATE', $actorId);
         record_auth_event('password_reset', null, $userId);
         $pdo->commit();
@@ -565,7 +572,7 @@ function reset_user_password(string $userId, string $actorId): string
         throw $exception;
     }
 
-    return $temp;
+    return ['ok' => true, 'error' => null];
 }
 
 /** Active sessions (non-expired), newest activity first. */
