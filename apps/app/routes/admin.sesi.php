@@ -10,7 +10,7 @@ declare(strict_types=1);
  * session logs you out.
  */
 return [
-    '_middleware' => ['auth', 'role:admin', 'password'],
+    '_middleware' => ['role:admin'],
 
     'GET' => static function (): string {
         $flash = $_SESSION['_flash'] ?? null;

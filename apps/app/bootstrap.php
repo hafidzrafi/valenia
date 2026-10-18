@@ -23,4 +23,4 @@ require_once __DIR__ . '/middleware/role.php';
 require_once __DIR__ . '/middleware/password.php';
 require_once __DIR__ . '/middleware/csrf.php';
 
-return new Router(__DIR__ . '/routes', ['csrf']);
+return new Router(__DIR__ . '/routes', ['csrf', 'auth', 'password']);

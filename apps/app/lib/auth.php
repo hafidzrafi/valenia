@@ -20,6 +20,30 @@ const AUTH_LOCK_MINUTES = 15;
 const AUTH_PASSWORD_MIN_LENGTH = 8;
 
 /**
+ * The authenticated user resolved for the current request (null when anonymous).
+ * Set by the `auth` guard and read by the layout/middleware.
+ */
+final class Auth
+{
+    public static ?array $user = null;
+}
+
+function current_user(): ?array
+{
+    return Auth::$user;
+}
+
+/**
+ * Anonymous-reachable paths (PRD: landing, login, logout, and the future patient
+ * history lookup are public). Paths are the trimmed routing values: '' is root.
+ * Keep in sync when adding public routes.
+ */
+function is_public_path(string $path): bool
+{
+    return in_array($path, ['', 'login', 'logout', 'greeting'], true);
+}
+
+/**
  * Insert one audit trail row. $oldJson/$newJson are JSON strings or null.
  */
 function audit_log(

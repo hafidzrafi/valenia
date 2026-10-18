@@ -5,12 +5,10 @@ declare(strict_types=1);
 /**
  * /ganti-sandi — required password change (FR-AUTH-08).
  *
- * Intentionally guarded by `auth` only: the `password` gate itself redirects
- * here, so attaching it would loop.
+ * Protected by the global `auth` guard; the global `password` gate exempts this
+ * path so it does not loop.
  */
 return [
-    '_middleware' => ['auth'],
-
     'GET' => static fn (): string => view('ganti-sandi', ['token' => csrf_token()]),
 
     'POST' => static function (Request $request): string|Response {
