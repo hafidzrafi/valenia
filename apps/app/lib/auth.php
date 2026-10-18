@@ -7,7 +7,9 @@ declare(strict_types=1);
  *
  * Shared logic lives here per the route-centric convention; route files only
  * call these helpers. Passwords are verified with password_verify() and never
- * logged. Login-related changes are recorded in audit_logs:
+ * logged. Authentication outcomes are recorded in `auth_events` (login success,
+ * login failure, lockout, logout, password change/reset), while `audit_logs`
+ * keeps the row-diff trail:
  *   - successful login  -> INSERT on sessions
  *   - failed attempt    -> UPDATE on credentials (failed_attempts counter)
  *   - logout / revoke   -> DELETE on sessions
@@ -41,6 +43,29 @@ function audit_log(
     $stmt->execute();
 }
 
+/**
+ * Append one authentication event (FR-AUTH-01/07, NFR-SEC-06).
+ *
+ * Wrapped so a trail write can never block authentication itself.
+ */
+function record_auth_event(string $event, ?string $username, ?string $userId = null): void
+{
+    try {
+        db()->prepare(
+            'INSERT INTO auth_events (event, username, user_id, ip_address, user_agent)
+             VALUES (:event, :username, :user, :ip, :ua)'
+        )->execute([
+            'event' => $event,
+            'username' => $username,
+            'user' => $userId,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+            'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+        ]);
+    } catch (Throwable $exception) {
+        app_log('error', 'Gagal menulis auth_events: ' . $exception->getMessage());
+    }
+}
+
 /** Hash a password per NFR-SEC-01 (Argon2id when available, else bcrypt). */
 function hash_password(string $password): string
 {
@@ -72,10 +97,16 @@ function authenticate(string $username, string $password): array
     $row = $stmt->fetch();
 
     if (!is_array($row) || !$row['is_active']) {
+        record_auth_event('login_failure', $username);
+        app_log('warning', 'Login gagal (akun tidak dikenal/nonaktif): ' . log_safe($username));
+
         return $result;
     }
 
     if ($row['locked_until'] !== null && strtotime((string) $row['locked_until']) > time()) {
+        record_auth_event('locked', $username, (string) $row['id']);
+        app_log('warning', 'Login ditolak (akun terkunci): ' . log_safe($username));
+
         $result['locked'] = true;
 
         return $result;
@@ -106,11 +137,14 @@ function authenticate(string $username, string $password): array
                 json_encode(['failed_attempts' => (int) $row['failed_attempts']]) ?: null,
                 json_encode(['failed_attempts' => $failed]) ?: null,
             );
+            record_auth_event('login_failure', $username, (string) $row['id']);
             $pdo->commit();
         } catch (Throwable $exception) {
             $pdo->rollBack();
             throw $exception;
         }
+
+        app_log('warning', 'Login gagal (kata sandi salah): ' . log_safe($username));
 
         if ($failed >= AUTH_MAX_FAILED_ATTEMPTS) {
             $result['locked'] = true;
@@ -144,6 +178,7 @@ function authenticate(string $username, string $password): array
     }
 
     $result['ok'] = true;
+    record_auth_event('login_success', (string) $row['username'], (string) $row['id']);
     $result['user'] = [
         'id' => (string) $row['id'],
         'username' => (string) $row['username'],
@@ -202,6 +237,10 @@ function logout_user(): void
             $rowId = (string) $found['id'];
             $actorId = (string) $found['user_id'];
         }
+    }
+
+    if ($actorId !== null) {
+        record_auth_event('logout', null, $actorId);
     }
 
     $_SESSION = [];
@@ -344,6 +383,7 @@ function change_password(string $userId, string $current, string $new): array
             json_encode(['must_change_password' => true]) ?: null,
             json_encode(['must_change_password' => false]) ?: null,
         );
+        record_auth_event('password_change', null, $userId);
 
         $currentRow = null;
 
@@ -494,6 +534,7 @@ function reset_user_password(string $userId, string $actorId): string
              WHERE id = :id'
         )->execute(['hash' => hash_password($temp), 'id' => $cred['id']]);
         audit_log('credentials', (string) $cred['id'], 'UPDATE', $actorId);
+        record_auth_event('password_reset', null, $userId);
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
