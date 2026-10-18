@@ -13,27 +13,33 @@ apps/
 ├── app/
 │   ├── bootstrap.php  # loads lib + guards, returns the Router
 │   ├── routes/        # one file per route (URL derived from the filename)
-│   ├── middleware/    # named guards: auth, role, csrf
-│   ├── lib/           # router, request, response, middleware, db, view, config
+│   ├── middleware/    # named guards: csrf, auth, password, role
+│   ├── lib/           # router, request, response, middleware, db, view,
+│   │                  #   config, session, auth, log
 │   ├── components/    # reusable view partials
 │   └── views/         # layouts and page templates
-├── database/          # schema.sql, migrations/, seeds/, migrate.php
+├── database/          # migrations/, seeds/, migrate.php, seed.php
 ├── resources/css/     # Tailwind sources
 └── composer.json
 ```
 
-Route files return an array keyed by HTTP method, with an optional `_middleware`:
+Route files return an array keyed by HTTP method, with an optional `_middleware`.
+Guards `csrf`, `auth`, and `password` run globally (see `app/bootstrap.php`); a
+route only adds the guards it needs on top, e.g. `role:admin`:
 
 ```php
 <?php
 // apps/app/routes/admin.php
 return [
-    '_middleware' => ['auth', 'role:admin'],
+    '_middleware' => ['role:admin'],
     'GET' => static fn (Request $request): string => view('admin', [
         'user' => (string) $request->attribute('user'),
     ]),
 ];
 ```
+
+Everything is protected by default; the anonymous-reachable paths are listed in
+`is_public_path()` (`app/lib/auth.php`).
 
 ## Running (development)
 
@@ -68,6 +74,7 @@ docker compose exec app php database/migrate.php up        # apply pending migra
 docker compose exec app php database/migrate.php status    # show applied / pending
 docker compose exec app php database/migrate.php rollback  # revert the last migration (*.down.sql)
 docker compose exec app php database/migrate.php fresh     # drop + re-apply everything (dev only)
+docker compose exec app php database/seed.php              # seed services + admin (dev only)
 ```
 
 ---
@@ -103,6 +110,8 @@ Adjust variables for your local PostgreSQL:
 - `DB_USER`: `valenia`
 - `DB_PASSWORD`: `valenia`
 - `APP_ENV`: `development`
+- `SEED_ADMIN_PASSWORD`: password for the initial `admin` account created by
+  `php database/seed.php` (dev only; the account must change it on first login)
 
 #### 3. Migrations (local)
 
@@ -111,6 +120,7 @@ php database/migrate.php up        # apply pending migrations
 php database/migrate.php status    # show applied / pending
 php database/migrate.php rollback  # revert the last migration (*.down.sql)
 php database/migrate.php fresh     # drop + re-apply everything (dev only)
+php database/seed.php              # seed services + admin (dev only)
 ```
 
 #### 4. Start local web server
