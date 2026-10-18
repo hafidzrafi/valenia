@@ -1,34 +1,216 @@
-<?php /** @var string $title */ ?>
-<div class="space-y-6">
-    <h1 class="text-2xl font-bold text-slate-900">
-        <i class="ph ph-heartbeat text-rose-600"></i>
-        <svg class="inline-block h-7 w-7 align-middle" width="534" height="534" viewBox="0 0 534 534" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M322.585 413.498C336.38 413.226 396.099 410.532 445.509 362.872C502.222 308.177 501.11 236.922 500.739 225.456C450.475 226.562 402.019 244.418 363.056 276.191C364.308 303.664 358.124 330.966 345.157 355.218C335.426 373.512 326.927 380.632 328.118 381.918C330.442 384.415 367.407 362.14 386.245 329.695C391.259 321.067 402.73 298.397 404.357 284.344C404.465 283.39 404.876 279.519 405.533 279.509C406.641 279.509 408.07 290.53 408.223 298.164C408.312 302.382 408.288 319.168 397.939 338.827C385.953 361.601 368.539 372.217 369.33 373.157C370.458 374.492 404.114 351.332 439.942 324.068C444.318 320.74 448.881 317.235 449.584 317.932C451.067 319.386 429.648 347.104 404.436 368.489C388.633 381.879 362.171 400.623 322.585 413.498Z" fill="#14B8A6"/>
-            <path d="M211.415 413.499C197.62 413.227 137.901 410.532 88.4907 362.873C31.7779 308.177 32.8904 236.923 33.2613 225.467C84.3257 226.59 133.5 244.995 172.754 277.675C171.988 295.026 174.161 312.382 179.182 329.008C182.45 339.772 186.903 350.14 192.458 359.921C201.852 376.238 209.763 382.468 208.7 383.654C206.46 386.127 166.915 363.442 147.755 329.686C144.62 324.168 131.399 299.47 129.643 284.335C129.535 283.381 129.124 279.51 128.467 279.5C127.423 279.5 125.955 289.339 125.777 298.155C125.658 303.92 125.594 320.974 133.51 338.086C145.06 363.071 166.89 373.988 165.743 375.531C164.754 376.846 148.932 368.762 132.847 355.98C121.742 347.164 113.139 338.18 94.0582 324.059C85.8899 318.012 84.7181 317.631 84.4165 317.923C82.9332 319.377 104.357 347.095 129.564 368.48C145.367 381.879 171.829 400.624 211.415 413.499Z" fill="#14B8A6"/>
-            <path d="M266.011 414.389C261.032 418.962 228.928 400.445 207.968 373.384C178.119 334.872 178.761 289.175 178.796 271.642C178.944 225.377 196.166 191.824 207.968 169.505C226.96 133.534 250.728 108.065 267.796 92.3174C281.524 105.334 293.981 119.628 304.998 135.008C317.102 151.942 341.226 186.465 350.17 236.225C354.353 259.464 364.509 315.638 333.715 363.639C312.202 397.177 275.9 418.656 271.608 414.839C270.619 413.968 271.672 412.084 271.752 403.555C271.752 403.555 271.806 397.963 270.951 389.31C269.581 375.51 244.997 351.367 235.227 337.587C217.254 312.241 214.05 274.164 228.067 248.967C234.925 236.646 252.701 215.132 272.192 220.037C291.777 224.982 302.635 253.946 295.495 265.259C290.323 273.462 269.418 280.819 264.592 285.645C262.636 287.65 260.893 289.852 259.39 292.216C258.372 293.74 257.438 295.318 256.592 296.943C254.421 301.156 251.385 307.01 252.453 313.67C252.618 314.696 252.873 315.705 253.215 316.686C250.142 317.676 247.389 319.47 245.244 321.883C244.256 323.01 243.108 324.355 242.594 326.442C241.63 330.348 243.553 334.066 244.023 333.992C244.379 333.933 243.791 331.752 244.849 328.672C245.561 326.59 246.757 324.894 247.074 325.018C247.39 325.141 246.678 326.462 246.886 328.509C247.036 329.932 247.546 331.293 248.369 332.464C249.739 334.387 251.949 335.698 252.325 335.327C252.701 334.956 251.193 333.646 250.347 330.956C249.966 329.759 248.636 325.636 250.842 322.887C252.152 321.25 254.164 320.78 255.361 320.637C256.579 321.698 257.982 322.528 259.499 323.084C260.461 323.424 261.455 323.665 262.466 323.801C263.495 323.956 264.536 324.021 265.576 323.994C272.553 323.846 281.186 320.894 283.01 320.256C291.144 318.175 314.724 310.99 325.671 290.159C344.89 253.571 315.208 193.98 274.248 189.05C241.892 185.149 213.343 216.655 203.217 243.103C190.88 275.371 198.495 319.663 222.94 343.045C231.766 351.48 261.215 375.347 264.582 389.068C266.238 395.807 266.56 403.817 266.56 403.817C266.842 410.28 267 413.513 266.011 414.389Z" fill="#14B8A6"/>
-        </svg>
-        VALENIA skeleton
-    </h1>
+<?php
 
-    <!-- Alpine: client interactivity -->
-    <section x-data="{ count: 0 }" class="rounded-lg border border-slate-200 bg-white p-4">
-        <button
-            @click="count++"
-            class="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
-            <i class="ph-bold ph-plus"></i> Klik
-        </button>
-        <span class="ml-2 text-sm">Count: <strong x-text="count"></strong></span>
-    </section>
+/**
+ * Home page (VALENIA-29) — standalone full page served at "/".
+ *
+ * IMPORTANT: this is a complete <html> document, not a content partial. Render
+ * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
+ * view('home'), which would wrap it in layout.php and emit two <html> documents.
+ *
+ * @var string $title
+ */
+$heroImage = ('/images/landingpage.jpg');
+$heroTitle = ("Layanan Poliklinik");
+$heroDesc = ("anjay YAWAWI LALILULELOOOOO~");
 
-    <!-- htmx: server partial swap -->
-    <section class="rounded-lg border border-slate-200 bg-white p-4">
-        <button
-            hx-get="/greeting"
-            hx-target="#greeting"
-            hx-swap="innerHTML"
-            class="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
-            Muat salam (htmx)
-        </button>
-        <div id="greeting" class="mt-2 text-sm text-slate-600">-</div>
-    </section>
-</div>
+ob_start();
+?>
+<?php include __DIR__ . '/../components/background-img.php'; ?>
+<?php include __DIR__ . '/../components/header.php';  ?>
+<?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+
+<body>
+
+
+    <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
+        <div
+            x-data="{ shown: false }"
+            x-init="
+        const observer = new IntersectionObserver(([entry]) => {
+           
+            if (entry.isIntersecting && entry.boundingClientRect.top > 50) {
+                shown = true;
+            } else {
+                if (entry.boundingClientRect.top > 0) {
+                    shown = false;
+                } 
+            }
+        }, { threshold: 0.1 });
+        
+        observer.observe($el);
+    "
+            :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"
+            class="flex flex-col justify-start items-center  absolute  top-51.25 gap-7.75 transition-all duration-1000 ease-out">
+            <p
+                class="self-stretch text-[64px] font-bold text-center font-stretch:expanded tracking-wider text-white">
+                VALENIA
+            </p>
+            <p
+                class="grow-0 shrink-0 w-[60%] h-[78px] text-xl text-center text-white">
+                Verifikasi Antrean dan Layanan Navigasi Interaktif Aplikasi Poliklinik Politeknik Negeri
+                Malang. Memberikan kemudahan akses layanan kesehatan yang cepat, terintegrasi, dan efisien
+                bagi seluruh civitas akademika.
+            </p>
+        </div>
+    </div>
+
+    <div class="relative top-20 w-full max-w-[58rem] mx-auto p-6 md:p-10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15">
+
+
+        <div class="flex-1 text-left z-10">
+            <h2 class="text-[32px] font-bold text-white mb-3">
+                Berobat Cuma 3 Langkah
+            </h2>
+            <p class="text-[18px] w-[90%]  text-white/80 leading-relaxed">
+                Daftar online, pantau antrean real-time, dan periksa tanpa perlu nunggu lama
+            </p>
+
+            <div class="flex justify-start items-center h-[159px] gap-5 mt-10">
+
+                <!-- Antrean Online -->
+                <div
+                    class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
+                    style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
+                    <div class="flex flex-col items-center self-stretch gap-5">
+
+                        <i class="ph ph-ticket text-500 text-[40px]"></i>
+                        <div class="flex flex-col items-start self-stretch gap-2">
+                            <p class="w-full text-[15px] font-medium text-center text-black">
+                                Antrean Online
+                            </p>
+                            <p class="w-full text-xs text-center text-black">
+                                Daftar pemeriksaan hari ini secara daring
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cek Antrean -->
+                <div
+                    class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
+                    style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
+                    <div class="flex flex-col items-center self-stretch gap-5">
+                        <i class="ph ph-clock-countdown text-500 text-[40px]"></i>
+
+                        <div class="flex flex-col items-start self-stretch gap-2">
+                            <p class="w-full text-[15px] font-medium text-center text-black">
+                                Cek Antrean
+                            </p>
+                            <p class="w-full text-xs text-center text-black">
+                                Pantau status nomor antrean Anda
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Riwayat -->
+                <div
+                    class="flex flex-col items-start w-[158px] flex-shrink-0 gap-2 px-1.5 py-6 smooth-corners-lg rounded-[32px] bg-white transition-all transform hover:scale-105"
+                    style="box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 4px 1px rgba(0,0,0,0.15);">
+                    <div class="flex flex-col items-center self-stretch gap-5">
+                        <i class="ph ph-calendar-blank text-500 text-[40px]"></i>
+
+                        <div class="flex flex-col items-start self-stretch gap-2">
+                            <p class="w-full text-[15px] font-medium text-center text-black">
+                                Riwayat
+                            </p>
+                            <p class="w-full text-xs text-center text-black">
+                                Lihat riwayat kunjungan dan medis
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            x-data="{
+    showVideo: false,
+    trigger() {
+      this.showVideo = true;
+      
+      // Forces Alpine to wait until the video DOM wrapper is ready
+      this.$nextTick(() => {
+        const video = this.$refs.reactionVideo;
+        if (video) {
+          video.currentTime = 0;
+          video.playbackRate = 4;
+          video.play().catch(err => console.log('Video playback interrupted:', err));
+        }
+      });
+
+      setTimeout(() => { this.showVideo = false }, 1000);
+    }
+  }"
+            @click="trigger"
+            class="relative w-72 shrink-0 z-10 transition-all transform hover:scale-105 active:scale-95 cursor-pointer">
+
+            <img src="/images/shade.webp" class="w-full h-auto object-cover" alt="mascot">
+
+            <div
+                x-show="showVideo"
+                x-transition.opacity
+                class="absolute inset-0 flex items-center justify-center bg-transparent pointer-events-none">
+
+                <video
+                    x-ref="reactionVideo"
+                    class="w-full h-auto object-contain"
+                    playsinline>
+                    <source src="/images/hearts.webm" type="video/webm">
+                </video>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="mt-50 w-full h-127 relative flex flex-col flex-shrink-0 items-center">
+        <h2 class="grow-0 shrink-0 w-[40%] absolute  text-[64px]  text-center font-bold text-white">
+            Pantau Antrean Real Time
+        </h2>
+        <div class="transform absolute scale-65 mt-50">
+            <?php include __DIR__ . '/../components/live-antrean.php' ?>
+        </div>
+
+    </div>
+
+
+    <div class="mt-32 top-32 w-full h-32 relative flex flex-col items-center">
+        <div class="absolute w-full text-center">
+            <h2 class="mb-4 text-4xl font-bold text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
+                Pilih Layanan Kesehatan
+            </h2>
+            <p class=" text-lg text-white opacity-90">
+                Pilih layanan sesuai keluhan
+            </p>
+        </div>
+        <div class="absolute scale-120 -mt-10   ">
+            <?php include __DIR__ . '/../components/3-card.php' ?>
+        </div>
+    </div>
+
+    <div class="flex flex-col relative w-full mt-140 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-20">
+        <div class="flex justify-start items-center relative gap-[200px]">
+            <!-- Card Section -->
+            <div class="cards perspective-normal">
+                <div class="card w-70 h-62.5 -translate-y-20 translate-x-5 bg-[url(/images/placeholder.jpg)] bg-cover bg-center border-2 border-[#555555] smooth-corners-lg rounded-[32px] relative transform-style preserve-3d will-change-transform transition-transform duration-500 hover:translateZ-[10px] hover:rotate-x-[20deg] hover:rotate-y-[20deg] hover:outline-2 hover:outline-teal-500">
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="flex flex-col items-end w-[580px] h-full space-y-4">
+                <h2 class="w-full text-8xl font-black text-right text-white">
+                    Tentang Kami
+                </h2>
+                <p class="w-full text-lg text-right text-white pb-40">
+                    Poli dimakan Valenia raja Ipsum Loh yah, Poli dimakan Valenia raja Ipsum Loh yah, Poli dimakan Valenia raja Ipsum Loh yah,
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <?php include __DIR__ . '/../components/footer.php' ?>
+
+    <?php
+    $content = ob_get_clean();
+    include __DIR__ . '/../views/layout.php';
+    ?>
