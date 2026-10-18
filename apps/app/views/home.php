@@ -177,7 +177,7 @@ ob_start();
     <div class="mt-32 top-32 w-full h-32 relative flex flex-col items-center">
         <div class="absolute w-full text-center">
             <h2 class="mb-4 text-4xl font-bold text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
-                Pilih Layanan Kesehatan Anda
+                Pilih Layanan Kesehatan
             </h2>
             <p class=" text-lg text-white opacity-90">
                 Pilih layanan sesuai keluhan
