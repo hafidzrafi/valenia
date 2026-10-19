@@ -12,10 +12,10 @@
 $heroImage = ('/images/landingpage.jpg');
 $heroTitle = ("Layanan Poliklinik");
 $heroDesc = ("anjay YAWAWI LALILULELOOOOO~");
-
+include __DIR__ . '/../components/background-img.php'; 
 ob_start();
 ?>
-<?php include __DIR__ . '/../components/background-img.php'; ?>
+
 <?php include __DIR__ . '/../components/header.php';  ?>
 <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
