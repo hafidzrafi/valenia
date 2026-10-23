@@ -1,6 +1,9 @@
 @import "tailwindcss" source(none);
 /* plugin for corner smoothing*/
+
 @plugin "tailwind-corner-smoothing";
+@plugin "tailwindcss-squircles";
+
 /* Scan server-rendered PHP for utility classes */
 @source "../../app";
 
@@ -11,3 +14,4 @@
      graceful fallbacks elsewhere (no webfont binary needed). */
   --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+

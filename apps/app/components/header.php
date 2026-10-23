@@ -23,21 +23,21 @@
                     <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
 
                         <form action="/form" method="get">
-                            <input type="hidden" name="heroform" value="Poli Umum">
+                            <input type="hidden" name="heroform" value="POLI UMUM">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
                                 Poli Umum
                             </button>
                         </form>
 
                         <form action="/form" method="get">
-                            <input type="hidden" name="heroform" value="Poli Gigi">
+                            <input type="hidden" name="heroform" value="POLI GIGI">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
                                 Poli Gigi
                             </button>
                         </form>
 
                         <form action="/form" method="get">
-                            <input type="hidden" name="heroform" value="Konseling">
+                            <input type="hidden" name="heroform" value="KONSELING">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
                                 Konseling dan Psikologi
                             </button>
