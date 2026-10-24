@@ -14,7 +14,7 @@
                                 'border-teal-500': touched && isValid,
                                 'border-red-500': touched && !isValid
                                 }">
-                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="nim_nip" name="nim_nip" placeholder="Masukkan NIM / NIP..."
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="nim_nip" name="nim_nip" required placeholder="Masukkan NIM / NIP... "
                         class="w-full text-xs font-medium text-left bg-transparent border-none focus:outline-none"
                         :class="{
                                     'text-gray-500': true,
@@ -43,7 +43,7 @@
                                     'border-teal-500': touched && tanggalLahir != '',
                                     'border-red-500': touched && tanggalLahir === ''                          
                                 }">
-                    <input type="date" id="tanggal_lahir" name="tanggal_lahir"
+                    <input type="date" id="tanggal_lahir" name="tanggal_lahir " required
                         class="w-full text-xs font-medium text-left text-[#757575] bg-transparent border-none focus:outline-none"
                         :class="{
                                      'text-gray-500': true,
@@ -65,7 +65,7 @@
             x-data="{ keluhan: '', touched: false }">
             <label for="keluhan" class="flex-grow-0 flex-shrink-0 text-sm font-medium text-left text-black">Keluhan</label>
             <div class="flex flex-col w-full">
-                <textarea id="keluhan" name="keluhan" placeholder="Masukkan keluhan..."
+                <textarea id="keluhan" name="keluhan" required placeholder="Masukkan keluhan..."
                     class="flex justify-start h-24 self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2 px-3 py-2 smooth-corners-lg rounded-2xl bg-white border-[1.5px] resize-none text-xs font-medium text-left text-[#757575] focus:outline-none"
                     :class="{
                                     'border-gray-500': !touched,

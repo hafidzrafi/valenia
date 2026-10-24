@@ -22,28 +22,31 @@
                 <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
 
-                        <form action="/form" method="get">
+                        <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI UMUM">
-                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
+                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Umum
                             </button>
                         </form>
 
-                        <form action="/form" method="get">
+                        <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI GIGI">
-                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
+                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Gigi
                             </button>
                         </form>
 
-                        <form action="/form" method="get">
+                        <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="KONSELING">
-                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">
+                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Konseling dan Psikologi
                             </button>
                         </form>
 
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-500 hover:text-white transition-colors active:bg-teal-700">Cek Riwayat</a>
+                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
 
                     </div>
                 </div>
@@ -59,9 +62,9 @@
                 </a>
                 <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <div class="w-48 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-500 hover:text-white transition-colors  active:bg-teal-700">Ketentuan Berobat</a>
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-500 hover:text-white transition-colors  active:bg-teal-700">Jadwal Dokter</a>
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-500 hover:text-white transition-colors  active:bg-teal-700">Tentang Poliklinik</a>
+                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Ketentuan Berobat</a>
+                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Jadwal Dokter</a>
+                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Tentang Poliklinik</a>
                     </div>
                 </div>
             </div>
