@@ -18,7 +18,7 @@ $showCta = $showCta ?? true;
 
     <!-- Konten Teks -->
     <div class="relative z-10 container mx-auto px-6 text-center text-white font-['SF_Pro_Display']">
-        <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
+        <h1 class="text-[96px] md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
             <?= $heroTitle; ?>
         </h1>
         <p class="text-lg md:text-2xl max-w-3xl mx-auto mb-10 opacity-90">
