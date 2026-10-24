@@ -24,7 +24,7 @@ $bgColor = match ($status_step) {
     </div>
 <?php elseif ($status_step == "done"): ?>
     <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">
-        <i class="ph ph-check text-teal-500 text-[64px]"></i>
+        <i class="ph ph-check text-teal-500 text-[32px]"></i>
     </div>
 <?php else: ?>
     <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">

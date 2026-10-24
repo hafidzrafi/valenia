@@ -40,7 +40,7 @@ function current_user(): ?array
  */
 function is_public_path(string $path): bool
 {
-    return in_array($path, ['', 'login', 'logout', 'greeting' , 'form'], true);
+    return in_array($path, ['', 'login', 'logout', 'greeting' , 'form' , 'ambil-tiket' ], true);
 }
 
 /**
