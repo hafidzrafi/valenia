@@ -43,10 +43,10 @@ ob_start();
                 <p class="pl-15.5 mt-17 text-[16px] text-black flex items-center gap-2">
                     Jam Operasional Layanan <i class="ph ph-clock text-black text-[18px]"></i>
                 </p>
-                <?php if ($heroform == "POLI UMUM" ||$heroform == "POLI GIGI"): ?>
+                <?php if ($heroform == "POLI UMUM" || $heroform == "POLI GIGI"): ?>
                     <p class="pl-15.5 text-[16px] text-black">
-                        Senin  Kamis: 08.00-16.00 WIB <br>
-                        Jumat: 08.00  16.30-WIB
+                        Senin Kamis: 08.00-16.00 WIB <br>
+                        Jumat: 08.00 16.30-WIB
                     </p>
                 <?php elseif ($heroform == "KONSELING"): ?>
                     <p class="pl-15.5 mt-3 text-[16px] text-black">
@@ -110,19 +110,26 @@ ob_start();
                 <div
                     class="w-115 h-130 rounded-[64px] bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]"
                     style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
+
                     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Form Pendaftaran</h1>
+
                     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/ambil-tiket">
+
                         <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
                         <div class="flex flex-row gap-6 justify-center">
                             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[180px] relative gap-1"
-                                x-data="{ nimNip: '', touched: false, isValid: true }">
+                                x-data="{ 
+                                nimNip: localStorage.getItem('nim_nip') || '', 
+                                touched: false, 
+                                isValid: true 
+                                }">
                                 <label for="nim_nip" class="flex-grow-0 flex-shrink-0 text-sm font-medium text-left text-black">NIM / NIP</label>
                                 <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2 px-3 py-2 smooth-corners-lg rounded-2xl bg-white border-[1.5px]"
                                     :class="{
-                                'border-gray-500': !touched,
-                                'border-teal-500': touched && isValid,
-                                'border-red-500': touched && !isValid
-                                }">
+                                     'border-gray-500': !touched,
+                                     'border-teal-500': touched && isValid,
+                                     'border-red-500': touched && !isValid
+                                    }">
                                     <input type="text" inputmode="numeric" pattern="[0-9]*" id="nim_nip" name="nim_nip" required placeholder="Masukkan NIM / NIP... "
                                         class="w-full text-xs font-medium text-left bg-transparent border-none focus:outline-none"
                                         :class="{
@@ -130,6 +137,7 @@ ob_start();
                                     'text-red-500': touched && !isValid
                                     }"
                                         x-model="nimNip"
+                                        @input="localStorage.setItem('nim_nip', nimNip)"
                                         @blur="touched = true; isValid = nimNip != '' && /^\d*$/.test(nimNip)">
                                 </div>
 
@@ -144,21 +152,23 @@ ob_start();
                             </div>
 
                             <div class="flex flex-col justify-start items-start w-[180px] relative gap-1"
-                                x-data="{ tanggalLahir: '', touched: false }">
+                                x-data="{ tanggalLahir: localStorage.getItem('tanggal_lahir') || '', touched: false }">
                                 <label for="tanggal_lahir" class="text-sm font-medium text-left text-black">Tanggal Lahir</label>
                                 <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2 px-3 py-2 smooth-corners-lg rounded-2xl bg-white border-[1.5px]"
                                     :class="{
                                     'border-gray-500': !touched,
                                     'border-teal-500': touched && tanggalLahir != '',
                                     'border-red-500': touched && tanggalLahir === ''                          
-                                }">
-                                    <input type="date" id="tanggal_lahir" name="tanggal_lahir " required
+                                    }">
+                                    <!-- Perhatikan juga penghapusan spasi ekstra pada name="tanggal_lahir " menjadi name="tanggal_lahir" -->
+                                    <input type="date" id="tanggal_lahir" name="tanggal_lahir" required
                                         class="w-full text-xs font-medium text-left text-[#757575] bg-transparent border-none focus:outline-none"
                                         :class="{
-                                     'text-gray-500': true,
+                                        'text-gray-500': true,
                                         'text-red-500': touched && tanggalLahir === ''
-                                }"
+                                        }"
                                         x-model="tanggalLahir"
+                                        @input="localStorage.setItem('tanggal_lahir', tanggalLahir)"
                                         @blur="touched = true">
 
                                 </div>
@@ -171,20 +181,20 @@ ob_start();
                         </div>
 
                         <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[384px] relative gap-1"
-                            x-data="{ keluhan: '', touched: false }">
+                            x-data="{ keluhan: localStorage.getItem('keluhan') || '', touched: false }">
                             <label for="keluhan" class="flex-grow-0 flex-shrink-0 text-sm font-medium text-left text-black">Keluhan</label>
                             <div class="flex flex-col w-full">
                                 <textarea id="keluhan" name="keluhan" required placeholder="Masukkan keluhan..."
                                     class="flex justify-start h-24 self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2 px-3 py-2 smooth-corners-lg rounded-2xl bg-white border-[1.5px] resize-none text-xs font-medium text-left text-[#757575] focus:outline-none"
                                     :class="{
-                                    'border-gray-500': !touched,
-                                    'border-teal-500': touched && keluhan != '',
-                                    'border-red-500': touched && keluhan === '',
-                                    'text-gray-500': true,
-                                        'text-red-500': touched && keluhan === ''
+                                'border-gray-500': !touched,
+                                'border-teal-500': touched && keluhan != '',
+                                'border-red-500': touched && keluhan === '',
+                                'text-gray-500': true,
+                                'text-red-500': touched && keluhan === ''
                                 }"
                                     x-model="keluhan"
-
+                                    @input="localStorage.setItem('keluhan', keluhan)"
                                     @blur="touched = true"></textarea>
                                 <div class="h-4">
                                     <span class="text-xs text-red-500"

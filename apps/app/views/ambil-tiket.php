@@ -113,7 +113,7 @@ ob_start();
                     class="w-115 h-130 rounded-[64px] bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]"
                     style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
                     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Konfirmasi Pendaftaran</h1>
-                    <p class=" text-[64px] mt-10 font-black text-center text-slate-900"><?php echo ($no_antrean) ?></p>
+                    <p class=" text-[64px] mt-10 font-black text-center text-slate-900"><?= e($no_antrean) ?> </p>
 
                     <div class="flex justify-center mt-10 items-center gap-4">
                         <div class="flex flex-col gap-3 h-[83px] w-[166px]">
@@ -130,12 +130,13 @@ ob_start();
 
                         <div class="flex flex-col gap-3 h-[78px] w-[110px]">
                             <p class="text-sm font-medium text-black text-right">Valenia Carlo</p>
-                            <p class="text-sm font-medium text-black text-right"><?php echo($heroform) ?></p>
+                            <p class="text-sm font-medium text-black text-right"><?= e($heroform) ?> </p>
                             <p class="text-sm font-medium text-black text-right">10:00 WIB</p>
                         </div>
                     </div>
 
-                    <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/muncul-qr">
+                    <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/muncul-qr"
+                        onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir'); localStorage.removeItem('keluhan');">
                         <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
