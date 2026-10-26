@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-
+session_start();
 /**
  * Front controller. Serves real static files through the built-in server and
  * dispatches every other request through the file-based router.
