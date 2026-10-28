@@ -15,20 +15,20 @@ $bgColor = match ($status_step) {
 ?>
 
 <?php if ($status_step == "current"): ?>
-    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">
-        <h3 class="text-white text-[20px] font-semibold"> <?php echo ($step_text) ?></h3>
+    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center border border-gray-500 <?= $bgColor ?>">
+        <h3 class="text-white text-[20px]"> <?php echo ($step_text) ?></h3>
     </div>
 <?php elseif ($status_step == "wait"): ?>
-    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">
-        <h3 class="text-black text-[20px] font-semibold"> <?php echo ($step_text) ?></h3>
+    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center border border-gray-500 <?= $bgColor ?>">
+        <h3 class="text-black text-[20px]"> <?php echo ($step_text) ?></h3>
     </div>
 <?php elseif ($status_step == "done"): ?>
-    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">
+    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center border border-gray-500 <?= $bgColor ?>">
         <i class="ph ph-check text-teal-500 text-[32px]"></i>
     </div>
 <?php else: ?>
-    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center <?= $bgColor ?>">
-        <h3 class="text-white text-[20px] font-semibold"> <?php echo ($step_text) ?></h3>
+    <div class=" w-11 h-11 rounded-full smooth-corners-lg  absolute flex justify-center items-center border border-gray-500 <?= $bgColor ?>">
+        <h3 class="text-white text-[20px]"> <?php echo ($step_text) ?></h3>
     </div>
 
 <?php endif ?>

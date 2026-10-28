@@ -146,8 +146,8 @@ ob_start();
                                 <p class="text-base font-semibold ">Batal</p>
                             </button>
                             <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                                <p class="text-base font-semibold text-white">Kirim</p>
-                                <i class="ph ph-download-simple text-white text-[18px]"></i>
+                                <p class="text-base font-semibold text-white">Ambil</p>
+                                <i class="ph ph-qr-code  text-white text-[1.25rem]"></i>
                             </button>
                         </div>
                     </form>

@@ -11,8 +11,8 @@
  */
 $heroImage = ('/images/landingpage.jpg');
 $heroTitle = ("Layanan Poliklinik");
-$heroDesc = ("anjay YAWAWI LALILULELOOOOO~");
-include __DIR__ . '/../components/background-img.php'; 
+$heroDesc = ("Politeknik Negeri Malang");
+include __DIR__ . '/../components/background-img.php';
 ob_start();
 ?>
 
@@ -207,10 +207,11 @@ ob_start();
             </div>
         </div>
     </div>
+</body>
 
-    <?php include __DIR__ . '/../components/footer.php' ?>
+<?php include __DIR__ . '/../components/footer.php' ?>
 
-    <?php
-    $content = ob_get_clean();
-    include __DIR__ . '/../views/layout.php';
-    ?>
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/../views/layout.php';
+?>
