@@ -138,10 +138,11 @@ ob_start();
                     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/muncul-qr"
                         onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir'); localStorage.removeItem('keluhan');">
                         <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="key_portal" value="true">
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
-                            <button type="button" onclick="window.history.back()" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-amber-500 border-amber-500 flex flex-row gap-2 items-center justify-center hover:bg-amber-500 hover:text-white">
+                            <button type="button" onclick="window.history.back()" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-amber-500 border-amber-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-amber-500 hover:text-white">
                                 <p class="text-base font-semibold ">Batal</p>
                             </button>
                             <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">

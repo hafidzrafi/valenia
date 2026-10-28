@@ -50,9 +50,9 @@ ob_start();
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
-                            <button type="button" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
-                                <p class="text-base font-semibold ">Cek Riwayat</p>
-                            </button>
+                            <a href="/portal-pasien" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
+                                <p class="text-base font-semibold">Cek Riwayat</p>
+                            </a>
                             <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
                                 <p class="text-base font-semibold text-white">Unduh</p>
                                 <i class="ph ph-download-simple text-white text-[18px]"></i>
