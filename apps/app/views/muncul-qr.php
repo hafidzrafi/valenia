@@ -10,11 +10,13 @@
  */
 
 $heroform = $_SESSION['heroform'] ?? "Default";
+$isform = true;
 $no_antrean = $no_antrean ?? 'P-11';
-include __DIR__ . '/../components/background-img.php';
-ob_start();
-?>
+$_SESSION['isguest'] = true;
 
+include __DIR__ . '/../components/background-img.php';
+?>
+<?php include __DIR__ . '/../components/cursor.php';  ?>
 
 <body>
 
@@ -73,7 +75,3 @@ ob_start();
 </body>
 
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/../views/layout.php';
-?>

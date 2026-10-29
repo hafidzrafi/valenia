@@ -10,11 +10,11 @@
  */
 
 $heroform = $_SESSION['heroform'] ?? "Default";
+$isform = true;
 $no_antrean = $no_antrean ?? 'P-11';
 include __DIR__ . '/../components/background-img.php';
-ob_start();
 ?>
-
+<?php include __DIR__ . '/../components/cursor.php';  ?>
 
 <body>
     <div class="mt-13 right-110   absolute">
@@ -164,7 +164,3 @@ ob_start();
 </body>
 
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/../views/layout.php';
-?>

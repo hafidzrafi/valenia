@@ -11,11 +11,13 @@
 
 
 $heroform = $heroform ?? ($_SESSION['heroform'] ?? 'Default');
+$isform = true;
 
 include __DIR__ . '/../components/background-img.php';
 ob_start();
 ?>
 
+<?php include __DIR__ . '/../components/cursor.php'; ?>
 
 <body>
     <div class="m-13 ml-25 absolute">

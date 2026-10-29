@@ -12,10 +12,16 @@
 $heroImage = ('/images/landingpage.jpg');
 $heroTitle = ("Layanan Poliklinik");
 $heroDesc = ("Politeknik Negeri Malang");
+if (!isset($_SESSION['isguest'])) {
+    $_SESSION['isguest'] = false; 
+}
+
+
 include __DIR__ . '/../components/background-img.php';
 ob_start();
 ?>
 
+<?php include __DIR__ . '/../components/cursor.php';  ?>
 <?php include __DIR__ . '/../components/header.php';  ?>
 <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
@@ -54,10 +60,10 @@ ob_start();
         </div>
     </div>
 
-    <div class="relative top-20 w-full max-w-[58rem] mx-auto p-6 md:p-10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15">
+    <div class="relative top-20 w-full max-w-[64rem] mx-auto p-6 md:p-10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15">
 
 
-        <div class="flex-1 text-left z-10">
+        <div class="w-80 h-95 flex-1 text-left   rounded-4xl pl-10 pt-5">
             <h2 class="text-[32px] font-bold text-white mb-3">
                 Berobat Cuma 3 Langkah
             </h2>
@@ -114,8 +120,8 @@ ob_start();
                             <p class="w-full text-[15px] font-medium text-center text-black">
                                 Riwayat
                             </p>
-                            <p class="w-full text-xs text-center text-black">
-                                Lihat riwayat kunjungan dan medis
+                            <p class="w-full text-xs text-center h-8 text-black">
+                                Lihat riwayat kunjungan
                             </p>
                         </div>
                     </div>

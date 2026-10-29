@@ -21,7 +21,7 @@
                         <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
                     </svg>
                 </a>
-                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible z-50">
                     <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
 
                         <form action="/form" method="post">
@@ -48,7 +48,11 @@
                             </button>
                         </form>
 
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
+                        <?php if ($_SESSION['isguest'] == true): ?>
+                            <a href="/portal-pasien" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
+                        <?php else: ?>
+                            <a href="/form-riwayat" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
+                        <?php endif ?>
 
                     </div>
                 </div>
@@ -62,7 +66,7 @@
                         <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
                     </svg>
                 </a>
-                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible  z-50">
                     <div class="w-48 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
                         <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Ketentuan Berobat</a>
                         <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Jadwal Dokter</a>
