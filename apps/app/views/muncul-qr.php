@@ -6,17 +6,15 @@
  * IMPORTANT: this is a complete <html> document, not a content partial. Render
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
- *
  */
-
-$heroform = $_SESSION['heroform'] ?? "Default";
+$heroform = $_SESSION['heroform'] ?? 'Default';
 $isform = true;
 $no_antrean = $no_antrean ?? 'P-11';
 $_SESSION['isguest'] = true;
 
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 ?>
-<?php include __DIR__ . '/../components/cursor.php';  ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <body>
 
@@ -36,9 +34,9 @@ include __DIR__ . '/../components/background-img.php';
 
                         <div class="flex justify-end  gap-4">
                             <div class="flex flex-col -translate-y-2 gap-1">
-                                <p class="text-[64px] font-black translate-x-2 text-center text-slate-900"><?php echo ($no_antrean) ?></p>
+                                <p class="text-[64px] font-black translate-x-2 text-center text-slate-900"><?php echo $no_antrean; ?></p>
                                 <p class="text-sm font-medium text-black text-right">Valenia Carlo</p>
-                                <p class="text-sm font-medium text-black text-right"><?php echo ($heroform) ?></p>
+                                <p class="text-sm font-medium text-black text-right"><?php echo $heroform; ?></p>
                                 <p class="text-sm font-medium text-black text-right">28 September 2026</p>
                                 <p class="text-sm font-medium text-black text-right">10:00 WIB</p>
                             </div>
@@ -48,7 +46,7 @@ include __DIR__ . '/../components/background-img.php';
                     <p class="flex justify-center mt-8 text-[14px]">Tunjukkan QR Code saat periksa di poliklinik</p>
 
                     <form class="flex flex-col gap-6 items-center mt-4" method="GET" action="">
-                        <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
@@ -68,7 +66,7 @@ include __DIR__ . '/../components/background-img.php';
         </div>
 
         <div>
-            <?php include __DIR__ . '/../components/subfooter.php'; ?>
+            <?php include __DIR__.'/../components/subfooter.php'; ?>
         </div>
     </div>
 

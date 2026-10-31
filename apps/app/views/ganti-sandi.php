@@ -1,16 +1,16 @@
 <?php
 /** @var string $token */
-/** @var string|null $error */
+/** @var null|string $error */
 ?>
 <h1 class="text-xl font-bold">Ganti Kata Sandi</h1>
 <p class="mt-1 text-slate-600 text-sm">Akun ini wajib mengganti kata sandi sebelum melanjutkan.</p>
 
-<?php if (!empty($error)): ?>
-    <p class="mt-3 text-rose-600 text-sm"><?= e($error) ?></p>
-<?php endif; ?>
+<?php if (!empty($error)) { ?>
+    <p class="mt-3 text-rose-600 text-sm"><?php echo e($error); ?></p>
+<?php } ?>
 
 <form method="POST" action="/ganti-sandi" class="mt-4 space-y-3 max-w-sm">
-    <input type="hidden" name="_token" value="<?= e($token) ?>">
+    <input type="hidden" name="_token" value="<?php echo e($token); ?>">
     <div>
         <label class="block text-sm" for="kata_sandi_saat_ini">Kata sandi saat ini</label>
         <input id="kata_sandi_saat_ini" type="password" name="kata_sandi_saat_ini" required

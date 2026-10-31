@@ -1,21 +1,21 @@
 <?php
 /** @var string $token */
-/** @var string|null $error */
-/** @var string|null $username */
+/** @var null|string $error */
+/** @var null|string $username */
 ?>
 <h1 class="text-xl font-bold">Masuk</h1>
 <p class="mt-1 text-slate-600 text-sm">Masuk dengan akun Admin atau Perawat.</p>
 
-<?php if (!empty($error)): ?>
-    <p class="mt-3 text-rose-600 text-sm"><?= e($error) ?></p>
-<?php endif; ?>
+<?php if (!empty($error)) { ?>
+    <p class="mt-3 text-rose-600 text-sm"><?php echo e($error); ?></p>
+<?php } ?>
 
 <form method="POST" action="/login" class="mt-4 space-y-3 max-w-sm">
-    <input type="hidden" name="_token" value="<?= e($token) ?>">
+    <input type="hidden" name="_token" value="<?php echo e($token); ?>">
     <div>
         <label class="block text-sm" for="username">Nama pengguna</label>
         <input id="username" type="text" name="username" required autocomplete="username"
-               value="<?= e($username ?? '') ?>"
+               value="<?php echo e($username ?? ''); ?>"
                class="mt-1 w-full border border-slate-300 rounded px-2 py-1">
     </div>
     <div>

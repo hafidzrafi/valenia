@@ -29,9 +29,24 @@ final class Router
         $this->load();
     }
 
+    public function dispatch(string $method, string $path): Response
+    {
+        $path = trim($path, '/');
+
+        foreach ($this->routes[$method] ?? [] as $pattern => $route) {
+            if (1 === preg_match('#^'.$pattern.'$#', $path, $matches)) {
+                return $this->run($route, $method, $path, $matches);
+            }
+        }
+
+        return $this->pathExists($path)
+            ? new Response('405 Method Not Allowed', 405)
+            : new Response('404 Not Found', 404);
+    }
+
     private function load(): void
     {
-        foreach (glob($this->dir . '/*.php') ?: [] as $file) {
+        foreach (glob($this->dir.'/*.php') ?: [] as $file) {
             $pattern = self::toPattern(basename($file, '.php'));
             $definition = require $file;
 
@@ -55,39 +70,24 @@ final class Router
     {
         $segments = array_filter(
             explode('.', $name),
-            static fn (string $segment): bool => $segment !== '_index',
+            static fn (string $segment): bool => '_index' !== $segment,
         );
 
-        if ($segments === []) {
+        if ([] === $segments) {
             return '';
         }
 
         return implode('/', array_map(
             static fn (string $segment): string => str_starts_with($segment, '$')
-                ? '(?P<' . substr($segment, 1) . '>[^/]+)'
+                ? '(?P<'.substr($segment, 1).'>[^/]+)'
                 : preg_quote($segment, '#'),
             $segments,
         ));
     }
 
-    public function dispatch(string $method, string $path): Response
-    {
-        $path = trim($path, '/');
-
-        foreach ($this->routes[$method] ?? [] as $pattern => $route) {
-            if (preg_match('#^' . $pattern . '$#', $path, $matches) === 1) {
-                return $this->run($route, $method, $path, $matches);
-            }
-        }
-
-        return $this->pathExists($path)
-            ? new Response('405 Method Not Allowed', 405)
-            : new Response('404 Not Found', 404);
-    }
-
     /**
      * @param array{handler: callable, middleware: list<string>} $route
-     * @param array<int|string, string> $matches
+     * @param array<int|string, string>                          $matches
      */
     private function run(array $route, string $method, string $path, array $matches): Response
     {
@@ -106,7 +106,7 @@ final class Router
     {
         foreach ($this->routes as $patterns) {
             foreach (array_keys($patterns) as $pattern) {
-                if (preg_match('#^' . $pattern . '$#', $path) === 1) {
+                if (1 === preg_match('#^'.$pattern.'$#', $path)) {
                     return true;
                 }
             }

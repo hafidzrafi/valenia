@@ -21,7 +21,7 @@ function csrf_token(): string
 Middleware::register('csrf', static function (Request $request, callable $next): Response {
     $token = $_COOKIE['csrf_token'] ?? '';
 
-    if (!is_string($token) || $token === '') {
+    if (!is_string($token) || '' === $token) {
         $token = bin2hex(random_bytes(32));
         setcookie('csrf_token', $token, [
             'httponly' => true,

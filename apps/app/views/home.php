@@ -9,21 +9,20 @@
  *
  * @var string $title
  */
-$heroImage = ('/images/landingpage.jpg');
-$heroTitle = ("Layanan Poliklinik");
-$heroDesc = ("Politeknik Negeri Malang");
+$heroImage = '/images/landingpage.jpg';
+$heroTitle = 'Layanan Poliklinik';
+$heroDesc = 'Politeknik Negeri Malang';
 if (!isset($_SESSION['isguest'])) {
-    $_SESSION['isguest'] = false; 
+    $_SESSION['isguest'] = false;
 }
 
-
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 ob_start();
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php';  ?>
-<?php include __DIR__ . '/../components/header.php';  ?>
-<?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 <body>
 
@@ -174,7 +173,7 @@ ob_start();
             Pantau Antrean Real Time
         </h2>
         <div class="transform absolute scale-65 mt-50">
-            <?php include __DIR__ . '/../components/live-antrean.php' ?>
+            <?php include __DIR__.'/../components/live-antrean.php'; ?>
         </div>
 
     </div>
@@ -190,7 +189,7 @@ ob_start();
             </p>
         </div>
         <div class="absolute scale-120 -mt-10   ">
-            <?php include __DIR__ . '/../components/3-card.php' ?>
+            <?php include __DIR__.'/../components/3-card.php'; ?>
         </div>
     </div>
 
@@ -215,9 +214,10 @@ ob_start();
     </div>
 </body>
 
-<?php include __DIR__ . '/../components/footer.php' ?>
+<?php include __DIR__.'/../components/footer.php'; ?>
 
 <?php
 $content = ob_get_clean();
-include __DIR__ . '/../views/layout.php';
+
+include __DIR__.'/../views/layout.php';
 ?>

@@ -6,7 +6,6 @@ declare(strict_types=1);
  * Read-only access to the current HTTP request, plus the Request object that
  * flows through the middleware pipeline.
  */
-
 final class Request
 {
     /**
@@ -18,8 +17,7 @@ final class Request
         public readonly string $path,
         public readonly array $params = [],
         public array $attributes = [],
-    ) {
-    }
+    ) {}
 
     public function attribute(string $key, mixed $default = null): mixed
     {

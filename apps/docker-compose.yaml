@@ -10,6 +10,9 @@ services:
       DB_DSN: ${DB_DSN:-pgsql:host=db;port=5432;dbname=valenia}
       DB_USER: ${DB_USER:-valenia}
       DB_PASSWORD: ${DB_PASSWORD:-valenia}
+    networks:
+      valenia:
+        ipv4_address: 172.20.20.2
     depends_on:
       db:
         condition: service_healthy
@@ -21,6 +24,9 @@ services:
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./public:/srv/public:ro
+    networks:
+      valenia:
+        ipv4_address: 172.20.20.3
     depends_on:
       - app
 
@@ -34,6 +40,9 @@ services:
       - db_data:/var/lib/postgresql
     ports:
       - "127.0.0.1:5432:5432"
+    networks:
+      valenia:
+        ipv4_address: 172.20.20.10
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\""]
       interval: 5s
@@ -42,3 +51,11 @@ services:
 
 volumes:
   db_data:
+
+networks:
+  valenia:
+    name: valenia-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.20.0/24

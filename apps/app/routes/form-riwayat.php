@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 return [
@@ -7,8 +8,8 @@ return [
     ]),
     'POST' => static function (Request $request): Response {
         // Proses penyimpanan data form di sini
-        
+
         // Kembalikan Response redirect
-        return redirect('/form-riwayat'); 
+        return redirect('/form-riwayat');
     },
 ];

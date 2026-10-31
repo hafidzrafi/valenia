@@ -41,12 +41,12 @@ final class Middleware
         [$base, $arg] = array_pad(explode(':', $name, 2), 2, null);
 
         if (!isset(self::$registry[$base])) {
-            throw new RuntimeException('Middleware tidak dikenal: ' . $base);
+            throw new RuntimeException('Middleware tidak dikenal: '.$base);
         }
 
         $middleware = self::$registry[$base];
 
-        if ($arg === null) {
+        if (null === $arg) {
             return $middleware;
         }
 

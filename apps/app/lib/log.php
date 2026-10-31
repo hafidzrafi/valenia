@@ -9,7 +9,6 @@ declare(strict_types=1);
  * `docker compose logs app`, which is where server-side 401/403 events and
  * errors are observed (NFR-REL-03).
  */
-
 function log_safe(string $value): string
 {
     // Strip control characters so user-controlled values (paths, user agents)
@@ -23,5 +22,5 @@ function app_log(string $level, string $message): void
     // exists only in CLI. Under Docker the FPM error log is the container's
     // stderr, so these lines show up in `docker compose logs app`.
     $time = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
-    error_log("[{$time}] [" . strtoupper($level) . '] ' . $message);
+    error_log("[{$time}] [".strtoupper($level).'] '.$message);
 }

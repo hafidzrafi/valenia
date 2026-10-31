@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 return [
@@ -6,8 +7,6 @@ return [
         'title' => 'Ambil scan QR',
     ]),
     'POST' => static function (Request $request): Response {
-        
-       
-        return redirect('/muncul-qr'); 
+        return redirect('/muncul-qr');
     },
 ];

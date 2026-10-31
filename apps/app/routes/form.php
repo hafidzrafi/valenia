@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 return [
@@ -6,7 +7,7 @@ return [
         $heroform = $_SESSION['heroform'] ?? 'Default';
 
         return render(app_path('app/views/form.php'), [
-            'title'    => 'Form ' . $heroform,
+            'title' => 'Form '.$heroform,
             'heroform' => $heroform,
         ]);
     },

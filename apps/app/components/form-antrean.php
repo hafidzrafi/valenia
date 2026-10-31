@@ -3,7 +3,7 @@
     style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Form Pendaftaran</h1>
     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/ambil-tiket">
-        <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+        <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
         <div class="flex flex-row gap-6 justify-center">
             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[180px] relative gap-1"
                 x-data="{ nimNip: '', touched: false, isValid: true }">

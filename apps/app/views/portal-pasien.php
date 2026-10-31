@@ -6,22 +6,21 @@
  * IMPORTANT: this is a complete <html> document, not a content partial. Render
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
- *
  */
-
-$heroform = $_SESSION['heroform'] ?? "Default";
+$heroform = $_SESSION['heroform'] ?? 'Default';
 $no_antrean = $no_antrean ?? 'P-11';
-include __DIR__ . '/../components/background-img.php';
 
-$heroImage = ('/images/portalpasien.webp');
-$heroTitle = ("Portal Pasien");
-$heroDesc = ("Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA");
+include __DIR__.'/../components/background-img.php';
+
+$heroImage = '/images/portalpasien.webp';
+$heroTitle = 'Portal Pasien';
+$heroDesc = 'Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA';
 $showCta = false;
 ?>
-<?php include __DIR__ . '/../components/cursor.php';  ?>
-<?php include __DIR__ . '/../components/header.php';  ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/header.php'; ?>
 <div class="overflow-hidden">
-    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 </div>
 
 
@@ -36,9 +35,9 @@ $showCta = false;
 
                 <div class="flex justify-end  gap-4">
                     <div class="flex flex-col -translate-y-2 gap-1">
-                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo ($no_antrean) ?></p>
+                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo $no_antrean; ?></p>
                         <p class="text-sm  text-black text-right">Valenia Carlo</p>
-                        <p class="text-sm  text-black text-right"><?php echo ($heroform) ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo $heroform; ?></p>
                         <p class="text-sm  text-black text-right">28 September 2026</p>
                         <p class="text-sm  text-black text-right">10:00 WIB</p>
                     </div>
@@ -77,9 +76,10 @@ $showCta = false;
                     <p class="text-sm  text-black pt-2">Mahasiswa</p>
                     <p class="text-sm  text-black">D4-TI</p>
                     <div class="scale-90 pt-2 flex -translate-x-3"><?php
-                                                                    $status_tag = ("positive");
-                                                                    $label_tag = ("Aktif");
-                                                                    include __DIR__ . '/../components/tag.php' ?>
+                                                                    $status_tag = 'positive';
+$label_tag = 'Aktif';
+
+include __DIR__.'/../components/tag.php'; ?>
                     </div>
 
                 </div>
@@ -102,16 +102,18 @@ $showCta = false;
                 <div class="flex justify-center items-center">
                     <?php
                     $status_step = 'done';
-                    $step_text = '1';
-                    include __DIR__ . '/../components/step.php' ?>
+$step_text = '1';
+
+include __DIR__.'/../components/step.php'; ?>
                 </div>
                 <span class=" w-[42px] h-[2px] bg-gray-500"></span>
 
                 <div class="flex justify-center items-center">
                     <?php
-                    $status_step = 'done';
-                    $step_text = '2';
-                    include __DIR__ . '/../components/step.php' ?>
+$status_step = 'done';
+$step_text = '2';
+
+include __DIR__.'/../components/step.php'; ?>
 
 
 
@@ -120,9 +122,10 @@ $showCta = false;
 
                 <div class=" flex justify-center items-center">
                     <?php
-                    $status_step = 'current';
-                    $step_text = '3';
-                    include __DIR__ . '/../components/step.php' ?>
+$status_step = 'current';
+$step_text = '3';
+
+include __DIR__.'/../components/step.php'; ?>
 
                 </div>
 
@@ -130,9 +133,10 @@ $showCta = false;
 
                 <div class=" flex justify-center items-center">
                     <?php
-                    $status_step = 'wait';
-                    $step_text = '4';
-                    include __DIR__ . '/../components/step.php' ?>
+$status_step = 'wait';
+$step_text = '4';
+
+include __DIR__.'/../components/step.php'; ?>
 
                 </div>
 
@@ -159,7 +163,7 @@ $showCta = false;
     <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
         <h1 class="text-4xl  flex justify-center font-bold text-white mt-5">Riwayat Kunjungan</h1>
 
-        <p class="text-7xl font-black mt-30 text-white"><?php echo ($no_antrean) ?></p>
+        <p class="text-7xl font-black mt-30 text-white"><?php echo $no_antrean; ?></p>
         <p class="  text-white mt-6 ">Nomor yang dilayani saat ini</p>
 
 
@@ -173,9 +177,10 @@ $showCta = false;
                         <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
                         <div class="flex justify-end scale-90">
                             <?php
-                            $status_tag = ("negative");
-                            $label_tag = ("Ditangani");
-                            include __DIR__ . '/../components/tag.php' ?>
+        $status_tag = 'negative';
+$label_tag = 'Ditangani';
+
+include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     </div>
 
@@ -185,9 +190,10 @@ $showCta = false;
                         <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
                         <div class="flex justify-end scale-90">
                             <?php
-                            $status_tag = ("positive");
-                            $label_tag = ("Selesai");
-                            include __DIR__ . '/../components/tag.php' ?>
+$status_tag = 'positive';
+$label_tag = 'Selesai';
+
+include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     </div>
 
@@ -197,9 +203,10 @@ $showCta = false;
                         <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
                         <div class="flex justify-end scale-90">
                             <?php
-                            $status_tag = ("disabled");
-                            $label_tag = ("Dibatalkan");
-                            include __DIR__ . '/../components/tag.php' ?>
+$status_tag = 'disabled';
+$label_tag = 'Dibatalkan';
+
+include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     </div>
 
@@ -209,9 +216,10 @@ $showCta = false;
                         <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
                         <div class="flex justify-end scale-90">
                             <?php
-                            $status_tag = ("positive");
-                            $label_tag = ("Selesai");
-                            include __DIR__ . '/../components/tag.php' ?>
+$status_tag = 'positive';
+$label_tag = 'Selesai';
+
+include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     </div>
 
@@ -276,9 +284,10 @@ $showCta = false;
                 </div>
                 <div class="absolute scale-110 translate-y-59  ">
                     <?php
-                    $status_tag = ("negative");
-                    $label_tag = ("Ditangani");
-                    include __DIR__ . '/../components/tag.php' ?>
+                    $status_tag = 'negative';
+$label_tag = 'Ditangani';
+
+include __DIR__.'/../components/tag.php'; ?>
                 </div>
 
                 <p class="text-sm mt-6  text-black text-center">28 September 2026</p>
@@ -308,4 +317,4 @@ $showCta = false;
 
 </body>
 
-<?php include __DIR__ . '/../components/footer.php' ?>
+<?php include __DIR__.'/../components/footer.php'; ?>

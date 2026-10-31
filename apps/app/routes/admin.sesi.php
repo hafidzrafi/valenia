@@ -18,7 +18,7 @@ return [
 
         $current = null;
 
-        if (session_id() !== '') {
+        if ('' !== session_id()) {
             $sel = db()->prepare('SELECT id FROM sessions WHERE token_hash = :hash');
             $sel->execute(['hash' => hash('sha256', session_id())]);
             $found = $sel->fetch();
@@ -33,10 +33,10 @@ return [
         ]);
     },
 
-    'POST' => static function (Request $request): string|Response {
+    'POST' => static function (Request $request): Response {
         $id = request_input('id') ?? '';
 
-        if ($id === '') {
+        if ('' === $id) {
             return new Response(view('admin.sesi', [
                 'sessions' => list_sessions(),
                 'current' => null,
@@ -50,14 +50,14 @@ return [
         try {
             $current = null;
 
-            if (session_id() !== '') {
+            if ('' !== session_id()) {
                 $sel = db()->prepare('SELECT id FROM sessions WHERE token_hash = :hash');
                 $sel->execute(['hash' => hash('sha256', session_id())]);
                 $found = $sel->fetch();
                 $current = is_array($found) ? (string) $found['id'] : null;
             }
 
-            if ($current !== null && $id === $current) {
+            if (null !== $current && $id === $current) {
                 logout_user();
 
                 return redirect('/login');
@@ -76,7 +76,7 @@ return [
 
             return redirect('/admin/sesi');
         } catch (Throwable $exception) {
-            app_log('error', 'Cabut sesi gagal: ' . $exception->getMessage());
+            app_log('error', 'Cabut sesi gagal: '.$exception->getMessage());
 
             return new Response(view('admin.sesi', [
                 'sessions' => list_sessions(),

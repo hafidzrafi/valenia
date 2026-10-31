@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
     'GET' => static fn (): string => view('ganti-sandi', ['token' => csrf_token()]),
 
-    'POST' => static function (Request $request): string|Response {
+    'POST' => static function (Request $request): Response {
         $post = static fn (string $key): string => isset($_POST[$key]) && is_string($_POST[$key])
             ? $_POST[$key]
             : '';
@@ -30,7 +30,7 @@ return [
         try {
             $result = change_password((string) $request->attribute('user_id'), $current, $new);
         } catch (Throwable $exception) {
-            app_log('error', 'Ganti sandi gagal: ' . $exception->getMessage());
+            app_log('error', 'Ganti sandi gagal: '.$exception->getMessage());
 
             return new Response(view('ganti-sandi', [
                 'token' => csrf_token(),
@@ -47,6 +47,6 @@ return [
 
         $user = load_session_user((string) $request->attribute('user_id'));
 
-        return redirect(target_for_role($user === null ? 'perawat' : $user['role']));
+        return redirect(target_for_role(null === $user ? 'perawat' : $user['role']));
     },
 ];
