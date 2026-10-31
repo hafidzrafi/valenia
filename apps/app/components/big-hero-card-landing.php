@@ -19,7 +19,7 @@ $page = $page ?? '';
         <div class="absolute inset-0 bg-black/50"></div>
 
         <!-- Konten Teks -->
-        <div class="relative z-10 container mx-auto px-6 text-center text-white font-['SF_Pro_Display']">
+        <div class="relative z-10 container mx-auto px-6 text-center text-white font-landing">
             <h1 class="text-[96px] md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
                 <?php echo $heroTitle; ?>
             </h1>
@@ -57,7 +57,7 @@ $page = $page ?? '';
         <div class="absolute inset-0 bg-black/50"></div>
 
         <!-- Konten Teks -->
-        <div class="relative z-10 container mx-auto px-6 text-center text-white font-['SF_Pro_Display']">
+        <div class="relative z-10 container mx-auto px-6 text-center text-white font-landing">
             <h1 class="text-[96px] md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
                 <?php echo $heroTitle; ?>
             </h1>

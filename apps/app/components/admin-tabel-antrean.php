@@ -7,8 +7,8 @@ $statusClass = [
     'Ditangani' => 'bg-amber-500 text-white',
 ];
 ?>
-<section class="font-['Poppins']">
-    <h2 class="mb-[22px] ml-3 font-['Oswald'] text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian Aktif</h2>
+<section class="font-sans">
+    <h2 class="mb-[22px] ml-3 font-display text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian Aktif</h2>
 
     <div class="smooth-corners-sm w-full overflow-hidden bg-[#f0fffb] pb-[7px] shadow-[0_4px_14px_rgba(30,110,95,0.18)]"
         style="border-radius: 24px;">

@@ -2,8 +2,8 @@
 $adminNama = $adminNama ?? 'Petugas Admin';
 $adminUnit = $adminUnit ?? 'Poliklinik Polinema';
 ?>
-<header class="relative pt-[30px] font-['Poppins']">
-    <h1 class="font-['Oswald'] text-[63px] font-bold leading-[75px] tracking-[0.5px] text-[#379a89]">Dashboard Admin</h1>
+<header class="relative pt-[30px] font-sans">
+    <h1 class="font-display text-[63px] font-bold leading-[75px] tracking-[0.5px] text-[#379a89]">Dashboard Admin</h1>
     <p class="text-[22px] font-medium leading-[30px] text-[#379a89]">Layanan Poliklinik Politeknik Negeri Malang</p>
 
     <div class="absolute right-0 top-[27px] flex h-[41px] w-[137px] items-center gap-[7px] rounded-full bg-white pl-[6px]">

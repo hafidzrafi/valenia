@@ -9,9 +9,9 @@ $ringkasan = [
     ['label' => 'Konseling', 'jumlah' => $perPoli['Konseling'] ?? 0, 'icon' => 'ph-brain'],
 ];
 ?>
-<section class="smooth-corners-lg h-[292px] w-[292px] shrink-0 border-2 border-white/60 bg-white/40 px-6 pt-[17px] shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md font-['Poppins']"
+<section class="smooth-corners-lg h-[292px] w-[292px] shrink-0 border-2 border-white/60 bg-white/40 px-6 pt-[17px] shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md font-sans"
     style="border-radius: 60px;">
-    <h2 class="mb-[14px] text-center font-['Oswald'] text-[28px] font-semibold leading-[34px] text-[#379a89]">Ringkasan Antrian</h2>
+    <h2 class="mb-[14px] text-center font-display text-[28px] font-semibold leading-[34px] text-[#379a89]">Ringkasan Antrian</h2>
     <div class="grid grid-cols-2 gap-4">
         <?php foreach ($ringkasan as $item) { ?>
             <div class="flex h-[90px] items-center gap-[7px] bg-[#effcf8] pl-4" style="border-radius: 24px;">

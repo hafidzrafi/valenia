@@ -11,7 +11,7 @@ $menu = [
     ['key' => 'profil', 'label' => 'Profil', 'icon' => 'ph-user-circle', 'href' => '#'],
 ];
 ?>
-<aside class="sticky top-0 z-10 flex h-screen w-64 shrink-0 flex-col justify-between bg-white px-[11px] pb-4 font-['Poppins']">
+<aside class="sticky top-0 z-10 flex h-screen w-64 shrink-0 flex-col justify-between bg-white px-[11px] pb-4 font-sans">
     <div>
         <div class="mb-[17px] flex items-center gap-4 pl-3 pt-6">
             <img src="/images/valenia-logo.svg" alt="VALENIA" class="h-[41px] w-[57px] object-contain"

@@ -5,7 +5,7 @@
             <div class="size-16 relative overflow-hidden flex items-center justify-center">
                 <img src="/images/valenia-logo.svg" alt="Logo Perusahaan" class="w-full h-full object-contain brightness-0 invert" />
             </div>
-            <span class="text-white text-2xl font-light font-stretch:expanded font-['SF_Pro_Display']">
+            <span class="text-white text-2xl font-light font-stretch:expanded font-landing">
                 VALENIA
             </span>
         </div>
@@ -53,14 +53,14 @@
     <!-- kode radit -->
     <?php /* $u = current_user(); ?>
         <?php if ($u === null): ?>
-            <a href="/login" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-['SF_Pro_Display'] transition-colors">Masuk</a>
+            <a href="/login" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-landing transition-colors">Masuk</a>
         <?php else: ?>
             <?php if (($u['role'] ?? '') === 'admin'): ?>
-                <a href="/admin" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-['SF_Pro_Display'] transition-colors">Admin</a>
+                <a href="/admin" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-landing transition-colors">Admin</a>
             <?php endif; ?>
-            <span class="text-white text-base font-['SF_Pro_Display']"><?= e($u['username']) ?></span>
+            <span class="text-white text-base font-landing"><?= e($u['username']) ?></span>
             <form method="POST" action="/logout" class="inline">
                 <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
-                <button type="submit" class="smooth-corners-md rounded-3xl px-5 py-3 bg-slate-900 hover:bg-slate-700 text-white text-base font-['SF_Pro_Display'] transition-colors">Keluar</button>
+                <button type="submit" class="smooth-corners-md rounded-3xl px-5 py-3 bg-slate-900 hover:bg-slate-700 text-white text-base font-landing transition-colors">Keluar</button>
             </form>
         <?php endif;  */ ?>
