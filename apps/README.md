@@ -150,7 +150,6 @@ composer test:integration
 ```
 
 Integration tests need a migrated `valenia_test` database and `RUN_DB_TESTS=1`.
-See `docs/guides/src/11-testing.typ` for the setup.
 
 ## Notes
 
