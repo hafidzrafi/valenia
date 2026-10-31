@@ -15,7 +15,7 @@ concurrency:
 jobs:
   quality:
     name: PHP quality gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps
@@ -75,14 +75,14 @@ jobs:
 
   assets:
     name: Asset build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
