@@ -15,10 +15,9 @@ $kehadiranMedis = [
 $active = 'dashboard';
 $token  = function_exists('csrf_token') ? csrf_token() : '';
 
-// Data untuk pill profil di header
-$role       = $role ?? 'admin';
-$adminNama  = 'Petugas ' . ucfirst($role);
-$adminUnit  = 'Poliklinik Polinema';
+$role      = $role ?? 'admin';
+$adminNama = 'Petugas ' . ucfirst($role);
+$adminUnit = 'Poliklinik Polinema';
 ?>
 <div class="flex min-h-screen flex-col lg:flex-row">
     <?php include __DIR__ . '/../components/admin-sidebar.php'; ?>
@@ -26,18 +25,20 @@ $adminUnit  = 'Poliklinik Polinema';
     <div class="flex min-h-screen min-w-0 flex-1 flex-col"
          style="background: radial-gradient(circle at 85% 15%, rgba(160,215,205,0.7) 0%, transparent 50%), linear-gradient(135deg, #a9dcb0 0%, #88cebb 50%, #3fa896 100%);">
 
-        <?php include __DIR__ . '/../components/admin-header.php'; ?>
+        <div class="mx-auto flex w-full max-w-[1080px] flex-1 flex-col px-8 pb-10">
+            <?php include __DIR__ . '/../components/admin-header.php'; ?>
 
-        <main class="flex-1 pb-8 pl-[46px] pr-6 pt-[21px]">
-            <div class="ml-[38px] flex flex-wrap items-end gap-x-[82px] gap-y-6">
-                <?php include __DIR__ . '/../components/admin-ringkasan-antrian.php'; ?>
-                <?php include __DIR__ . '/../components/admin-kehadiran-medis.php'; ?>
-            </div>
+            <main class="mt-[21px]">
+                <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
+                    <?php include __DIR__ . '/../components/admin-ringkasan-antrian.php'; ?>
+                    <?php include __DIR__ . '/../components/admin-kehadiran-medis.php'; ?>
+                </div>
 
-            <div class="mt-8">
-                <?php include __DIR__ . '/../components/admin-tabel-antrean.php'; ?>
-            </div>
-        </main>
+                <div class="mt-8">
+                    <?php include __DIR__ . '/../components/admin-tabel-antrean.php'; ?>
+                </div>
+            </main>
+        </div>
 
         <?php include __DIR__ . '/../components/admin-footer.php'; ?>
     </div>

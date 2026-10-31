@@ -8,10 +8,10 @@ $statusClass = [
 ];
 ?>
 <section class="font-['Poppins']">
-    <h2 class="mb-[22px] ml-[6px] font-['Oswald'] text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian Aktif</h2>
+    <h2 class="mb-[22px] ml-3 font-['Oswald'] text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian Aktif</h2>
 
-    <div class="smooth-corners-lg ml-[30px] w-[996px] max-w-full overflow-hidden bg-[#f0fffb] pb-[7px] shadow-[0_4px_14px_rgba(30,110,95,0.18)]"
-        style="border-radius: 62px;">
+    <div class="smooth-corners-sm w-full overflow-hidden bg-[#f0fffb] pb-[7px] shadow-[0_4px_14px_rgba(30,110,95,0.18)]"
+        style="border-radius: 24px;">
         <table class="ml-[27px] w-[calc(100%-27px)] table-fixed border-collapse text-left text-[13px] text-black">
             <colgroup>
                 <col style="width:142px"><col style="width:210px"><col style="width:271px"><col style="width:154px"><col>

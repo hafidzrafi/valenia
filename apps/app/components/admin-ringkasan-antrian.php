@@ -18,9 +18,9 @@ $ringkasan = [
                 <div class="flex size-[35px] shrink-0 items-center justify-center rounded-full bg-[#d9f5ec]">
                     <i class="ph <?= e($item['icon']) ?> text-[24px] text-slate-900"></i>
                 </div>
-                <div class="leading-tight">
-                    <p class="w-min text-[10px] font-normal text-slate-600"><?= e($item['label']) ?></p>
-                    <p class="mt-0.5 text-base font-semibold text-slate-900"><?= (int) $item['jumlah'] ?></p>
+                <div>
+                    <p class="h-[24px] w-min text-[10px] font-normal leading-[12px] text-slate-600"><?= e($item['label']) ?></p>
+                    <p class="mt-1 text-base font-semibold leading-none text-slate-900"><?= (int) $item['jumlah'] ?></p>
                 </div>
             </div>
         <?php endforeach; ?>
