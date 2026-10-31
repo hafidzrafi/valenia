@@ -20,7 +20,7 @@
 
 <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
     <main>
-        <?= $content ?>
+        <?php echo $content; ?>
     </main>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.0/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/morph@3.17.0/dist/cdn.min.js"></script>

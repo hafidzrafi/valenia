@@ -11,8 +11,8 @@ $adminUnit = $adminUnit ?? 'Poliklinik Polinema';
             <i class="ph ph-user text-[18px] text-white"></i>
         </div>
         <div class="leading-tight">
-            <p class="text-[11px] font-semibold text-teal-600"><?= e($adminNama) ?></p>
-            <p class="text-[9px] text-teal-600"><?= e($adminUnit) ?></p>
+            <p class="text-[11px] font-semibold text-teal-600"><?php echo e($adminNama); ?></p>
+            <p class="text-[9px] text-teal-600"><?php echo e($adminUnit); ?></p>
         </div>
     </div>
 </header>
