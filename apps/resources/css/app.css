@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap");
+@import url("https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css");
+
 @import "tailwindcss" source(none);
 /* plugin for corner smoothing*/
 

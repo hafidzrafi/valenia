@@ -1,19 +1,45 @@
 <?php
-/** @var string $user */
-/** @var string $role */
-/** @var string $token */
+$antreanAktif = [
+    ['no' => 'A-01', 'nama' => 'Raditya M.', 'nim' => '254107020102', 'poli' => 'Umum',      'status' => 'Selesai'],
+    ['no' => 'A-02', 'nama' => 'Galuh p.',   'nim' => '254107020127', 'poli' => 'Umum',      'status' => 'Menunggu'],
+    ['no' => 'A-03', 'nama' => 'Findi f.',   'nim' => '254107020016', 'poli' => 'Konseling', 'status' => 'Ditangani'],
+    ['no' => 'A-04', 'nama' => 'M. hafidz',  'nim' => '254107020084', 'poli' => 'Konseling', 'status' => 'Selesai'],
+];
+
+$kehadiranMedis = [
+    ['poli' => 'Poli Umum', 'jam' => '10:00:00 WIB', 'hadir' => true],
+    ['poli' => 'Poli Gigi', 'jam' => '-',            'hadir' => false],
+    ['poli' => 'Konseling', 'jam' => '10:00:00 WIB', 'hadir' => true],
+];
+
+$active = 'dashboard';
+$token  = function_exists('csrf_token') ? csrf_token() : '';
+
+$role      = $role ?? 'admin';
+$adminNama = 'Petugas ' . ucfirst($role);
+$adminUnit = 'Poliklinik Polinema';
 ?>
-<h1 class="text-xl font-bold">Area Admin</h1>
-<p class="mt-2 text-slate-600 text-sm">
-    Masuk sebagai <strong><?= e($user) ?></strong> (<?= e($role) ?>).
-</p>
+<div class="flex min-h-screen flex-col lg:flex-row">
+    <?php include __DIR__ . '/../components/admin-sidebar.php'; ?>
 
-<ul class="mt-4 space-y-2 text-sm">
-    <li><a class="text-teal-700 underline" href="/admin/pengguna">Kelola akun pengguna</a></li>
-    <li><a class="text-teal-700 underline" href="/admin/sesi">Kelola sesi aktif</a></li>
-</ul>
+    <div class="flex min-h-screen min-w-0 flex-1 flex-col"
+         style="background: radial-gradient(circle at 85% 15%, rgba(160,215,205,0.7) 0%, transparent 50%), linear-gradient(135deg, #a9dcb0 0%, #88cebb 50%, #3fa896 100%);">
 
-<form method="POST" action="/logout" class="mt-4">
-    <input type="hidden" name="_token" value="<?= e($token) ?>">
-    <button type="submit" class="bg-slate-900 text-white rounded px-3 py-1 text-sm">Keluar</button>
-</form>
+        <div class="mx-auto flex w-full max-w-[1080px] flex-1 flex-col px-8 pb-10">
+            <?php include __DIR__ . '/../components/admin-header.php'; ?>
+
+            <main class="mt-[21px]">
+                <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
+                    <?php include __DIR__ . '/../components/admin-ringkasan-antrian.php'; ?>
+                    <?php include __DIR__ . '/../components/admin-kehadiran-medis.php'; ?>
+                </div>
+
+                <div class="mt-8">
+                    <?php include __DIR__ . '/../components/admin-tabel-antrean.php'; ?>
+                </div>
+            </main>
+        </div>
+
+        <?php include __DIR__ . '/../components/admin-footer.php'; ?>
+    </div>
+</div>
