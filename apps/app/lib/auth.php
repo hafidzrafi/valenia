@@ -14,7 +14,6 @@ declare(strict_types=1);
  *   - failed attempt    -> UPDATE on credentials (failed_attempts counter)
  *   - logout / revoke   -> DELETE on sessions
  */
-
 const AUTH_MAX_FAILED_ATTEMPTS = 5;
 const AUTH_LOCK_MINUTES = 15;
 const AUTH_PASSWORD_MIN_LENGTH = 8;
@@ -25,9 +24,11 @@ const AUTH_PASSWORD_MIN_LENGTH = 8;
  */
 final class Auth
 {
+    /** @var null|array<string, mixed> */
     public static ?array $user = null;
 }
 
+/** @return null|array<string, mixed> */
 function current_user(): ?array
 {
     return Auth::$user;
@@ -40,7 +41,7 @@ function current_user(): ?array
  */
 function is_public_path(string $path): bool
 {
-    return in_array($path, ['', 'login', 'logout', 'greeting' , 'form' , 'ambil-tiket' , 'muncul-qr' ,'portal-pasien' ,'form-riwayat' ], true);
+    return in_array($path, ['', 'login', 'logout', 'greeting', 'form', 'ambil-tiket', 'muncul-qr', 'portal-pasien', 'form-riwayat'], true);
 }
 
 /**
@@ -61,9 +62,9 @@ function audit_log(
     $stmt->bindValue(':table', $table);
     $stmt->bindValue(':row', $rowId);
     $stmt->bindValue(':action', $action);
-    $stmt->bindValue(':actor', $actorId, $actorId === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-    $stmt->bindValue(':old', $oldJson, $oldJson === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-    $stmt->bindValue(':new', $newJson, $newJson === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+    $stmt->bindValue(':actor', $actorId, null === $actorId ? PDO::PARAM_NULL : PDO::PARAM_STR);
+    $stmt->bindValue(':old', $oldJson, null === $oldJson ? PDO::PARAM_NULL : PDO::PARAM_STR);
+    $stmt->bindValue(':new', $newJson, null === $newJson ? PDO::PARAM_NULL : PDO::PARAM_STR);
     $stmt->execute();
 }
 
@@ -86,7 +87,7 @@ function record_auth_event(string $event, ?string $username, ?string $userId = n
             'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
         ]);
     } catch (Throwable $exception) {
-        app_log('error', 'Gagal menulis auth_events: ' . $exception->getMessage());
+        app_log('error', 'Gagal menulis auth_events: '.$exception->getMessage());
     }
 }
 
@@ -104,6 +105,8 @@ function hash_password(string $password): string
  * Generic on purpose: callers must not distinguish an unknown username from a
  * wrong password (FR-AUTH-01). Returns:
  *   ['ok' => bool, 'user' => ?array, 'locked' => bool, 'must_change' => bool]
+ *
+ * @return array{ok: bool, user: null|array<string, mixed>, locked: bool, must_change: bool}
  */
 function authenticate(string $username, string $password): array
 {
@@ -122,14 +125,14 @@ function authenticate(string $username, string $password): array
 
     if (!is_array($row) || !$row['is_active']) {
         record_auth_event('login_failure', $username);
-        app_log('warning', 'Login gagal (akun tidak dikenal/nonaktif): ' . log_safe($username));
+        app_log('warning', 'Login gagal (akun tidak dikenal/nonaktif): '.log_safe($username));
 
         return $result;
     }
 
-    if ($row['locked_until'] !== null && strtotime((string) $row['locked_until']) > time()) {
+    if (null !== $row['locked_until'] && strtotime((string) $row['locked_until']) > time()) {
         record_auth_event('locked', $username, (string) $row['id']);
-        app_log('warning', 'Login ditolak (akun terkunci): ' . log_safe($username));
+        app_log('warning', 'Login ditolak (akun terkunci): '.log_safe($username));
 
         $result['locked'] = true;
 
@@ -165,10 +168,11 @@ function authenticate(string $username, string $password): array
             $pdo->commit();
         } catch (Throwable $exception) {
             $pdo->rollBack();
+
             throw $exception;
         }
 
-        app_log('warning', 'Login gagal (kata sandi salah): ' . log_safe($username));
+        app_log('warning', 'Login gagal (kata sandi salah): '.log_safe($username));
 
         if ($failed >= AUTH_MAX_FAILED_ATTEMPTS) {
             $result['locked'] = true;
@@ -193,11 +197,12 @@ function authenticate(string $username, string $password): array
         $pdo->prepare(
             'UPDATE credentials
              SET failed_attempts = 0, locked_until = NULL, last_login_at = now(), updated_at = now()'
-            . $rehash . ' WHERE id = :id'
+            .$rehash.' WHERE id = :id'
         )->execute($params);
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 
@@ -217,6 +222,8 @@ function authenticate(string $username, string $password): array
 /**
  * Create the session for an authenticated user and audit it.
  * Returns the sessions-row id. Regenerates the token to prevent fixation.
+ *
+ * @param array<string, mixed> $user
  */
 function login_user(array $user): string
 {
@@ -252,7 +259,7 @@ function logout_user(): void
     $rowId = null;
     $actorId = null;
 
-    if ($sessionId !== '') {
+    if ('' !== $sessionId) {
         $sel = db()->prepare('SELECT id, user_id FROM sessions WHERE token_hash = :hash');
         $sel->execute(['hash' => hash('sha256', $sessionId)]);
         $found = $sel->fetch();
@@ -263,25 +270,25 @@ function logout_user(): void
         }
     }
 
-    if ($actorId !== null) {
+    if (null !== $actorId) {
         record_auth_event('logout', null, $actorId);
     }
 
     $_SESSION = [];
 
-    if ($sessionId !== '') {
+    if ('' !== $sessionId) {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', [
             'expires' => 1,
-            'path' => is_string($params['path'] ?? null) ? $params['path'] : '/',
+            'path' => $params['path'],
             'httponly' => true,
             'samesite' => 'Lax',
-            'secure' => env('APP_ENV') === 'production',
+            'secure' => 'production' === env('APP_ENV'),
         ]);
         session_destroy();
     }
 
-    if ($rowId !== null) {
+    if (null !== $rowId) {
         audit_log('sessions', $rowId, 'DELETE', $actorId);
     }
 }
@@ -292,12 +299,14 @@ function logout_user(): void
  * Validates the session row (exists, not expired, not idle), the account still
  * being active, refreshes last_seen_at, and publishes the actor for the audit
  * trail / future RLS (app.actor_id, app.actor_role) on this connection.
+ *
+ * @return null|array<string, mixed>
  */
 function load_session_user(string $userId): ?array
 {
     $sessionId = session_id();
 
-    if ($sessionId === '') {
+    if ('' === $sessionId) {
         return null;
     }
 
@@ -330,7 +339,8 @@ function load_session_user(string $userId): ?array
     }
 
     db()->prepare('UPDATE sessions SET last_seen_at = now() WHERE id = :id')
-        ->execute(['id' => $row['session_row_id']]);
+        ->execute(['id' => $row['session_row_id']])
+    ;
 
     $actor = db()->prepare("SELECT set_config('app.actor_id', :id, false), set_config('app.actor_role', :role, false)");
     $actor->execute(['id' => (string) $row['id'], 'role' => (string) $row['role']]);
@@ -350,14 +360,14 @@ function clear_session_data(): void
 {
     $_SESSION = [];
 
-    if (session_id() !== '') {
+    if ('' !== session_id()) {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', [
             'expires' => 1,
-            'path' => is_string($params['path'] ?? null) ? $params['path'] : '/',
+            'path' => $params['path'],
             'httponly' => true,
             'samesite' => 'Lax',
-            'secure' => env('APP_ENV') === 'production',
+            'secure' => 'production' === env('APP_ENV'),
         ]);
         session_destroy();
     }
@@ -366,12 +376,14 @@ function clear_session_data(): void
 /** Where a role lands after login: admins to /admin, everyone else to /. */
 function target_for_role(string $role): string
 {
-    return $role === 'admin' ? '/admin' : '/';
+    return 'admin' === $role ? '/admin' : '/';
 }
 
 /**
  * Change a user's password. Returns ['ok' => bool, 'error' => ?string].
  * Also clears lockout state and revokes every *other* session.
+ *
+ * @return array{ok: bool, error: ?string}
  */
 function change_password(string $userId, string $current, string $new): array
 {
@@ -411,30 +423,35 @@ function change_password(string $userId, string $current, string $new): array
 
         $currentRow = null;
 
-        if (session_id() !== '') {
+        if ('' !== session_id()) {
             $sel = $pdo->prepare('SELECT id FROM sessions WHERE token_hash = :hash');
             $sel->execute(['hash' => hash('sha256', session_id())]);
             $found = $sel->fetch();
             $currentRow = is_array($found) ? (string) $found['id'] : null;
         }
 
-        if ($currentRow === null) {
+        if (null === $currentRow) {
             $pdo->prepare('DELETE FROM sessions WHERE user_id = :user')->execute(['user' => $userId]);
         } else {
             $pdo->prepare('DELETE FROM sessions WHERE user_id = :user AND id != :keep')
-                ->execute(['user' => $userId, 'keep' => $currentRow]);
+                ->execute(['user' => $userId, 'keep' => $currentRow])
+            ;
         }
 
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 
     return ['ok' => true, 'error' => null];
 }
 
-/** All accounts, newest-relevant fields for the admin overview. */
+/** All accounts, newest-relevant fields for the admin overview.
+ *
+ * @return list<array<string, mixed>>
+ */
 function list_users(): array
 {
     return db()->query(
@@ -450,17 +467,19 @@ function list_users(): array
 /**
  * Create an account (admin only). Returns ['ok' => bool, 'error' => ?string].
  * New accounts must change their password on first login.
+ *
+ * @return array{ok: bool, error: ?string}
  */
 function create_user(string $username, string $fullName, string $role, string $password, string $actorId): array
 {
     $username = trim($username);
     $fullName = trim($fullName);
 
-    if ($username === '' || $fullName === '') {
+    if ('' === $username || '' === $fullName) {
         return ['ok' => false, 'error' => 'Nama pengguna dan nama lengkap wajib diisi.'];
     }
 
-    if ($role !== 'admin' && $role !== 'perawat') {
+    if ('admin' !== $role && 'perawat' !== $role) {
         return ['ok' => false, 'error' => 'Peran tidak dikenal.'];
     }
 
@@ -488,7 +507,7 @@ function create_user(string $username, string $fullName, string $role, string $p
     } catch (Throwable $exception) {
         $pdo->rollBack();
 
-        if ($exception instanceof PDOException && $exception->getCode() === '23505') {
+        if ($exception instanceof PDOException && '23505' === $exception->getCode()) {
             return ['ok' => false, 'error' => 'Nama pengguna sudah dipakai.'];
         }
 
@@ -509,14 +528,15 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
         $sel->execute(['id' => $userId]);
         $old = $sel->fetchColumn();
 
-        if ($old === false) {
+        if (false === $old) {
             $pdo->rollBack();
 
             return false;
         }
 
         $pdo->prepare('UPDATE users SET is_active = :active WHERE id = :id')
-            ->execute(['active' => $active, 'id' => $userId]);
+            ->execute(['active' => $active, 'id' => $userId])
+        ;
         audit_log(
             'users',
             $userId,
@@ -528,6 +548,7 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 
@@ -537,6 +558,8 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
 /**
  * Reset a password to one supplied by the admin. Returns ['ok' => bool, 'error' => ?string].
  * The account must change the password on the next login.
+ *
+ * @return array{ok: bool, error: ?string}
  */
 function reset_user_password(string $userId, string $newPassword, string $actorId): array
 {
@@ -569,13 +592,17 @@ function reset_user_password(string $userId, string $newPassword, string $actorI
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 
     return ['ok' => true, 'error' => null];
 }
 
-/** Active sessions (non-expired), newest activity first. */
+/** Active sessions (non-expired), newest activity first.
+ *
+ * @return list<array<string, mixed>>
+ */
 function list_sessions(): array
 {
     return db()->query(
@@ -610,6 +637,7 @@ function revoke_session(string $sessionRowId, string $actorId): bool
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 

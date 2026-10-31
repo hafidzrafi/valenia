@@ -6,18 +6,14 @@
  * IMPORTANT: this is a complete <html> document, not a content partial. Render
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
- *
  */
-
-
-
 $isform = true;
 
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 
 
@@ -36,7 +32,7 @@ include __DIR__ . '/../components/background-img.php';
         <form class="flex flex-col gap-2 items-center mt-10" method="POST" action="/portal-pasien"
             onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir');">
 
-            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
 
             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[250px] relative gap-1"
                 x-data="{ 
@@ -117,7 +113,7 @@ include __DIR__ . '/../components/background-img.php';
 
 
     <div>
-        <?php include __DIR__ . '/../components/subfooter.php'; ?>
+        <?php include __DIR__.'/../components/subfooter.php'; ?>
     </div>
 
 </div>

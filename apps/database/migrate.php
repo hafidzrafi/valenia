@@ -18,10 +18,11 @@ declare(strict_types=1);
  *   fresh     drop the public schema and re-apply everything (development only)
  */
 
-require_once __DIR__ . '/../app/lib/config.php';
-require_once __DIR__ . '/../app/lib/db.php';
+require_once __DIR__.'/../app/lib/config.php';
 
-const MIGRATIONS_DIR = __DIR__ . '/migrations';
+require_once __DIR__.'/../app/lib/db.php';
+
+const MIGRATIONS_DIR = __DIR__.'/migrations';
 const MIGRATIONS_TABLE = 'schema_migrations';
 
 /** Fixed, arbitrary key used for the session-level advisory lock. */
@@ -34,7 +35,7 @@ const ADVISORY_LOCK_KEY = 728461;
  */
 function migration_files(string $dir): array
 {
-    $files = glob($dir . '/*.sql') ?: [];
+    $files = glob($dir.'/*.sql') ?: [];
 
     $files = array_values(array_filter(
         $files,
@@ -62,12 +63,12 @@ function checksum_of(string $file): string
 function ensure_table(PDO $pdo): void
 {
     $pdo->exec(
-        'CREATE TABLE IF NOT EXISTS ' . MIGRATIONS_TABLE . ' ('
-        . ' version TEXT PRIMARY KEY,'
-        . ' checksum TEXT NOT NULL,'
-        . ' applied_at TIMESTAMPTZ NOT NULL DEFAULT now(),'
-        . ' execution_ms INTEGER NOT NULL DEFAULT 0'
-        . ')'
+        'CREATE TABLE IF NOT EXISTS '.MIGRATIONS_TABLE.' ('
+        .' version TEXT PRIMARY KEY,'
+        .' checksum TEXT NOT NULL,'
+        .' applied_at TIMESTAMPTZ NOT NULL DEFAULT now(),'
+        .' execution_ms INTEGER NOT NULL DEFAULT 0'
+        .')'
     );
 }
 
@@ -79,7 +80,7 @@ function ensure_table(PDO $pdo): void
 function applied_migrations(PDO $pdo): array
 {
     $rows = $pdo->query(
-        'SELECT version, checksum FROM ' . MIGRATIONS_TABLE . ' ORDER BY version'
+        'SELECT version, checksum FROM '.MIGRATIONS_TABLE.' ORDER BY version'
     )->fetchAll();
 
     $map = [];
@@ -93,12 +94,12 @@ function applied_migrations(PDO $pdo): array
 
 function lock(PDO $pdo): void
 {
-    $pdo->exec('SELECT pg_advisory_lock(' . ADVISORY_LOCK_KEY . ')');
+    $pdo->exec('SELECT pg_advisory_lock('.ADVISORY_LOCK_KEY.')');
 }
 
 function unlock(PDO $pdo): void
 {
-    $pdo->exec('SELECT pg_advisory_unlock(' . ADVISORY_LOCK_KEY . ')');
+    $pdo->exec('SELECT pg_advisory_unlock('.ADVISORY_LOCK_KEY.')');
 }
 
 /**
@@ -138,12 +139,13 @@ function apply_migration(PDO $pdo, string $file): int
         $elapsed = (int) round((microtime(true) - $start) * 1000);
 
         $pdo->prepare(
-            'INSERT INTO ' . MIGRATIONS_TABLE . ' (version, checksum, execution_ms) VALUES (?, ?, ?)'
+            'INSERT INTO '.MIGRATIONS_TABLE.' (version, checksum, execution_ms) VALUES (?, ?, ?)'
         )->execute([$version, checksum_of($file), $elapsed]);
 
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
+
         throw $exception;
     }
 
@@ -157,8 +159,8 @@ function command_up(PDO $pdo): int
 
     $drift = drift_of($files, $applied);
 
-    if ($drift !== []) {
-        fwrite(STDERR, 'Drift: migrasi yang sudah diterapkan telah diubah: ' . implode(', ', $drift) . "\n");
+    if ([] !== $drift) {
+        fwrite(STDERR, 'Drift: migrasi yang sudah diterapkan telah diubah: '.implode(', ', $drift)."\n");
         fwrite(STDERR, "Jangan mengubah berkas migrasi yang sudah diterapkan; buat migrasi baru.\n");
 
         return 1;
@@ -169,7 +171,7 @@ function command_up(PDO $pdo): int
         static fn (string $file): bool => !isset($applied[version_of($file)]),
     ));
 
-    if ($pending === []) {
+    if ([] === $pending) {
         fwrite(STDOUT, "Tidak ada migrasi baru. Basis data sudah terbaru.\n");
 
         return 0;
@@ -184,7 +186,7 @@ function command_up(PDO $pdo): int
             try {
                 $milliseconds = apply_migration($pdo, $file);
             } catch (Throwable $exception) {
-                fwrite(STDERR, "  GAGAL {$version}: " . $exception->getMessage() . "\n");
+                fwrite(STDERR, "  GAGAL {$version}: ".$exception->getMessage()."\n");
 
                 return 1;
             }
@@ -195,7 +197,7 @@ function command_up(PDO $pdo): int
         unlock($pdo);
     }
 
-    fwrite(STDOUT, 'Migrasi selesai: ' . count($pending) . " berkas diterapkan.\n");
+    fwrite(STDOUT, 'Migrasi selesai: '.count($pending)." berkas diterapkan.\n");
 
     return 0;
 }
@@ -215,8 +217,8 @@ function command_status(PDO $pdo): int
 
         $at = '';
 
-        if ($status === 'applied') {
-            $row = $pdo->prepare('SELECT applied_at FROM ' . MIGRATIONS_TABLE . ' WHERE version = ?');
+        if ('applied' === $status) {
+            $row = $pdo->prepare('SELECT applied_at FROM '.MIGRATIONS_TABLE.' WHERE version = ?');
             $row->execute([$version]);
             $at = (string) ($row->fetchColumn() ?: '');
         }
@@ -236,17 +238,17 @@ function command_status(PDO $pdo): int
 function command_rollback(PDO $pdo): int
 {
     $version = $pdo->query(
-        'SELECT version FROM ' . MIGRATIONS_TABLE . ' ORDER BY version DESC LIMIT 1'
+        'SELECT version FROM '.MIGRATIONS_TABLE.' ORDER BY version DESC LIMIT 1'
     )->fetchColumn();
 
-    if ($version === false) {
+    if (false === $version) {
         fwrite(STDOUT, "Tidak ada migrasi untuk dibatalkan.\n");
 
         return 0;
     }
 
     $version = (string) $version;
-    $down = MIGRATIONS_DIR . '/' . $version . '.down.sql';
+    $down = MIGRATIONS_DIR.'/'.$version.'.down.sql';
 
     if (!is_file($down)) {
         fwrite(STDERR, "Berkas rollback tidak ditemukan: {$version}.down.sql\n");
@@ -261,11 +263,11 @@ function command_rollback(PDO $pdo): int
 
         try {
             $pdo->exec((string) file_get_contents($down));
-            $pdo->prepare('DELETE FROM ' . MIGRATIONS_TABLE . ' WHERE version = ?')->execute([$version]);
+            $pdo->prepare('DELETE FROM '.MIGRATIONS_TABLE.' WHERE version = ?')->execute([$version]);
             $pdo->commit();
         } catch (Throwable $exception) {
             $pdo->rollBack();
-            fwrite(STDERR, "Rollback {$version} gagal: " . $exception->getMessage() . "\n");
+            fwrite(STDERR, "Rollback {$version} gagal: ".$exception->getMessage()."\n");
 
             return 1;
         }
@@ -280,7 +282,7 @@ function command_rollback(PDO $pdo): int
 
 function command_fresh(PDO $pdo): int
 {
-    if (env('APP_ENV') === 'production') {
+    if ('production' === env('APP_ENV')) {
         fwrite(STDERR, "Perintah fresh dilarang pada lingkungan produksi.\n");
 
         return 1;
@@ -314,7 +316,8 @@ $command = $argv[1] ?? 'up';
 try {
     $pdo = db();
 } catch (Throwable $exception) {
-    fwrite(STDERR, 'Gagal terhubung ke basis data: ' . $exception->getMessage() . "\n");
+    fwrite(STDERR, 'Gagal terhubung ke basis data: '.$exception->getMessage()."\n");
+
     exit(1);
 }
 
@@ -329,6 +332,7 @@ try {
         default => usage(),
     });
 } catch (Throwable $exception) {
-    fwrite(STDERR, 'Error: ' . $exception->getMessage() . "\n");
+    fwrite(STDERR, 'Error: '.$exception->getMessage()."\n");
+
     exit(1);
 }

@@ -6,18 +6,15 @@
  * IMPORTANT: this is a complete <html> document, not a content partial. Render
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
- *
  */
-
-
 $heroform = $heroform ?? ($_SESSION['heroform'] ?? 'Default');
 $isform = true;
 
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 ob_start();
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <body>
     <div class="m-13 ml-25 absolute">
@@ -39,24 +36,24 @@ ob_start();
     <div class="min-h-screen flex flex-col">
         <div class="grow flex items-center justify-center">
             <div class="w-280 h-88  flex flex-col smooth-corners-lg rounded-[64px] bg-white">
-                <h1 class="text-[64px] pt-5 pl-15 -mb-2.5 font-bold text-slate-900"> <?= e($heroform) ?> </h1>
+                <h1 class="text-[64px] pt-5 pl-15 -mb-2.5 font-bold text-slate-900"> <?php echo e($heroform); ?> </h1>
                 <span class="ml-15.5 w-[375px] h-[5px] mb-3 bg-slate-900"></span>
                 <p class="pl-15.5 text-[16px] text-black">Masukkan NIM atau NIP, tanggal lahir dan keluhan <br>
                     yang dialami pada form berikut</p>
                 <p class="pl-15.5 mt-17 text-[16px] text-black flex items-center gap-2">
                     Jam Operasional Layanan <i class="ph ph-clock text-black text-[18px]"></i>
                 </p>
-                <?php if ($heroform == "POLI UMUM" || $heroform == "POLI GIGI"): ?>
+                <?php if ('POLI UMUM' == $heroform || 'POLI GIGI' == $heroform) { ?>
                     <p class="pl-15.5 text-[16px] text-black">
                         Senin Kamis: 08.00-16.00 WIB <br>
                         Jumat: 08.00 16.30-WIB
                     </p>
-                <?php elseif ($heroform == "KONSELING"): ?>
+                <?php } elseif ('KONSELING' == $heroform) { ?>
                     <p class="pl-15.5 mt-3 text-[16px] text-black">
                         Selasa & Jumat 09:00-13:00 WIB
                     </p>
 
-                <?php endif ?>
+                <?php } ?>
 
                 <div
                     class="flex flex-col translate-x-120 translate-y-13 absolute justify-start items-center flex-grow-0 flex-shrink-0 h-[276px] w-[66px] gap-17">
@@ -79,16 +76,18 @@ ob_start();
                     <div class="flex justify-center items-center">
                         <?php
                         $status_step = 'current';
-                        $step_text = '1';
-                        include __DIR__ . '/../components/step.php' ?>
+$step_text = '1';
+
+include __DIR__.'/../components/step.php'; ?>
                     </div>
                     <span class=" w-[3px] h-[50px] bg-gray-500"></span>
 
                     <div class="flex justify-center items-center">
                         <?php
-                        $status_step = 'wait';
-                        $step_text = '2';
-                        include __DIR__ . '/../components/step.php' ?>
+$status_step = 'wait';
+$step_text = '2';
+
+include __DIR__.'/../components/step.php'; ?>
 
 
 
@@ -97,9 +96,10 @@ ob_start();
 
                     <div class=" flex justify-center items-center">
                         <?php
-                        $status_step = 'wait';
-                        $step_text = '3';
-                        include __DIR__ . '/../components/step.php' ?>
+$status_step = 'wait';
+$step_text = '3';
+
+include __DIR__.'/../components/step.php'; ?>
 
                     </div>
 
@@ -118,7 +118,7 @@ ob_start();
 
                     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/ambil-tiket">
 
-                        <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                         <div class="flex flex-row gap-6 justify-center">
                             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[180px] relative gap-1"
                                 x-data="{ 
@@ -215,7 +215,7 @@ ob_start();
         </div>
 
         <div>
-            <?php include __DIR__ . '/../components/subfooter.php'; ?>
+            <?php include __DIR__.'/../components/subfooter.php'; ?>
         </div>
     </div>
 
@@ -224,5 +224,6 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-include __DIR__ . '/../views/layout.php';
+
+include __DIR__.'/../views/layout.php';
 ?>

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 /** Immutable HTTP response value object plus a redirect helper. */
-
 final class Response
 {
     /**
@@ -13,10 +12,9 @@ final class Response
         public readonly string $body = '',
         public readonly int $status = 200,
         public readonly array $headers = [],
-    ) {
-    }
+    ) {}
 
-    public static function from(string|self $result): self
+    public static function from(self|string $result): self
     {
         return is_string($result) ? new self($result) : $result;
     }

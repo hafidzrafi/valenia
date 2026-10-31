@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: PHP quality gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps
+    services:
+      postgres:
+        image: postgres:18.6-alpine3.24
+        env:
+          POSTGRES_DB: valenia_test
+          POSTGRES_USER: valenia
+          POSTGRES_PASSWORD: valenia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U valenia"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: test
+      DB_DSN: pgsql:host=127.0.0.1;port=5432;dbname=valenia_test
+      DB_USER: valenia
+      DB_PASSWORD: valenia
+      RUN_DB_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5.12'
+          extensions: pdo_pgsql, pcov
+          coverage: pcov
+
+      - name: Assert PHP >= 8.5.12
+        run: |
+          php -r 'if (version_compare(PHP_VERSION, "8.5.12", "<")) {
+            fwrite(STDERR, "PHP >= 8.5.12 required, got " . PHP_VERSION . "\n");
+            exit(1);
+          }'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Apply migrations
+        run: php database/migrate.php up
+
+      - name: Seed reference data
+        run: php database/seed.php
+
+      - name: Code style
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: Static analysis
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Tests
+        run: vendor/bin/phpunit --coverage-text
+
+  assets:
+    name: Asset build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run css:build
+
+      - name: Assert CSS output
+        run: test -s public/assets/app.css

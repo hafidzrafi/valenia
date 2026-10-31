@@ -9,7 +9,6 @@ declare(strict_types=1);
  * until they set a new password. Anonymous visitors have no must_change
  * attribute, so public paths pass straight through.
  */
-
 Middleware::register('password', static function (Request $request, callable $next): Response {
     $exempt = ['ganti-sandi', 'logout'];
 

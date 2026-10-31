@@ -26,7 +26,7 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI UMUM">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Umum
                             </button>
@@ -34,7 +34,7 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI GIGI">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Gigi
                             </button>
@@ -42,17 +42,17 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="KONSELING">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Konseling dan Psikologi
                             </button>
                         </form>
 
-                        <?php if ($_SESSION['isguest'] == true): ?>
+                        <?php if (true == $_SESSION['isguest']) { ?>
                             <a href="/portal-pasien" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
-                        <?php else: ?>
+                        <?php } else { ?>
                             <a href="/form-riwayat" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
-                        <?php endif ?>
+                        <?php } ?>
 
                     </div>
                 </div>
