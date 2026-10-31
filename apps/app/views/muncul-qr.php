@@ -10,11 +10,13 @@
  */
 
 $heroform = $_SESSION['heroform'] ?? "Default";
+$isform = true;
 $no_antrean = $no_antrean ?? 'P-11';
-include __DIR__ . '/../components/background-img.php';
-ob_start();
-?>
+$_SESSION['isguest'] = true;
 
+include __DIR__ . '/../components/background-img.php';
+?>
+<?php include __DIR__ . '/../components/cursor.php';  ?>
 
 <body>
 
@@ -50,9 +52,9 @@ ob_start();
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
-                            <button type="button" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
-                                <p class="text-base font-semibold ">Cek Riwayat</p>
-                            </button>
+                            <a href="/portal-pasien" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
+                                <p class="text-base font-semibold">Cek Riwayat</p>
+                            </a>
                             <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
                                 <p class="text-base font-semibold text-white">Unduh</p>
                                 <i class="ph ph-download-simple text-white text-[18px]"></i>
@@ -73,7 +75,3 @@ ob_start();
 </body>
 
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/../views/layout.php';
-?>

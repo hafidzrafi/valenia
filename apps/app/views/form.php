@@ -11,18 +11,21 @@
 
 
 $heroform = $heroform ?? ($_SESSION['heroform'] ?? 'Default');
+$isform = true;
 
 include __DIR__ . '/../components/background-img.php';
 ob_start();
 ?>
 
+<?php include __DIR__ . '/../components/cursor.php'; ?>
 
 <body>
     <div class="m-13 ml-25 absolute">
         <nav class="w-70 h-10 gap-2.5 pl-2.5 flex items-center absolute smooth-corners-lg rounded-full bg-gradient-to-br from-white/90 to-white/60 border-2 border-white/50 backdrop-blur-[36.6px]" style="box-shadow: 3px 6px 5px 0 rgba(0,0,0,0.1);">
             <ol class="flex items-center space-x-2">
                 <li>
-                    <a href="/" class="text-gray-500 hover:text-teal-500 hover:underline">Beranda</a>
+                    <a href="/" class="text-gray-500 hover:text-teal-500 hover:underline"
+                        onclick="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir'); localStorage.removeItem('keluhan');">Beranda</a>
                 </li>
                 <li>/</li>
                 <li>
@@ -158,7 +161,7 @@ ob_start();
                                     'border-gray-500': !touched,
                                     'border-red-500': touched && tanggalLahir === ''                          
                                     }">
-                                
+
                                     <input type="date" id="tanggal_lahir" name="tanggal_lahir" required
                                         class="w-full text-xs font-medium text-left bg-transparent p-2 smooth-corners-lg rounded-2xl border-gray-500 text-gray-500  border-[1.5px] focus:outline-none focus:border-teal-500 focus:text-gray-500"
                                         :class="{

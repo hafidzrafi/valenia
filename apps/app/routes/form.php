@@ -6,7 +6,7 @@ return [
         $heroform = $_SESSION['heroform'] ?? 'Default';
 
         return render(app_path('app/views/form.php'), [
-            'title'    => 'Form Pendaftaran',
+            'title'    => 'Form ' . $heroform,
             'heroform' => $heroform,
         ]);
     },
