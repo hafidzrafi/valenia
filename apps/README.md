@@ -151,6 +151,24 @@ composer test:integration
 
 Integration tests need a migrated `valenia_test` database and `RUN_DB_TESTS=1`.
 
+## Patient flow
+
+Public patient routes:
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/` | GET | Landing page |
+| `/form` | GET/POST | Choose a poli and show the registration form |
+| `/ambil-tiket` | GET/POST | Validate identity and confirm registration |
+| `/muncul-qr` | GET/POST | Issue the queue number and show the QR ticket |
+| `/form-riwayat` | GET | Patient history lookup form |
+| `/portal-pasien` | GET/POST | Look up and display active visit/history |
+| `/portal-keluar` | POST | Clear the portal session |
+
+Anonymous visits use the inactive `guest` system account in `users`; the visit
+records `registration_source = 'guest'` and still has a non-null `created_by`.
+Queue dates use `app_today()` in the Asia/Jakarta timezone.
+
 ## Notes
 
 - No framework, no ORM, no external routing library.
