@@ -15,7 +15,7 @@ $isform = true;
 $patientName = (string) ($patient['full_name'] ?? '-');
 $identityNumber = (string) ($patient['identity_number'] ?? '-');
 $identityType = (string) ($patient['identity_type'] ?? '-');
-$activeQueue = isset($active['queue_number']) ? (string) $active['queue_number'] : '—';
+$activeQueue = isset($active['queue_code']) ? (string) $active['queue_code'] : '—';
 $activeService = (string) ($active['service_name'] ?? '-');
 $activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
 $activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
@@ -198,7 +198,7 @@ include __DIR__.'/../components/step.php'; ?>
                     <?php foreach ($history as $visit) { ?>
                         <?php [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])]; ?>
                         <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                            <p class="text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
+                            <p class="text-lg font-medium text-black"><?php echo e($visit['service_name']); ?> <span class="text-xs text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></span></p>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
                             <div class="flex justify-end scale-90">

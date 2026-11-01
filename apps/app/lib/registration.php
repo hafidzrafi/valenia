@@ -110,6 +110,35 @@ function validate_registration_input(array $input): array
 }
 
 /**
+ * Format a stored integer queue number as a human-readable code.
+ */
+function queue_code(int $number, string $prefix): string
+{
+    $prefix = strtoupper(trim($prefix));
+
+    if ('' === $prefix) {
+        return (string) $number;
+    }
+
+    return $prefix.'-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT);
+}
+
+/**
+ * @param array<string, mixed> $visit
+ *
+ * @return array<string, mixed>
+ */
+function add_queue_code(array $visit): array
+{
+    $visit['queue_code'] = queue_code(
+        (int) ($visit['queue_number'] ?? 0),
+        (string) ($visit['queue_prefix'] ?? ''),
+    );
+
+    return $visit;
+}
+
+/**
  * @return array{ok: bool, service: ?array<string, mixed>, error: ?string}
  */
 function resolve_service(string $key): array
@@ -121,7 +150,7 @@ function resolve_service(string $key): array
         return ['ok' => false, 'service' => null, 'error' => 'Layanan tidak tersedia.'];
     }
 
-    $stmt = db()->prepare('SELECT id, name FROM services WHERE name = :name AND is_active = TRUE');
+    $stmt = db()->prepare('SELECT id, name, queue_prefix FROM services WHERE name = :name AND is_active = TRUE');
     $stmt->execute(['name' => $name]);
     $service = $stmt->fetch();
 
@@ -222,7 +251,7 @@ function find_or_create_patient(array $input): array
 function has_active_visit_today(string $patientId, int $serviceId): ?array
 {
     $stmt = db()->prepare(
-        "SELECT v.id, v.queue_number, v.queue_date, v.status, s.name AS service_name
+        "SELECT v.id, v.queue_number, v.queue_date, v.status, s.name AS service_name, s.queue_prefix
          FROM visits v
          JOIN services s ON s.id = v.service_id
          WHERE v.patient_id = :patient
@@ -260,15 +289,17 @@ function issue_guest_ticket(string $patientId, int $serviceId, string $complaint
     );
     $patient->execute(['id' => $patientId]);
 
-    $service = db()->prepare('SELECT id, name FROM services WHERE id = :id');
+    $service = db()->prepare('SELECT id, name, queue_prefix FROM services WHERE id = :id');
     $service->execute(['id' => $serviceId]);
+    $serviceRow = $service->fetch();
 
     return [
         'visit_id' => (string) $ticket['visit_id'],
         'queue_number' => (int) $ticket['queue_number'],
+        'queue_code' => queue_code((int) $ticket['queue_number'], (string) (is_array($serviceRow) ? ($serviceRow['queue_prefix'] ?? '') : '')),
         'ticket_token' => (string) $ticket['ticket_token'],
         'patient' => $patient->fetch(),
-        'service' => $service->fetch(),
+        'service' => $serviceRow,
         'created_at' => date('Y-m-d H:i:s'),
     ];
 }
@@ -462,7 +493,7 @@ function ticket_qr_png(string $token, int $size = 220): ?string
 function portal_data(string $patientId): array
 {
     $active = db()->prepare(
-        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name
+        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name, s.queue_prefix
          FROM visits v
          JOIN services s ON s.id = v.service_id
          WHERE v.patient_id = :patient
@@ -475,7 +506,7 @@ function portal_data(string $patientId): array
     $activeVisit = $active->fetch();
 
     $history = db()->prepare(
-        'SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name
+        'SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name, s.queue_prefix
          FROM visits v
          JOIN services s ON s.id = v.service_id
          WHERE v.patient_id = :patient
@@ -485,7 +516,7 @@ function portal_data(string $patientId): array
     $history->execute(['patient' => $patientId]);
 
     return [
-        'active' => is_array($activeVisit) ? $activeVisit : null,
-        'history' => $history->fetchAll(),
+        'active' => is_array($activeVisit) ? add_queue_code($activeVisit) : null,
+        'history' => array_map('add_queue_code', $history->fetchAll()),
     ];
 }

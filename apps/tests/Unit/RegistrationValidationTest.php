@@ -110,4 +110,12 @@ final class RegistrationValidationTest extends TestCase
         self::assertSame('Poli Gigi', $config['services']['POLI GIGI']);
         self::assertSame('Konseling/Psikologi', $config['services']['KONSELING']);
     }
+
+    public function testQueueCodeUsesPrefixAndPadsTheNumber(): void
+    {
+        self::assertSame('PU-01', \queue_code(1, 'PU'));
+        self::assertSame('PU-11', \queue_code(11, 'PU'));
+        self::assertSame('PG-100', \queue_code(100, 'PG'));
+        self::assertSame('1', \queue_code(1, ''));
+    }
 }

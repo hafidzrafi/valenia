@@ -53,6 +53,7 @@ return [
             'patient_name' => (string) $patient['patient']['full_name'],
             'service_id' => (int) $service['service']['id'],
             'service_name' => (string) $service['service']['name'],
+            'queue_prefix' => (string) ($service['service']['queue_prefix'] ?? ''),
             'complaint' => $input['complaint'],
             'duplicate' => null !== $duplicate,
         ];

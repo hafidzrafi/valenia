@@ -10,7 +10,7 @@
 $ticket = $ticket ?? [];
 $heroform = $ticket['service']['name'] ?? 'Default';
 $isform = true;
-$no_antrean = isset($ticket['queue_number']) ? (string) $ticket['queue_number'] : '—';
+$no_antrean = isset($ticket['queue_code']) ? (string) $ticket['queue_code'] : '—';
 $patientName = (string) ($ticket['patient']['full_name'] ?? '-');
 $ticketTime = isset($ticket['created_at']) ? date('H:i', strtotime((string) $ticket['created_at'])) : '-';
 $ticketDate = isset($ticket['created_at']) ? date('d M Y', strtotime((string) $ticket['created_at'])) : '-';

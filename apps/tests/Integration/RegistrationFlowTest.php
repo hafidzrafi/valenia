@@ -49,6 +49,7 @@ final class RegistrationFlowTest extends DatabaseTestCase
         $second = \issue_guest_ticket($patientId, $serviceId, 'Sakit kepala');
 
         self::assertSame((int) $first['queue_number'] + 1, (int) $second['queue_number']);
+        self::assertMatchesRegularExpression('/^PU-\d{2,}$/', (string) $first['queue_code']);
         self::assertNotSame($first['ticket_token'], $second['ticket_token']);
         self::assertMatchesRegularExpression(
             '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',

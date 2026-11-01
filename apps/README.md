@@ -167,7 +167,9 @@ Public patient routes:
 
 Anonymous visits use the inactive `guest` system account in `users`; the visit
 records `registration_source = 'guest'` and still has a non-null `created_by`.
-Queue dates use `app_today()` in the Asia/Jakarta timezone.
+Queue dates use `app_today()` in the Asia/Jakarta timezone. Ticket numbers are
+stored as integers and displayed as service-prefixed codes (`PU-01`, `PG-01`,
+`PK-01`).
 
 ## Notes
 
