@@ -44,7 +44,7 @@ ob_start();
             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"
             class="flex flex-col justify-start items-center  absolute  top-51.25 gap-7.75 transition-all duration-1000 ease-out">
             <p
-                class="self-stretch text-[64px] font-bold text-center font-stretch:expanded tracking-wider text-white">
+                class="self-stretch text-[64px] font-black text-center font-display-expanded tracking-wider text-white">
                 VALENIA
             </p>
             <p
@@ -166,7 +166,7 @@ ob_start();
 
 
     <div class="mt-50 w-full h-127 relative flex flex-col flex-shrink-0 items-center">
-        <h2 class="grow-0 shrink-0 w-[40%] absolute  text-[64px]  text-center font-bold text-white">
+        <h2 class="grow-0 shrink-0 w-[40%] absolute  text-[64px]  text-center font-black font-display-expanded text-white">
             Pantau Antrean Real Time
         </h2>
         <div class="transform absolute scale-65 mt-50">
@@ -176,21 +176,21 @@ ob_start();
     </div>
 
 
-    <div class="mt-32 top-32 w-full h-32 relative flex flex-col items-center">
-        <div class="absolute w-full text-center">
-            <h2 class="mb-4 text-4xl font-bold text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
+    <section aria-labelledby="layanan-heading" class="mt-32 w-full relative flex flex-col items-center px-4 pb-24">
+        <div class="w-full text-center">
+            <h2 id="layanan-heading" class="mb-4 text-4xl font-black font-display-expanded text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
                 Pilih Layanan Kesehatan
             </h2>
             <p class=" text-lg text-white opacity-90">
                 Pilih layanan sesuai keluhan
             </p>
         </div>
-        <div class="absolute scale-120 -mt-10   ">
+        <div class="mt-10 w-full">
             <?php include __DIR__.'/../components/3-card.php'; ?>
         </div>
-    </div>
+    </section>
 
-    <div class="flex flex-col relative w-full mt-140 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-20">
+    <section aria-labelledby="tentang-heading" class="flex flex-col relative w-full mt-24 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-20">
         <div class="flex justify-start items-center relative gap-[200px]">
             <!-- Card Section -->
             <div class="cards perspective-normal">
@@ -200,7 +200,7 @@ ob_start();
 
             <!-- About Section -->
             <div class="flex flex-col items-end w-[580px] h-full space-y-4">
-                <h2 class="w-full text-8xl font-black text-right text-white">
+                <h2 id="tentang-heading" class="w-full text-8xl font-black font-display-expanded text-right text-white">
                     Tentang Kami
                 </h2>
                 <p class="w-full text-lg text-right text-white pb-40">
@@ -208,7 +208,7 @@ ob_start();
                 </p>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 
 <?php include __DIR__.'/../components/footer.php'; ?>

@@ -1,5 +1,5 @@
-<div class="flex justify-center items-center min-h-screen">
-    <div class="flex space-x-8">
+<div class="flex justify-center items-center py-8">
+    <div class="flex flex-wrap justify-center gap-8">
 
         <form action="/form" method="post">
             <input type="hidden" name="heroform" value="POLI UMUM">
@@ -7,7 +7,7 @@
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
-                        <h3 class="text-[24px] font-bold text-white">Poli Umum</h3>
+                        <h3 class="text-[24px] font-black font-display-expanded text-white">Poli Umum</h3>
                         <div class="scale-80 left-0 -translate-x-4">
                             <?php
                             $status_tag = 'positive';
@@ -26,7 +26,7 @@
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
-                        <h3 class="text-[24px] font-bold text-white">Poli Gigi</h3>
+                        <h3 class="text-[24px] font-black font-display-expanded text-white">Poli Gigi</h3>
                         <div class="scale-80 left-0 -translate-x-4">
                             <?php
             $status_tag = 'negative';
@@ -45,7 +45,7 @@
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
-                        <h3 class="text-[24px] font-bold text-white">Konseling</h3>
+                        <h3 class="text-[24px] font-black font-display-expanded text-white">Konseling</h3>
                         <div class="scale-80 left-0 -translate-x-4">
                             <?php
             $status_tag = 'positive';

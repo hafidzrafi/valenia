@@ -86,7 +86,7 @@ $showCta = false;
 
                 <div class="flex justify-end  gap-4">
                     <div class="flex flex-col -translate-y-2 gap-1">
-                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo e($activeQueue); ?></p>
+                        <p class="text-[32px] font-black font-display-expanded text-right text-slate-900"><?php echo e($activeQueue); ?></p>
                         <p class="text-sm  text-black text-right"><?php echo e($patientName); ?></p>
                         <p class="text-sm  text-black text-right"><?php echo e($activeService); ?></p>
                         <p class="text-sm  text-black text-right"><?php echo e($activeDate); ?></p>
@@ -169,7 +169,7 @@ include __DIR__.'/../components/tag.php'; ?>
     </div>
 
     <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
-        <h1 class="text-4xl  flex justify-center font-bold text-white mt-5">Riwayat Kunjungan</h1>
+        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
 
         <div id="served-boards"
              hx-get="/portal-boards"

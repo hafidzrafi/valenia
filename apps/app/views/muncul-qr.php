@@ -45,7 +45,7 @@ include __DIR__.'/../components/background-img.php';
 
                         <div class="flex justify-end  gap-4">
                             <div class="flex flex-col -translate-y-2 gap-1">
-                                <p class="text-[64px] font-black translate-x-2 text-center text-slate-900"><?php echo e($no_antrean); ?></p>
+                                <p class="text-[64px] font-black font-display-expanded translate-x-2 text-center text-slate-900"><?php echo e($no_antrean); ?></p>
                                 <p class="text-sm font-medium text-black text-right"><?php echo e($patientName); ?></p>
                                 <p class="text-sm font-medium text-black text-right"><?php echo e($heroform); ?></p>
                                 <p class="text-sm font-medium text-black text-right"><?php echo e($ticketDate); ?></p>
