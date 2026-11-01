@@ -512,7 +512,10 @@ function portal_data(string $patientId, ?string $selectedVisitId = null): array
 
     $selectedVisit = null;
 
-    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+    $isUuid = is_string($selectedVisitId)
+        && 1 === preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $selectedVisitId);
+
+    if ($isUuid) {
         $selected = db()->prepare(
             "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token,
                     s.name AS service_name, s.queue_prefix,

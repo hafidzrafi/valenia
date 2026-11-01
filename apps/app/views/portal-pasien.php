@@ -43,6 +43,14 @@ $statusMap = [
     'batal' => ['disabled', 'Dibatalkan'],
 ];
 
+$progressSteps = match ($activeStatus) {
+    'menunggu' => ['done', 'current', 'wait', 'wait'],
+    'dilayani' => ['done', 'done', 'current', 'wait'],
+    'selesai' => ['done', 'done', 'done', 'done'],
+    'batal' => ['done', 'done', 'wait', 'wait'],
+    default => ['current', 'wait', 'wait', 'wait'],
+};
+
 include __DIR__.'/../components/background-img.php';
 
 $heroImage = '/images/portalpasien.webp';
@@ -125,46 +133,19 @@ include __DIR__.'/../components/tag.php'; ?>
             </div>
 
             <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-6">
-                <div class="flex justify-center items-center">
-                    <?php
-                    $status_step = 'done';
-$step_text = '1';
+                <?php foreach ([1, 2, 3, 4] as $index) { ?>
+                    <?php if ($index > 1) { ?>
+                        <span class=" w-[42px] h-[2px] bg-gray-500"></span>
+                    <?php } ?>
 
-include __DIR__.'/../components/step.php'; ?>
-                </div>
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
+                    <div class="flex justify-center items-center">
+                        <?php
+                        $status_step = $progressSteps[$index - 1];
+                    $step_text = (string) $index;
 
-                <div class="flex justify-center items-center">
-                    <?php
-$status_step = 'done';
-$step_text = '2';
-
-include __DIR__.'/../components/step.php'; ?>
-
-
-
-                </div>
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
-
-                <div class=" flex justify-center items-center">
-                    <?php
-$status_step = 'current';
-$step_text = '3';
-
-include __DIR__.'/../components/step.php'; ?>
-
-                </div>
-
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
-
-                <div class=" flex justify-center items-center">
-                    <?php
-$status_step = 'wait';
-$step_text = '4';
-
-include __DIR__.'/../components/step.php'; ?>
-
-                </div>
+                    include __DIR__.'/../components/step.php'; ?>
+                    </div>
+                <?php } ?>
 
             </div>
             <div class=" flex flex-row gap-10 items-center justify-center h-4 w-112">
@@ -195,7 +176,7 @@ include __DIR__.'/../components/step.php'; ?>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-5xl mx-auto mt-40">
             <div class="flex flex-col gap-3 space-y-2 col-span-2">
-                <div class="grid grid-cols-1 gap-2 place-items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-6 shadow-sm min-h-[324px]">
+                <div class="flex flex-col gap-3 items-center justify-start rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-6 shadow-sm min-h-[324px]">
 
                     <?php if ([] === $history) { ?>
                         <p class="text-sm text-gray-600">Belum ada riwayat kunjungan.</p>
@@ -203,11 +184,11 @@ include __DIR__.'/../components/step.php'; ?>
 
                     <?php foreach ($history as $visit) { ?>
                         <?php
-                        [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
+                    [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
                         $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
                         ?>
                         <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
-                           class="grid grid-cols-4 items-center px-8 h-15 w-130 border rounded-3xl no-underline transition-colors <?php echo $isSelected ? 'border-teal-500 bg-teal-100/80' : 'border-gray-500 bg-white hover:bg-teal-100/80 hover:border-teal-500'; ?>">
+                           class="grid grid-cols-4 items-center px-8 h-15 w-130 rounded-3xl no-underline transition-colors border bg-white shadow-[0_2px_8px_rgba(30,60,55,0.08)] <?php echo $isSelected ? 'border-teal-500 ring-1 ring-teal-500' : 'border-gray-200 hover:border-teal-400'; ?>">
                             <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
                                 <p class="truncate text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
                                 <p class="text-xs font-medium text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></p>
@@ -283,27 +264,31 @@ include __DIR__.'/../components/step.php'; ?>
                     <p data-testid="selected-visit-code" class="mt-1 text-sm font-medium text-slate-500"><?php echo e($selectedQueue); ?></p>
                 <?php } ?>
 
-                <div class="w-50 h-55 flex justify-center items-center border-b-2 border-gray-500">
-                    <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-white p-1 mb-3">
+                <div class="flex flex-col items-center">
+                    <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-white p-1">
                         <?php if (null !== $selectedQrSvg) { ?>
                             <?php echo $selectedQrSvg; ?>
                         <?php } else { ?>
                             <i class="ph ph-clock text-[72px] text-teal-500"></i>
                         <?php } ?>
                     </div>
+
+                    <?php if (null !== $selected) { ?>
+                        <div data-testid="selected-visit-status" class="mt-4">
+                            <?php $status_tag = $selectedTag;
+                        $label_tag = $selectedLabel;
+
+                        include __DIR__.'/../components/tag.php'; ?>
+                        </div>
+                    <?php } ?>
+
+                    <div class="mt-4 w-full border-t border-gray-400"></div>
                 </div>
                 <?php if (null !== $selected) { ?>
-                    <div data-testid="selected-visit-status" class="absolute scale-110 translate-y-59">
-                        <?php $status_tag = $selectedTag;
-                    $label_tag = $selectedLabel;
-
-                    include __DIR__.'/../components/tag.php'; ?>
-                    </div>
-
-                    <p class="text-sm mt-6  text-black text-center"><?php echo e($selectedDate); ?></p>
-                    <p class="text-sm  text-black text-center"><?php echo e($selectedTime); ?></p>
+                    <p class="text-sm mt-4 text-black text-center"><?php echo e($selectedDate); ?></p>
+                    <p class="text-sm text-black text-center"><?php echo e($selectedTime); ?></p>
                 <?php } else { ?>
-                    <p class="text-sm mt-6 text-black text-center">Klik salah satu riwayat untuk melihat detail.</p>
+                    <p class="text-sm mt-4 text-black text-center">Klik salah satu riwayat untuk melihat detail.</p>
                 <?php } ?>
 
                 <div class="flex flex-row items-center justify-center gap-4">
