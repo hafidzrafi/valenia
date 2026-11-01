@@ -25,23 +25,23 @@ ob_start();
 
     <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
         <div
-            x-data="{ shown: false }"
+            x-data="{ shown: true }"
             x-init="
         const observer = new IntersectionObserver(([entry]) => {
-           
+
             if (entry.isIntersecting && entry.boundingClientRect.top > 50) {
                 shown = true;
             } else {
                 if (entry.boundingClientRect.top > 0) {
                     shown = false;
-                } 
+                }
             }
         }, { threshold: 0.1 });
-        
+
         observer.observe($el);
     "
             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"
-            class="flex flex-col justify-start items-center  absolute  top-51.25 gap-7.75 transition-all duration-1000 ease-out">
+            class="flex flex-col justify-start items-center absolute top-51.25 gap-7.75 opacity-100 translate-y-0 transition-all duration-1000 ease-out">
             <p
                 class="self-stretch text-[64px] font-black text-center font-display-expanded tracking-wider text-white">
                 VALENIA
