@@ -20,6 +20,8 @@ $activeService = (string) ($active['service_name'] ?? '-');
 $activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
 $activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
 $activeStatus = (string) ($active['status'] ?? '');
+$activeTicketToken = (string) ($active['ticket_token'] ?? '');
+$activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128) : null;
 
 $statusMap = [
     'menunggu' => ['positive', 'Menunggu'],
@@ -49,8 +51,12 @@ $showCta = false;
             style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
             <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Antrean Aktif</h1>
             <div class="flex flex-row justify-center items-center mt-10 gap-8">
-                <div class="flex justify-center items-center rounded-2xl bg-white h-34 w-34">
-                    <i class="ph ph-ticket text-[64px] text-teal-500"></i>
+                <div class="flex h-34 w-34 items-center justify-center rounded-2xl bg-white p-1">
+                    <?php if (null !== $activeQrSvg) { ?>
+                        <?php echo $activeQrSvg; ?>
+                    <?php } else { ?>
+                        <i class="ph ph-ticket text-[64px] text-teal-500"></i>
+                    <?php } ?>
                 </div>
 
                 <div class="flex justify-end  gap-4">
@@ -65,60 +71,44 @@ $showCta = false;
             </div>
             <div class="flex flex-col justify-center items-center">
                 <p class="flex justify-center mt-8 text-[14px]"><?php echo null === $active ? 'Tidak ada antrean aktif hari ini.' : 'Tunjukkan QR Code saat periksa di poliklinik'; ?></p>
-                <button type="button" class="w-[148px] h-[48px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                    <p class="text-base font-medium text-white">Unduh</p>
-                    <i class="ph ph-download-simple text-white text-[18px]"></i>
-                </button>
+                <?php if (null !== $active) { ?>
+                    <a href="/muncul-qr?download=1" class="w-[148px] h-[48px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                        <p class="text-base font-medium text-white">Unduh</p>
+                        <i class="ph ph-download-simple text-white text-[18px]"></i>
+                    </a>
+                <?php } ?>
             </div>
         </div>
 
 
         <div
-            class="w-130 h-100 rounded-4xl smooth-corners-md bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] flex flex-col justify-center items-center border-2 border-gray-400"
+            class="w-130 h-100 rounded-4xl smooth-corners-md bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] flex flex-col justify-start border-2 border-gray-400 px-12 pt-10"
             style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
-            <div class="flex flex-row w-full">
+            <div class="flex w-full items-start justify-between gap-6">
+                <div class="min-w-0 pt-1">
+                    <h1 class="truncate text-[24px] font-medium leading-tight text-slate-900"
+                        title="<?php echo e($patientName); ?>"><?php echo e($patientName); ?></h1>
 
-                <div>
-                    <div class=" w-full h-5 flex justify-start ml-12">
-                        <h1 class="text-[24px]  flex w-50 font-medium text-slate-900"><?php echo e($patientName); ?></h1>
-                    </div>
-
-                </div>
-
-                <div class=" w-full h-10 flex justify-end mr-12">
-                    <div class="border rounded-full w-30 h-30 flex "></div>
-                </div>
-
-            </div>
-
-            <div class=" w-104 translate-y-1  ">
-                <div class="border-t  w-65 h-20">
-                    <p class="text-sm  text-black pt-2"><?php echo e($identityType); ?></p>
-                    <p class="text-sm  text-black"><?php echo e($identityNumber); ?></p>
-                    <div class="scale-90 pt-2 flex -translate-x-3"><?php
-                                                                    $status_tag = 'positive';
+                    <div class="mt-5 border-t border-gray-400 pt-3">
+                        <p class="text-sm text-black"><?php echo e($identityType); ?></p>
+                        <p class="text-sm text-black"><?php echo e($identityNumber); ?></p>
+                        <div class="mt-3"><?php
+                        $status_tag = 'positive';
 $label_tag = 'Aktif';
 
 include __DIR__.'/../components/tag.php'; ?>
+                        </div>
                     </div>
-
                 </div>
+
+                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400"></div>
             </div>
 
-
-            <div class=" w-104 translate-y-18  ">
-                <div class="border-t  w-100 h-20">
-                    <p class="  text-black font-medium pt-2">Progres Antrean Aktif</p>
-                </div>
+            <div class="mt-7 w-full border-t border-gray-400 pt-3">
+                <p class="text-black font-medium">Progres Antrean Aktif</p>
             </div>
 
-
-
-
-
-
-
-            <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-10">
+            <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-6">
                 <div class="flex justify-center items-center">
                     <?php
                     $status_step = 'done';
@@ -198,7 +188,10 @@ include __DIR__.'/../components/step.php'; ?>
                     <?php foreach ($history as $visit) { ?>
                         <?php [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])]; ?>
                         <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                            <p class="text-lg font-medium text-black"><?php echo e($visit['service_name']); ?> <span class="text-xs text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></span></p>
+                            <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
+                                <p class="truncate text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
+                                <p class="text-xs font-medium text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></p>
+                            </div>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
                             <div class="flex justify-end scale-90">
@@ -265,8 +258,12 @@ include __DIR__.'/../components/step.php'; ?>
                 <h1 class="text-2xl flex justify-center  font-bold text-slate-900"><?php echo e(null === $active ? 'Tidak ada antrean' : $activeService); ?></h1>
 
                 <div class="w-50 h-55 flex justify-center items-center border-b-2 border-gray-500">
-                    <div class="flex justify-center items-center rounded-2xl bg-white h-40 w-40 mb-3">
-                        <i class="ph <?php echo null === $active ? 'ph-clock' : 'ph-ticket'; ?> text-[72px] text-teal-500"></i>
+                    <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-white p-1 mb-3">
+                        <?php if (null !== $activeQrSvg) { ?>
+                            <?php echo $activeQrSvg; ?>
+                        <?php } else { ?>
+                            <i class="ph ph-clock text-[72px] text-teal-500"></i>
+                        <?php } ?>
                     </div>
                 </div>
                 <?php if (null !== $active) { ?>
@@ -290,10 +287,12 @@ include __DIR__.'/../components/step.php'; ?>
 
                     </button>
 
-                    <button type="button" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                        <p class="font-medium text-white">Unduh</p>
-                        <i class="ph ph-download-simple text-white text-[18px]"></i>
-                    </button>
+                    <?php if (null !== $active) { ?>
+                        <a href="/muncul-qr?download=1" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                            <p class="font-medium text-white">Unduh</p>
+                            <i class="ph ph-download-simple text-white text-[18px]"></i>
+                        </a>
+                    <?php } ?>
 
                 </div>
 

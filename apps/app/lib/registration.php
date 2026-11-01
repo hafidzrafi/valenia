@@ -493,7 +493,7 @@ function ticket_qr_png(string $token, int $size = 220): ?string
 function portal_data(string $patientId): array
 {
     $active = db()->prepare(
-        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name, s.queue_prefix
+        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token, s.name AS service_name, s.queue_prefix
          FROM visits v
          JOIN services s ON s.id = v.service_id
          WHERE v.patient_id = :patient
@@ -518,5 +518,46 @@ function portal_data(string $patientId): array
     return [
         'active' => is_array($activeVisit) ? add_queue_code($activeVisit) : null,
         'history' => array_map('add_queue_code', $history->fetchAll()),
+    ];
+}
+
+/**
+ * Resolve the ticket available for PNG download.
+ *
+ * Prefers the fresh registration ticket, then falls back to the active portal
+ * visit. Both paths are session-bound: either the ticket just issued in this
+ * browser session, or a portal session unlocked via NIM/NIP plus birth date.
+ *
+ * @return null|array<string, mixed>
+ */
+function downloadable_ticket(): ?array
+{
+    $ticket = $_SESSION['ticket'] ?? null;
+
+    if (is_array($ticket) && isset($ticket['ticket_token'])) {
+        return $ticket;
+    }
+
+    $patient = portal_patient();
+
+    if (!is_array($patient)) {
+        return null;
+    }
+
+    $data = portal_data((string) $patient['id']);
+    $active = $data['active'] ?? null;
+
+    if (!is_array($active) || !isset($active['ticket_token'])) {
+        return null;
+    }
+
+    return [
+        'visit_id' => (string) $active['id'],
+        'queue_number' => (int) $active['queue_number'],
+        'queue_code' => (string) ($active['queue_code'] ?? ''),
+        'ticket_token' => (string) $active['ticket_token'],
+        'patient' => $patient,
+        'service' => ['name' => $active['service_name']],
+        'created_at' => (string) $active['created_at'],
     ];
 }

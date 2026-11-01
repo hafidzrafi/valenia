@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 return [
     'GET' => static function (Request $request): Response|string {
-        $ticket = $_SESSION['ticket'] ?? null;
-
-        if (!is_array($ticket)) {
-            return redirect('/form');
-        }
-
         if ('1' === request_input('download')) {
+            $ticket = downloadable_ticket();
+
+            if (null === $ticket) {
+                return redirect('/form');
+            }
+
             $png = ticket_qr_png((string) ($ticket['ticket_token'] ?? ''));
 
             if (null === $png) {
@@ -21,6 +21,12 @@ return [
                 'Content-Type' => 'image/png',
                 'Content-Disposition' => 'attachment; filename="valenia-tiket.png"',
             ]);
+        }
+
+        $ticket = $_SESSION['ticket'] ?? null;
+
+        if (!is_array($ticket)) {
+            return redirect('/form');
         }
 
         return view('muncul-qr', [
