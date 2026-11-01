@@ -9,7 +9,9 @@
  */
 $patient = $patient ?? [];
 $active = $active ?? null;
+$selected = $selected ?? $active;
 $history = $history ?? [];
+$flash = $flash ?? null;
 $isform = true;
 
 $patientName = (string) ($patient['full_name'] ?? '-');
@@ -22,6 +24,17 @@ $activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $act
 $activeStatus = (string) ($active['status'] ?? '');
 $activeTicketToken = (string) ($active['ticket_token'] ?? '');
 $activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128) : null;
+
+$selectedQueue = isset($selected['queue_code']) ? (string) $selected['queue_code'] : '—';
+$selectedService = (string) ($selected['service_name'] ?? '-');
+$selectedDate = isset($selected['created_at']) ? date('d M Y', strtotime((string) $selected['created_at'])) : '-';
+$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])).' WIB' : '-';
+$selectedStatus = (string) ($selected['status'] ?? '');
+$selectedIsActive = (bool) ($selected['is_active'] ?? false);
+$selectedTicketToken = (string) ($selected['ticket_token'] ?? '');
+$selectedQrSvg = $selectedIsActive && '' !== $selectedTicketToken
+    ? ticket_qr_svg($selectedTicketToken, 128)
+    : null;
 
 $statusMap = [
     'menunggu' => ['positive', 'Menunggu'],
@@ -45,6 +58,9 @@ $showCta = false;
 
 
 <body>
+    <?php if (null !== $flash) { ?>
+        <p class="mx-auto mt-4 w-fit rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700"><?php echo e($flash); ?></p>
+    <?php } ?>
     <div class="w-full h-130 flex items-center justify-center flex-row gap-8">
         <div
             class="w-90 h-100 smooth-corners-md rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] border-2 border-gray-400"
@@ -186,8 +202,12 @@ include __DIR__.'/../components/step.php'; ?>
                     <?php } ?>
 
                     <?php foreach ($history as $visit) { ?>
-                        <?php [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])]; ?>
-                        <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
+                        <?php
+                        [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
+                        $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
+                        ?>
+                        <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
+                           class="grid grid-cols-4 items-center px-8 h-15 w-130 border rounded-3xl no-underline transition-colors <?php echo $isSelected ? 'border-teal-500 bg-teal-100/80' : 'border-gray-500 bg-white hover:bg-teal-100/80 hover:border-teal-500'; ?>">
                             <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
                                 <p class="truncate text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
                                 <p class="text-xs font-medium text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></p>
@@ -197,7 +217,7 @@ include __DIR__.'/../components/step.php'; ?>
                             <div class="flex justify-end scale-90">
                                 <?php include __DIR__.'/../components/tag.php'; ?>
                             </div>
-                        </div>
+                        </a>
                     <?php } ?>
 
                 </div>
@@ -254,40 +274,52 @@ include __DIR__.'/../components/step.php'; ?>
 
 
             <div class="flex flex-col items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-md min-h-[400px] min-w-70">
-                <?php [$activeTag, $activeLabel] = $statusMap[$activeStatus] ?? ['disabled', 'Tidak aktif']; ?>
-                <h1 class="text-2xl flex justify-center  font-bold text-slate-900"><?php echo e(null === $active ? 'Tidak ada antrean' : $activeService); ?></h1>
+                <?php [$selectedTag, $selectedLabel] = $statusMap[$selectedStatus] ?? ['disabled', 'Tidak aktif']; ?>
+                <h1 data-testid="selected-visit-service" class="text-2xl flex justify-center font-bold text-slate-900">
+                    <?php echo e(null === $selected ? 'Pilih riwayat kunjungan' : $selectedService); ?>
+                </h1>
+
+                <?php if (null !== $selected) { ?>
+                    <p data-testid="selected-visit-code" class="mt-1 text-sm font-medium text-slate-500"><?php echo e($selectedQueue); ?></p>
+                <?php } ?>
 
                 <div class="w-50 h-55 flex justify-center items-center border-b-2 border-gray-500">
                     <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-white p-1 mb-3">
-                        <?php if (null !== $activeQrSvg) { ?>
-                            <?php echo $activeQrSvg; ?>
+                        <?php if (null !== $selectedQrSvg) { ?>
+                            <?php echo $selectedQrSvg; ?>
                         <?php } else { ?>
                             <i class="ph ph-clock text-[72px] text-teal-500"></i>
                         <?php } ?>
                     </div>
                 </div>
-                <?php if (null !== $active) { ?>
-                    <div class="absolute scale-110 translate-y-59  ">
-                        <?php $status_tag = $activeTag;
-                    $label_tag = $activeLabel;
+                <?php if (null !== $selected) { ?>
+                    <div data-testid="selected-visit-status" class="absolute scale-110 translate-y-59">
+                        <?php $status_tag = $selectedTag;
+                    $label_tag = $selectedLabel;
 
                     include __DIR__.'/../components/tag.php'; ?>
                     </div>
 
-                    <p class="text-sm mt-6  text-black text-center"><?php echo e($activeDate); ?></p>
-                    <p class="text-sm  text-black text-center"><?php echo e($activeTime); ?></p>
+                    <p class="text-sm mt-6  text-black text-center"><?php echo e($selectedDate); ?></p>
+                    <p class="text-sm  text-black text-center"><?php echo e($selectedTime); ?></p>
                 <?php } else { ?>
-                    <p class="text-sm mt-6 text-black text-center">Belum ada kunjungan hari ini.</p>
+                    <p class="text-sm mt-6 text-black text-center">Klik salah satu riwayat untuk melihat detail.</p>
                 <?php } ?>
 
                 <div class="flex flex-row items-center justify-center gap-4">
 
-                    <button type="button" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl border-2 border-amber-500 bg-white/80 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white">
-                        <p class="font-medium ">Batal</p>
+                    <?php if (null !== $selected && 'menunggu' === $selectedStatus && $selectedIsActive) { ?>
+                        <form method="POST" action="/portal-batal"
+                              onsubmit="return confirm('Batalkan antrean ini?')">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="visit_id" value="<?php echo e((string) $selected['id']); ?>">
+                            <button type="submit" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl border-2 border-amber-500 bg-white/80 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white">
+                                <p class="font-medium ">Batal</p>
+                            </button>
+                        </form>
+                    <?php } ?>
 
-                    </button>
-
-                    <?php if (null !== $active) { ?>
+                    <?php if (null !== $selectedQrSvg) { ?>
                         <a href="/muncul-qr?download=1" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
                             <p class="font-medium text-white">Unduh</p>
                             <i class="ph ph-download-simple text-white text-[18px]"></i>

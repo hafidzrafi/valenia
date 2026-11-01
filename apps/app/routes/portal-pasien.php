@@ -10,13 +10,17 @@ return [
             return redirect('/form-riwayat');
         }
 
-        $data = portal_data((string) $patient['id']);
+        $data = portal_data((string) $patient['id'], request_input('visit'));
+        $flash = $_SESSION['portal_flash'] ?? null;
+        unset($_SESSION['portal_flash']);
 
         return view('portal-pasien', [
             'title' => 'Portal Pasien',
             'patient' => $patient,
             'active' => $data['active'],
+            'selected' => $data['selected'],
             'history' => $data['history'],
+            'flash' => is_string($flash) ? $flash : null,
         ]);
     },
 

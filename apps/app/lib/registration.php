@@ -490,10 +490,14 @@ function ticket_qr_png(string $token, int $size = 220): ?string
 /**
  * @return array{active: ?array<string, mixed>, history: list<array<string, mixed>>}
  */
-function portal_data(string $patientId): array
+/**
+ * @return array{active: null|array<string, mixed>, selected: null|array<string, mixed>, history: list<array<string, mixed>>}
+ */
+function portal_data(string $patientId, ?string $selectedVisitId = null): array
 {
     $active = db()->prepare(
-        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token, s.name AS service_name, s.queue_prefix
+        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token,
+                s.name AS service_name, s.queue_prefix, TRUE AS is_active
          FROM visits v
          JOIN services s ON s.id = v.service_id
          WHERE v.patient_id = :patient
@@ -504,6 +508,28 @@ function portal_data(string $patientId): array
     );
     $active->execute(['patient' => $patientId]);
     $activeVisit = $active->fetch();
+    $activeVisit = is_array($activeVisit) ? add_queue_code($activeVisit) : null;
+
+    $selectedVisit = null;
+
+    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+        $selected = db()->prepare(
+            "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token,
+                    s.name AS service_name, s.queue_prefix,
+                    (v.status IN ('menunggu', 'dilayani') AND v.queue_date = app_today()) AS is_active
+             FROM visits v
+             JOIN services s ON s.id = v.service_id
+             WHERE v.id = :visit AND v.patient_id = :patient
+             LIMIT 1"
+        );
+        $selected->execute(['visit' => $selectedVisitId, 'patient' => $patientId]);
+        $selectedVisit = $selected->fetch();
+        $selectedVisit = is_array($selectedVisit) ? add_queue_code($selectedVisit) : null;
+    }
+
+    if (null === $selectedVisit) {
+        $selectedVisit = $activeVisit;
+    }
 
     $history = db()->prepare(
         'SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name, s.queue_prefix
@@ -516,9 +542,24 @@ function portal_data(string $patientId): array
     $history->execute(['patient' => $patientId]);
 
     return [
-        'active' => is_array($activeVisit) ? add_queue_code($activeVisit) : null,
+        'active' => $activeVisit,
+        'selected' => $selectedVisit,
         'history' => array_map('add_queue_code', $history->fetchAll()),
     ];
+}
+
+/**
+ * Cancel a portal visit through the database state-machine function.
+ */
+function cancel_portal_visit(string $patientId, string $visitId): bool
+{
+    $stmt = db()->prepare('SELECT cancelled FROM cancel_guest_visit(:visit, :patient)');
+    $stmt->execute([
+        'visit' => $visitId,
+        'patient' => $patientId,
+    ]);
+
+    return (bool) $stmt->fetchColumn();
 }
 
 /**

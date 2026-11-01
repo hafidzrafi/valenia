@@ -171,6 +171,11 @@ Queue dates use `app_today()` in the Asia/Jakarta timezone. Ticket numbers are
 stored as integers and displayed as service-prefixed codes (`PU-01`, `PG-01`,
 `PK-01`).
 
+In the portal, selecting a history row updates the right-hand detail card.
+Today's own `menunggu` visit can be cancelled through `POST /portal-batal`;
+cancellation is a status change, not a delete, and the queue number is not
+reused.
+
 ## Notes
 
 - No framework, no ORM, no external routing library.
