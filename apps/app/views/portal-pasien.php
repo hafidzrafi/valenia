@@ -168,8 +168,8 @@ include __DIR__.'/../components/tag.php'; ?>
 
     </div>
 
-    <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
-        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
+    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] rounded-bl-none rounded-br-none bg-slate-900/70 items-center pt-15 pb-12">
+        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Sedang Dilayani</h1>
 
         <div id="served-boards"
              hx-get="/portal-boards"
@@ -179,6 +179,10 @@ include __DIR__.'/../components/tag.php'; ?>
             <?php include __DIR__.'/partials/served-boards.php'; ?>
         </div>
         <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
+    </section>
+
+    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto smooth-corners-lg rounded-tl-none rounded-tr-none rounded-bl-[90px] rounded-br-[90px] bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
+        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
 
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-5xl mx-auto mt-40">
@@ -334,7 +338,7 @@ $pagerLink = static function (int $target) use ($selectedVisitId): string {
             </div>
         </div>
 
-    </div>
+    </section>
 
 
 </body>

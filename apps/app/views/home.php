@@ -13,15 +13,14 @@ $heroImage = '/images/landingpage.jpg';
 $heroTitle = 'Layanan Poliklinik';
 $heroDesc = 'Politeknik Negeri Malang';
 
-include __DIR__.'/../components/background-img.php';
 ob_start();
 ?>
 
+<body>
+<div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
 <?php include __DIR__.'/../components/cursor.php'; ?>
 <?php include __DIR__.'/../components/header.php'; ?>
 <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
-
-<body>
 
 
     <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
@@ -165,11 +164,11 @@ ob_start();
     </div>
 
 
-    <div class="mt-50 w-full h-127 relative flex flex-col flex-shrink-0 items-center">
-        <h2 class="grow-0 shrink-0 w-[40%] absolute  text-[64px]  text-center font-black font-display-expanded text-white">
+    <div class="mt-50 w-full relative flex flex-col flex-shrink-0 items-center px-4">
+        <h2 class="grow-0 shrink-0 w-[40%] text-[64px] text-center font-black font-display-expanded text-white">
             Pantau Antrean Real Time
         </h2>
-        <div class="transform absolute scale-65 mt-50">
+        <div class="mt-16 w-full max-w-[1285px] overflow-x-auto pb-4">
             <?php include __DIR__.'/../components/live-antrean.php'; ?>
         </div>
 
@@ -178,8 +177,8 @@ ob_start();
 
     <section aria-labelledby="layanan-heading" class="mt-32 w-full relative flex flex-col items-center px-4 pb-24">
         <div class="w-full text-center">
-            <h2 id="layanan-heading" class="mb-4 text-4xl font-black font-display-expanded text-white bg-gradient-to-r from-teal-500 to-[#10B981] inline-block px-6 py-3 smooth-corners-md rounded-[36px] shadow-xl animate-[bounce_3s_infinite]">
-                Pilih Layanan Kesehatan
+            <h2 id="layanan-heading" class="mb-4 text-[64px] font-black font-display-expanded text-center text-white">
+                Layanan Kesehatan
             </h2>
             <p class=" text-lg text-white opacity-90">
                 Pilih layanan sesuai keluhan
@@ -209,6 +208,7 @@ ob_start();
             </div>
         </div>
     </section>
+</div>
 </body>
 
 <?php include __DIR__.'/../components/footer.php'; ?>
