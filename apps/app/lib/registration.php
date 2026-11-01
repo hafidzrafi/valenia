@@ -491,6 +491,34 @@ function ticket_qr_png(string $token, int $size = 220): ?string
  * @return array{active: ?array<string, mixed>, history: list<array<string, mixed>>}
  */
 /**
+ * @return list<array<string, mixed>>
+ */
+function queue_boards(): array
+{
+    return db()->query('SELECT * FROM queue_boards()')->fetchAll();
+}
+
+/**
+ * @return array{advanced: bool, queue_code: ?string, visit_id: ?string}
+ */
+function advance_queue(int $serviceId, string $actorId): array
+{
+    $stmt = db()->prepare('SELECT advanced, queue_code, visit_id FROM advance_queue(:service, :actor)');
+    $stmt->execute(['service' => $serviceId, 'actor' => $actorId]);
+    $row = $stmt->fetch();
+
+    if (!is_array($row)) {
+        return ['advanced' => false, 'queue_code' => null, 'visit_id' => null];
+    }
+
+    return [
+        'advanced' => (bool) $row['advanced'],
+        'queue_code' => null !== $row['queue_code'] ? (string) $row['queue_code'] : null,
+        'visit_id' => null !== $row['visit_id'] ? (string) $row['visit_id'] : null,
+    ];
+}
+
+/**
  * @return array{active: null|array<string, mixed>, selected: null|array<string, mixed>, history: list<array<string, mixed>>, pagination: array{page: int, per_page: int, total: int, pages: int}}
  */
 function portal_data(string $patientId, ?string $selectedVisitId = null, int $page = 1, int $perPage = 5): array

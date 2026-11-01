@@ -36,6 +36,7 @@ return [
             'history' => $data['history'],
             'pagination' => $pagination,
             'selectedVisitId' => is_string($visit) ? $visit : null,
+            'boards' => queue_boards(),
             'flash' => is_string($flash) ? $flash : null,
         ]);
     },

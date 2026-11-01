@@ -11,6 +11,7 @@ $patient = $patient ?? [];
 $active = $active ?? null;
 $selected = $selected ?? $active;
 $history = $history ?? [];
+$boards = $boards ?? [];
 $flash = $flash ?? null;
 $isform = true;
 
@@ -170,8 +171,14 @@ include __DIR__.'/../components/tag.php'; ?>
     <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
         <h1 class="text-4xl  flex justify-center font-bold text-white mt-5">Riwayat Kunjungan</h1>
 
-        <p class="text-7xl font-black mt-30 text-white"><?php echo e($activeQueue); ?></p>
-        <p class="  text-white mt-6 ">Nomor yang dilayani saat ini</p>
+        <div id="served-boards"
+             hx-get="/portal-boards"
+             hx-trigger="every 10s"
+             hx-swap="innerHTML"
+             class="mt-10">
+            <?php include __DIR__.'/partials/served-boards.php'; ?>
+        </div>
+        <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
 
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-5xl mx-auto mt-40">
