@@ -7,8 +7,26 @@
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
  */
-$heroform = $_SESSION['heroform'] ?? 'Default';
-$no_antrean = $no_antrean ?? 'P-11';
+$patient = $patient ?? [];
+$active = $active ?? null;
+$history = $history ?? [];
+$isform = true;
+
+$patientName = (string) ($patient['full_name'] ?? '-');
+$identityNumber = (string) ($patient['identity_number'] ?? '-');
+$identityType = (string) ($patient['identity_type'] ?? '-');
+$activeQueue = isset($active['queue_number']) ? (string) $active['queue_number'] : '—';
+$activeService = (string) ($active['service_name'] ?? '-');
+$activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
+$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
+$activeStatus = (string) ($active['status'] ?? '');
+
+$statusMap = [
+    'menunggu' => ['positive', 'Menunggu'],
+    'dilayani' => ['negative', 'Dilayani'],
+    'selesai' => ['positive', 'Selesai'],
+    'batal' => ['disabled', 'Dibatalkan'],
+];
 
 include __DIR__.'/../components/background-img.php';
 
@@ -31,20 +49,22 @@ $showCta = false;
             style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
             <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Antrean Aktif</h1>
             <div class="flex flex-row justify-center items-center mt-10 gap-8">
-                <div class="flex justify-start  bg-[url(/images/qr-placeholder.jpg)] bg-cover bg-center smooth-corners-md rounded-2xl h-34 w-34"></div>
+                <div class="flex justify-center items-center rounded-2xl bg-white h-34 w-34">
+                    <i class="ph ph-ticket text-[64px] text-teal-500"></i>
+                </div>
 
                 <div class="flex justify-end  gap-4">
                     <div class="flex flex-col -translate-y-2 gap-1">
-                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo $no_antrean; ?></p>
-                        <p class="text-sm  text-black text-right">Valenia Carlo</p>
-                        <p class="text-sm  text-black text-right"><?php echo $heroform; ?></p>
-                        <p class="text-sm  text-black text-right">28 September 2026</p>
-                        <p class="text-sm  text-black text-right">10:00 WIB</p>
+                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo e($activeQueue); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($patientName); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeService); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeDate); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeTime); ?></p>
                     </div>
                 </div>
             </div>
             <div class="flex flex-col justify-center items-center">
-                <p class="flex justify-center mt-8 text-[14px]">Tunjukkan QR Code saat periksa di poliklinik</p>
+                <p class="flex justify-center mt-8 text-[14px]"><?php echo null === $active ? 'Tidak ada antrean aktif hari ini.' : 'Tunjukkan QR Code saat periksa di poliklinik'; ?></p>
                 <button type="button" class="w-[148px] h-[48px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
                     <p class="text-base font-medium text-white">Unduh</p>
                     <i class="ph ph-download-simple text-white text-[18px]"></i>
@@ -60,7 +80,7 @@ $showCta = false;
 
                 <div>
                     <div class=" w-full h-5 flex justify-start ml-12">
-                        <h1 class="text-[24px]  flex w-50 font-medium text-slate-900">Valenia Carlo</h1>
+                        <h1 class="text-[24px]  flex w-50 font-medium text-slate-900"><?php echo e($patientName); ?></h1>
                     </div>
 
                 </div>
@@ -73,8 +93,8 @@ $showCta = false;
 
             <div class=" w-104 translate-y-1  ">
                 <div class="border-t  w-65 h-20">
-                    <p class="text-sm  text-black pt-2">Mahasiswa</p>
-                    <p class="text-sm  text-black">D4-TI</p>
+                    <p class="text-sm  text-black pt-2"><?php echo e($identityType); ?></p>
+                    <p class="text-sm  text-black"><?php echo e($identityNumber); ?></p>
                     <div class="scale-90 pt-2 flex -translate-x-3"><?php
                                                                     $status_tag = 'positive';
 $label_tag = 'Aktif';
@@ -163,7 +183,7 @@ include __DIR__.'/../components/step.php'; ?>
     <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
         <h1 class="text-4xl  flex justify-center font-bold text-white mt-5">Riwayat Kunjungan</h1>
 
-        <p class="text-7xl font-black mt-30 text-white"><?php echo $no_antrean; ?></p>
+        <p class="text-7xl font-black mt-30 text-white"><?php echo e($activeQueue); ?></p>
         <p class="  text-white mt-6 ">Nomor yang dilayani saat ini</p>
 
 
@@ -171,57 +191,21 @@ include __DIR__.'/../components/step.php'; ?>
             <div class="flex flex-col gap-3 space-y-2 col-span-2">
                 <div class="grid grid-cols-1 gap-2 place-items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-6 shadow-sm min-h-[324px]">
 
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Umum</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-        $status_tag = 'negative';
-$label_tag = 'Ditangani';
+                    <?php if ([] === $history) { ?>
+                        <p class="text-sm text-gray-600">Belum ada riwayat kunjungan.</p>
+                    <?php } ?>
 
-include __DIR__.'/../components/tag.php'; ?>
+                    <?php foreach ($history as $visit) { ?>
+                        <?php [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])]; ?>
+                        <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
+                            <p class="text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
+                            <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
+                            <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
+                            <div class="flex justify-end scale-90">
+                                <?php include __DIR__.'/../components/tag.php'; ?>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Konseling</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'positive';
-$label_tag = 'Selesai';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Gigi</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'disabled';
-$label_tag = 'Dibatalkan';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Umum</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'positive';
-$label_tag = 'Selesai';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
+                    <?php } ?>
 
                 </div>
 
@@ -277,21 +261,27 @@ include __DIR__.'/../components/tag.php'; ?>
 
 
             <div class="flex flex-col items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-md min-h-[400px] min-w-70">
-                <h1 class="text-2xl flex justify-center  font-bold text-slate-900">Poli Umum</h1>
+                <?php [$activeTag, $activeLabel] = $statusMap[$activeStatus] ?? ['disabled', 'Tidak aktif']; ?>
+                <h1 class="text-2xl flex justify-center  font-bold text-slate-900"><?php echo e(null === $active ? 'Tidak ada antrean' : $activeService); ?></h1>
 
                 <div class="w-50 h-55 flex justify-center items-center border-b-2 border-gray-500">
-                    <div class="flex    bg-[url(/images/qr-placeholder.jpg)] bg-cover bg-center smooth-corners-md rounded-2xl h-40 w-40 mb-3"></div>
+                    <div class="flex justify-center items-center rounded-2xl bg-white h-40 w-40 mb-3">
+                        <i class="ph <?php echo null === $active ? 'ph-clock' : 'ph-ticket'; ?> text-[72px] text-teal-500"></i>
+                    </div>
                 </div>
-                <div class="absolute scale-110 translate-y-59  ">
-                    <?php
-                    $status_tag = 'negative';
-$label_tag = 'Ditangani';
+                <?php if (null !== $active) { ?>
+                    <div class="absolute scale-110 translate-y-59  ">
+                        <?php $status_tag = $activeTag;
+                    $label_tag = $activeLabel;
 
-include __DIR__.'/../components/tag.php'; ?>
-                </div>
+                    include __DIR__.'/../components/tag.php'; ?>
+                    </div>
 
-                <p class="text-sm mt-6  text-black text-center">28 September 2026</p>
-                <p class="text-sm  text-black text-center">10:00 WIB</p>
+                    <p class="text-sm mt-6  text-black text-center"><?php echo e($activeDate); ?></p>
+                    <p class="text-sm  text-black text-center"><?php echo e($activeTime); ?></p>
+                <?php } else { ?>
+                    <p class="text-sm mt-6 text-black text-center">Belum ada kunjungan hari ini.</p>
+                <?php } ?>
 
                 <div class="flex flex-row items-center justify-center gap-4">
 
@@ -306,6 +296,11 @@ include __DIR__.'/../components/tag.php'; ?>
                     </button>
 
                 </div>
+
+                <form method="POST" action="/portal-keluar" class="mt-6">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" class="text-sm font-medium text-gray-500 hover:text-teal-600 hover:underline">Keluar portal</button>
+                </form>
 
 
 

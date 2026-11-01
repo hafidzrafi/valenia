@@ -7,10 +7,15 @@
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
  */
-$heroform = $_SESSION['heroform'] ?? 'Default';
+$ticket = $ticket ?? [];
+$heroform = $ticket['service']['name'] ?? 'Default';
 $isform = true;
-$no_antrean = $no_antrean ?? 'P-11';
-$_SESSION['isguest'] = true;
+$no_antrean = isset($ticket['queue_number']) ? (string) $ticket['queue_number'] : '—';
+$patientName = (string) ($ticket['patient']['full_name'] ?? '-');
+$ticketTime = isset($ticket['created_at']) ? date('H:i', strtotime((string) $ticket['created_at'])) : '-';
+$ticketDate = isset($ticket['created_at']) ? date('d M Y', strtotime((string) $ticket['created_at'])) : '-';
+$ticketToken = (string) ($ticket['ticket_token'] ?? '');
+$qrSvg = ticket_qr_svg($ticketToken, 180);
 
 include __DIR__.'/../components/background-img.php';
 ?>
@@ -30,35 +35,38 @@ include __DIR__.'/../components/background-img.php';
                     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Pendaftaran Berhasil!</h1>
 
                     <div class="flex flex-row justify-center items-center mt-10 gap-8">
-                        <div class="flex justify-start  bg-[url(/images/qr-placeholder.jpg)] bg-cover bg-center smooth-corners-md rounded-2xl h-45 w-45"></div>
+                        <div class="flex h-[180px] w-[180px] items-center justify-center rounded-2xl bg-white p-1">
+                            <?php if (null !== $qrSvg) { ?>
+                                <?php echo $qrSvg; ?>
+                            <?php } else { ?>
+                                <span class="break-all text-center text-[10px] text-slate-600"><?php echo e($ticketToken); ?></span>
+                            <?php } ?>
+                        </div>
 
                         <div class="flex justify-end  gap-4">
                             <div class="flex flex-col -translate-y-2 gap-1">
-                                <p class="text-[64px] font-black translate-x-2 text-center text-slate-900"><?php echo $no_antrean; ?></p>
-                                <p class="text-sm font-medium text-black text-right">Valenia Carlo</p>
-                                <p class="text-sm font-medium text-black text-right"><?php echo $heroform; ?></p>
-                                <p class="text-sm font-medium text-black text-right">28 September 2026</p>
-                                <p class="text-sm font-medium text-black text-right">10:00 WIB</p>
+                                <p class="text-[64px] font-black translate-x-2 text-center text-slate-900"><?php echo e($no_antrean); ?></p>
+                                <p class="text-sm font-medium text-black text-right"><?php echo e($patientName); ?></p>
+                                <p class="text-sm font-medium text-black text-right"><?php echo e($heroform); ?></p>
+                                <p class="text-sm font-medium text-black text-right"><?php echo e($ticketDate); ?></p>
+                                <p class="text-sm font-medium text-black text-right"><?php echo e($ticketTime); ?> WIB</p>
                             </div>
                         </div>
                     </div>
 
                     <p class="flex justify-center mt-8 text-[14px]">Tunjukkan QR Code saat periksa di poliklinik</p>
 
-                    <form class="flex flex-col gap-6 items-center mt-4" method="GET" action="">
-                        <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
-                        <div class="flex flex-row gap-6 justify-center">
-                        </div>
+                    <div class="flex flex-col gap-6 items-center mt-4">
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
                             <a href="/portal-pasien" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
                                 <p class="text-base font-semibold">Cek Riwayat</p>
                             </a>
-                            <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                            <a href="/muncul-qr?download=1" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
                                 <p class="text-base font-semibold text-white">Unduh</p>
                                 <i class="ph ph-download-simple text-white text-[18px]"></i>
-                            </button>
+                            </a>
                         </div>
-                    </form>
+                    </div>
                     <a href="/" class="flex justify-center mt-5 text-teal-500 text-base font-medium hover:text-teal-800 hover:underline">Kembali ke Beranda</a>
                 </div>
             </div>

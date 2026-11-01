@@ -9,6 +9,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title><?php echo e($title ?? 'VALENIA'); ?></title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
@@ -24,6 +25,15 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.0/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/morph@3.17.0/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.17.0/dist/cdn.min.js"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+
+            if (meta) {
+                event.detail.headers['X-CSRF-Token'] = meta.content;
+            }
+        });
+    </script>
 </body>
 
 </html>

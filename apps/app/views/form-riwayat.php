@@ -8,6 +8,8 @@
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
  */
 $isform = true;
+$old = $old ?? [];
+$error = $error ?? null;
 
 include __DIR__.'/../components/background-img.php';
 
@@ -29,10 +31,13 @@ include __DIR__.'/../components/background-img.php';
         <h1 class="text-3xl pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Portal Pasien</h1>
         <p class="text-sm text-center mt-4">Masukkan NIM/NIP dan tanggal lahir <br> untuk cek riwayat</p>
 
-        <form class="flex flex-col gap-2 items-center mt-10" method="POST" action="/portal-pasien"
-            onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir');">
+        <?php if (null !== $error) { ?>
+            <p class="mt-4 mx-6 rounded-2xl bg-red-50 px-4 py-2 text-center text-sm text-red-600"><?php echo e($error); ?></p>
+        <?php } ?>
 
-            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
+        <form class="flex flex-col gap-2 items-center mt-10" method="POST" action="/portal-pasien">
+
+            <?php echo csrf_field(); ?>
 
             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[250px] relative gap-1"
                 x-data="{ 

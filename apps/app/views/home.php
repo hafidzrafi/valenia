@@ -12,9 +12,6 @@
 $heroImage = '/images/landingpage.jpg';
 $heroTitle = 'Layanan Poliklinik';
 $heroDesc = 'Politeknik Negeri Malang';
-if (!isset($_SESSION['isguest'])) {
-    $_SESSION['isguest'] = false;
-}
 
 include __DIR__.'/../components/background-img.php';
 ob_start();

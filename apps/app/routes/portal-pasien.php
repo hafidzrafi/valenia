@@ -3,10 +3,38 @@
 declare(strict_types=1);
 
 return [
-    'GET' => static fn (Request $request): string => view('portal-pasien', [
-        'title' => 'Portal Pasien',
-    ]),
+    'GET' => static function (Request $request): Response|string {
+        $patient = portal_patient();
+
+        if (!is_array($patient)) {
+            return redirect('/form-riwayat');
+        }
+
+        $data = portal_data((string) $patient['id']);
+
+        return view('portal-pasien', [
+            'title' => 'Portal Pasien',
+            'patient' => $patient,
+            'active' => $data['active'],
+            'history' => $data['history'],
+        ]);
+    },
+
     'POST' => static function (Request $request): Response {
+        $identity = (string) request_input('nim_nip', '');
+        $birthDate = (string) request_input('tanggal_lahir', '');
+        $patient = find_patient_for_portal($identity, $birthDate);
+
+        if (!is_array($patient)) {
+            $_SESSION['portal_old'] = ['nim_nip' => $identity, 'tanggal_lahir' => $birthDate];
+            $_SESSION['portal_error'] = 'Data pasien tidak ditemukan atau tidak cocok.';
+
+            return redirect('/form-riwayat');
+        }
+
+        unset($_SESSION['portal_old'], $_SESSION['portal_error']);
+        unlock_portal((string) $patient['id']);
+
         return redirect('/portal-pasien');
     },
 ];

@@ -3,7 +3,7 @@
 
         <form action="/form" method="post">
             <input type="hidden" name="heroform" value="POLI UMUM">
-            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
+            <?php echo csrf_field(); ?>
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
@@ -22,7 +22,7 @@
 
         <form action="/form" method="post">
             <input type="hidden" name="heroform" value="POLI GIGI">
-            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
+            <?php echo csrf_field(); ?>
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
@@ -41,7 +41,7 @@
 
         <form action="/form" method="post">
             <input type="hidden" name="heroform" value="KONSELING">
-            <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
+            <?php echo csrf_field(); ?>
             <button type="submit" class="w-full text-left">
                 <div class="flex flex-col w-48 h-64 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.8)),url(/images/placeholder.jpg)] bg-cover bg-center smooth-corners-lg rounded-[32px]  p-4 transition-all transform hover:scale-110 hover:outline hover:outline-3 hover:outline-teal-500 hover:shadow-2xl hover:shadow-gray-500/75 active:scale-100">
                     <div class="mt-auto">
