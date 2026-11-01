@@ -102,4 +102,39 @@ final class PortalInteractiveTest extends DatabaseTestCase
 
         self::assertFalse(\cancel_portal_visit($patientId, (string) $ticket['visit_id']));
     }
+
+    public function testHistoryPaginationUsesTheDatabaseFunction(): void
+    {
+        $patientId = $this->createPatient('910000000010');
+
+        for ($i = 0; $i < 7; ++$i) {
+            \issue_guest_ticket($patientId, $this->serviceId(), 'Kontrol '.$i);
+        }
+
+        $first = \portal_data($patientId, null, 1, 5);
+        $second = \portal_data($patientId, null, 2, 5);
+
+        self::assertSame(7, $first['pagination']['total']);
+        self::assertSame(2, $first['pagination']['pages']);
+        self::assertCount(5, $first['history']);
+        self::assertCount(2, $second['history']);
+        self::assertSame(2, $second['pagination']['page']);
+
+        $firstIds = array_column($first['history'], 'id');
+        $secondIds = array_column($second['history'], 'id');
+
+        self::assertSame([], array_intersect($firstIds, $secondIds));
+        self::assertMatchesRegularExpression('/^P[UGK]-\d{2,}$/', (string) $first['history'][0]['queue_code']);
+    }
+
+    public function testOutOfRangePageFallsBackToTheLastPage(): void
+    {
+        $patientId = $this->createPatient('910000000011');
+        \issue_guest_ticket($patientId, $this->serviceId(), 'Demam');
+
+        $data = \portal_data($patientId, null, 99, 5);
+
+        self::assertSame(1, $data['pagination']['page']);
+        self::assertCount(1, $data['history']);
+    }
 }

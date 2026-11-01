@@ -10,9 +10,23 @@ return [
             return redirect('/form-riwayat');
         }
 
-        $data = portal_data((string) $patient['id'], request_input('visit'));
+        $page = max(1, (int) (request_input('page', '1') ?? '1'));
+        $visit = request_input('visit');
+        $data = portal_data((string) $patient['id'], $visit, $page);
         $flash = $_SESSION['portal_flash'] ?? null;
         unset($_SESSION['portal_flash']);
+
+        $pagination = $data['pagination'];
+
+        if ($page > $pagination['pages']) {
+            $query = ['page' => (string) $pagination['pages']];
+
+            if (is_string($visit) && '' !== $visit) {
+                $query['visit'] = $visit;
+            }
+
+            return redirect('/portal-pasien?'.http_build_query($query));
+        }
 
         return view('portal-pasien', [
             'title' => 'Portal Pasien',
@@ -20,6 +34,8 @@ return [
             'active' => $data['active'],
             'selected' => $data['selected'],
             'history' => $data['history'],
+            'pagination' => $pagination,
+            'selectedVisitId' => is_string($visit) ? $visit : null,
             'flash' => is_string($flash) ? $flash : null,
         ]);
     },

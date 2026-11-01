@@ -203,48 +203,52 @@ include __DIR__.'/../components/tag.php'; ?>
 
                 </div>
 
+<?php
+$pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
+$selectedVisitId = $selectedVisitId ?? null;
+
+$pagerLink = static function (int $target) use ($selectedVisitId): string {
+    $query = ['page' => (string) $target];
+
+    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+        $query['visit'] = $selectedVisitId;
+    }
+
+    return '/portal-pasien?'.http_build_query($query);
+};
+?>
+
                 <div class="rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-sm flex flex-row items-center justify-center space-x-2">
 
                     <input type="text" id="filter" name="filter" placeholder="Cari..."
                         class="w-50 text-xs  text-left bg-transparent p-2 smooth-corners-lg rounded-2xl mr-8  border-[1.5px] border-gray-500 focus:outline-none focus:border-teal-500 focus:bg-teal-100/50 hover:bg-teal-100/50 ">
 
-                    <div
-                        x-data="{ 
-                            currentPage: 1, 
-                            totalPages: 4,
-                            goToPage(page) {
-                                if(page < 1 || page > this.totalPages) return;
-                                this.currentPage = page;
-                                // fetch data
-                                console.log('Fetching data for page:', this.currentPage);
-                            }
-                        }"
-                        class="flex items-center space-x-2 text-sm font-medium">
+                    <div class="flex items-center space-x-2 text-sm font-medium">
                         <!-- Previous button -->
-                        <button
-                            @click="goToPage(currentPage - 1)"
-                            :disabled="currentPage === 1"
-                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <a
+                            href="<?php echo e($pagerLink(max(1, $pagination['page'] - 1))); ?>"
+                            aria-label="Halaman sebelumnya"
+                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors <?php echo $pagination['page'] <= 1 ? 'opacity-40 pointer-events-none' : ''; ?>">
                             <i class="ph ph-caret-left text-[18px]"></i>
-                        </button>
+                        </a>
 
                         <!-- number -->
-                        <template x-for="i in totalPages" :key="i">
-                            <button
-                                @click="goToPage(i)"
-                                :class="currentPage === i ? 'bg-teal-400/50 text-white border-teal-500' : 'border-gray-500 hover:bg-teal-100'"
-                                class="w-9 h-9 flex items-center justify-center rounded-[8px] border transition-colors"
-                                x-text="i">
-                            </button>
-                        </template>
+                        <?php for ($pagerPage = 1; $pagerPage <= $pagination['pages']; ++$pagerPage) { ?>
+                            <a
+                                href="<?php echo e($pagerLink($pagerPage)); ?>"
+                                aria-label="Halaman <?php echo $pagerPage; ?>"
+                                class="w-9 h-9 flex items-center justify-center rounded-[8px] border transition-colors <?php echo $pagerPage === $pagination['page'] ? 'bg-teal-400/50 text-white border-teal-500' : 'border-gray-500 hover:bg-teal-100'; ?>">
+                                <?php echo $pagerPage; ?>
+                            </a>
+                        <?php } ?>
 
                         <!-- Next button -->
-                        <button
-                            @click="goToPage(currentPage + 1)"
-                            :disabled="currentPage === totalPages"
-                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <a
+                            href="<?php echo e($pagerLink(min($pagination['pages'], $pagination['page'] + 1))); ?>"
+                            aria-label="Halaman berikutnya"
+                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors <?php echo $pagination['page'] >= $pagination['pages'] ? 'opacity-40 pointer-events-none' : ''; ?>">
                             <i class="ph ph-caret-right text-[18px]"></i>
-                        </button>
+                        </a>
                     </div>
 
                 </div>

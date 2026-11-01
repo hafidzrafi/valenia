@@ -491,9 +491,9 @@ function ticket_qr_png(string $token, int $size = 220): ?string
  * @return array{active: ?array<string, mixed>, history: list<array<string, mixed>>}
  */
 /**
- * @return array{active: null|array<string, mixed>, selected: null|array<string, mixed>, history: list<array<string, mixed>>}
+ * @return array{active: null|array<string, mixed>, selected: null|array<string, mixed>, history: list<array<string, mixed>>, pagination: array{page: int, per_page: int, total: int, pages: int}}
  */
-function portal_data(string $patientId, ?string $selectedVisitId = null): array
+function portal_data(string $patientId, ?string $selectedVisitId = null, int $page = 1, int $perPage = 5): array
 {
     $active = db()->prepare(
         "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.ticket_token,
@@ -534,20 +534,41 @@ function portal_data(string $patientId, ?string $selectedVisitId = null): array
         $selectedVisit = $activeVisit;
     }
 
+    $page = max(1, $page);
+    $perPage = min(max(1, $perPage), 50);
+
     $history = db()->prepare(
-        'SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, s.name AS service_name, s.queue_prefix
-         FROM visits v
-         JOIN services s ON s.id = v.service_id
-         WHERE v.patient_id = :patient
-         ORDER BY v.created_at DESC
-         LIMIT 50'
+        'SELECT visit_id AS id, queue_number, queue_date, status, created_at,
+                service_name, queue_prefix, queue_code, total
+         FROM portal_history_page(:patient, :page, :per_page)'
     );
-    $history->execute(['patient' => $patientId]);
+    $history->execute(['patient' => $patientId, 'page' => $page, 'per_page' => $perPage]);
+    $rows = $history->fetchAll();
+
+    $total = 0;
+
+    if ([] !== $rows && isset($rows[0]['total'])) {
+        $total = (int) $rows[0]['total'];
+    }
+
+    $pages = max(1, (int) ceil($total / $perPage));
+
+    if ($page > $pages) {
+        $page = $pages;
+        $history->execute(['patient' => $patientId, 'page' => $page, 'per_page' => $perPage]);
+        $rows = $history->fetchAll();
+    }
 
     return [
         'active' => $activeVisit,
         'selected' => $selectedVisit,
-        'history' => array_map('add_queue_code', $history->fetchAll()),
+        'history' => array_map('add_queue_code', $rows),
+        'pagination' => [
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'pages' => $pages,
+        ],
     ];
 }
 
