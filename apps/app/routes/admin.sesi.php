@@ -36,10 +36,19 @@ return [
     'POST' => static function (Request $request): Response {
         $id = request_input('id') ?? '';
 
+        $current = null;
+
+        if ('' !== session_id()) {
+            $sel = db()->prepare('SELECT id FROM sessions WHERE token_hash = :hash');
+            $sel->execute(['hash' => hash('sha256', session_id())]);
+            $found = $sel->fetch();
+            $current = is_array($found) ? (string) $found['id'] : null;
+        }
+
         if ('' === $id) {
             return new Response(view('admin.sesi', [
                 'sessions' => list_sessions(),
-                'current' => null,
+                'current' => $current,
                 'token' => csrf_token(),
                 'error' => 'Sesi tidak dikenal.',
             ]), 422);
@@ -48,15 +57,6 @@ return [
         $me = (string) $request->attribute('user_id');
 
         try {
-            $current = null;
-
-            if ('' !== session_id()) {
-                $sel = db()->prepare('SELECT id FROM sessions WHERE token_hash = :hash');
-                $sel->execute(['hash' => hash('sha256', session_id())]);
-                $found = $sel->fetch();
-                $current = is_array($found) ? (string) $found['id'] : null;
-            }
-
             if (null !== $current && $id === $current) {
                 logout_user();
 
@@ -80,7 +80,7 @@ return [
 
             return new Response(view('admin.sesi', [
                 'sessions' => list_sessions(),
-                'current' => null,
+                'current' => $current,
                 'token' => csrf_token(),
                 'error' => 'Terjadi kesalahan. Coba lagi.',
             ]), 500);

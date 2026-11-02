@@ -21,7 +21,8 @@
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="service_id" value="<?php echo e((string) $board['service_id']); ?>">
                 <button type="submit"
-                    class="w-full rounded-2xl bg-teal-500 px-4 py-2 font-medium text-white transition-colors hover:bg-teal-600 <?php echo 0 === (int) $board['waiting_count'] ? 'pointer-events-none opacity-40' : ''; ?>">
+                    <?php echo 0 === (int) $board['waiting_count'] ? 'disabled' : ''; ?>
+                    class="w-full rounded-2xl bg-teal-500 px-4 py-2 font-medium text-white transition-colors hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-40">
                     Panggil berikutnya
                 </button>
             </form>
