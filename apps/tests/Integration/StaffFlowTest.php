@@ -159,6 +159,77 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame(0, (int) $stmt->fetchColumn());
     }
 
+    public function testDoubleCompletionIsRejectedAndKeepsOneExamination(): void
+    {
+        $patient = $this->patient('930000000008', 'Staff Double');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Demam');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+
+        $first = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        $second = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+
+        self::assertTrue($first['ok'], (string) $first['error']);
+        self::assertFalse($second['ok']);
+        self::assertSame('Antrean ini sudah diselesaikan.', $second['error']);
+
+        $stmt = $this->pdo->prepare('SELECT count(*) FROM examinations WHERE visit_id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame(1, (int) $stmt->fetchColumn());
+    }
+
+    public function testCompletionRejectsAVisitFromAnotherDay(): void
+    {
+        $patient = $this->patient('930000000009', 'Staff Yesterday');
+        $service = $this->serviceId('Poli Gigi');
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO visits (patient_id, service_id, queue_number, queue_date, status, served_at, created_by, registration_source)
+             VALUES (:patient, :service, 901, app_today() - 1, 'dilayani', now(), :actor, 'staff')
+             RETURNING id"
+        );
+        $stmt->execute([
+            'patient' => $patient,
+            'service' => $service,
+            'actor' => $this->adminId(),
+        ]);
+        $visitId = (string) $stmt->fetchColumn();
+        $this->visitIds[] = $visitId;
+
+        $result = \complete_staff_visit($visitId, $this->adminId());
+
+        self::assertFalse($result['ok']);
+        self::assertSame('Hanya antrean hari ini yang dapat diselesaikan.', $result['error']);
+
+        $check = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $check->execute(['id' => $visitId]);
+        self::assertSame('dilayani', $check->fetchColumn());
+    }
+
+    public function testActivityFallsBackWhenTheActorNoLongerExists(): void
+    {
+        $tempUserId = $this->temporaryUser('activity-actor');
+        $patient = $this->patient('930000000010', 'Staff Actor');
+        $service = $this->serviceId('Konseling/Psikologi');
+
+        $ticket = \issue_guest_ticket($patient, $service, 'Konsultasi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $tempUserId);
+
+        $this->pdo->prepare('DELETE FROM users WHERE id = :id')->execute(['id' => $tempUserId]);
+
+        $events = array_values(array_filter(
+            \staff_queue_activity(),
+            static fn (array $event): bool => $event['code'] === $ticket['queue_code'] && 'Dipanggil' === $event['event']
+        ));
+
+        self::assertCount(1, $events);
+        self::assertSame('akun dihapus', $events[0]['actor']);
+    }
+
     public function testBoardKeepsTheLastServedCodeAfterCompletion(): void
     {
         $patient = $this->patient('930000000007', 'Staff Board');
@@ -235,6 +306,24 @@ final class StaffFlowTest extends DatabaseTestCase
     {
         $id = $this->pdo->query('SELECT id FROM doctors ORDER BY id LIMIT 1')->fetchColumn();
         self::assertIsString($id, 'The seed must create at least one doctor.');
+
+        return $id;
+    }
+
+    /** Create a throwaway perawat account and return its id. */
+    private function temporaryUser(string $prefix): string
+    {
+        $username = $prefix.'-'.bin2hex(random_bytes(4));
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO users (username, full_name, role) VALUES (:username, 'Temp Staff', 'perawat') RETURNING id"
+        );
+        $stmt->execute(['username' => $username]);
+        $id = (string) $stmt->fetchColumn();
+
+        $this->pdo->prepare(
+            "INSERT INTO credentials (user_id, password_hash, must_change_password) VALUES (:id, 'x', FALSE)"
+        )->execute(['id' => $id]);
 
         return $id;
     }
