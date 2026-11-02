@@ -1,0 +1,15 @@
+parameters:
+    level: 6
+    paths:
+        - app
+        - public
+        - database
+        - tests
+    excludePaths:
+        - vendor/*
+        - node_modules/*
+        - public/assets/*
+        - .phpunit.cache/*
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    reportUnmatchedIgnoredErrors: true

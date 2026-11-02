@@ -1,6 +1,6 @@
 <?php
 
-/** @var string $title */
+/** @var null|string $title */
 /** @var string $content */
 ?>
 <!DOCTYPE html>
@@ -8,21 +8,35 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title) ?></title>
-    <link rel="stylesheet" href="/assets/app.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo e($title ?? 'VALENIA'); ?></title>
+
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" defer></script>
+
+    <link rel="stylesheet" href="/assets/app.css">
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
     <main>
-        <?= $content ?>
+        <?php echo $content; ?>
     </main>
+    <script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.0/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/morph@3.17.0/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.17.0/dist/cdn.min.js"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+
+            if (meta) {
+                event.detail.headers['X-CSRF-Token'] = meta.content;
+            }
+        });
+    </script>
 </body>
 
 </html>

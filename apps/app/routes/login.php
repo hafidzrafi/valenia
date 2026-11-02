@@ -10,19 +10,19 @@ declare(strict_types=1);
  * the form again with a generic message (FR-AUTH-01, UAT 2).
  */
 return [
-    'GET' => static function (): string|Response {
+    'GET' => static function (): Response|string {
         start_app_session();
 
         $raw = $_SESSION['user_id'] ?? null;
 
-        if (is_string($raw) && $raw !== '' && ($user = load_session_user($raw)) !== null) {
+        if (is_string($raw) && '' !== $raw && ($user = load_session_user($raw)) !== null) {
             return redirect(target_for_role($user['role']));
         }
 
         return view('login', ['token' => csrf_token()]);
     },
 
-    'POST' => static function (): string|Response {
+    'POST' => static function (): Response|string {
         $username = request_input('username') ?? '';
         $password = isset($_POST['password']) && is_string($_POST['password'])
             ? $_POST['password']
@@ -31,7 +31,7 @@ return [
         try {
             $result = authenticate($username, $password);
         } catch (Throwable $exception) {
-            app_log('error', 'Login gagal: ' . $exception->getMessage());
+            app_log('error', 'Login gagal: '.$exception->getMessage());
 
             return new Response(view('login', [
                 'token' => csrf_token(),

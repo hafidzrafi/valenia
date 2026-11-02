@@ -4,13 +4,13 @@
             <div class="size-16 relative overflow-hidden  flex items-center justify-center">
                 <img src="/images/valenia-logo.svg" alt="Logo Perusahaan" class="w-full h-full object-contain" />
             </div>
-            <span class="text-teal-500 text-2xl font-light font-stretch:expanded font-['SF_Pro_Display'] tracking-wider translate-y-4">
+            <span class="text-teal-500 text-2xl font-light font-stretch:expanded font-display tracking-wider translate-y-4">
                 VALENIA
             </span>
         </a>
     </div>
     <div class="flex items-center gap-12">
-        <nav class="flex items-center gap-12 text-black text-base font-['SF_Pro_Display']">
+        <nav class="flex items-center gap-12 text-black text-base font-display">
             <a href="/" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
 
             <!-- Dropdown Layanan -->
@@ -26,7 +26,7 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI UMUM">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Umum
                             </button>
@@ -34,7 +34,7 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI GIGI">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Poli Gigi
                             </button>
@@ -42,17 +42,17 @@
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="KONSELING">
-                            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="block w-full px-4 py-2 text-left rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">
                                 Konseling dan Psikologi
                             </button>
                         </form>
 
-                        <?php if ($_SESSION['isguest'] == true): ?>
+                        <?php if (null !== portal_patient()) { ?>
                             <a href="/portal-pasien" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
-                        <?php else: ?>
+                        <?php } else { ?>
                             <a href="/form-riwayat" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors ">Cek Riwayat</a>
-                        <?php endif ?>
+                        <?php } ?>
 
                     </div>
                 </div>

@@ -6,18 +6,16 @@
  * IMPORTANT: this is a complete <html> document, not a content partial. Render
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
- *
  */
-
-
-
 $isform = true;
+$old = $old ?? [];
+$error = $error ?? null;
 
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 
 
@@ -27,16 +25,19 @@ include __DIR__ . '/../components/background-img.php';
 
 
     <div
-        class="w-85 h-120 rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] mt-14"
+        class="w-[340px] min-h-[480px] rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] mt-14 px-6 pb-8"
         style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
 
-        <h1 class="text-3xl pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Portal Pasien</h1>
-        <p class="text-sm text-center mt-4">Masukkan NIM/NIP dan tanggal lahir <br> untuk cek riwayat</p>
+        <h1 class="text-3xl pt-6 flex justify-center font-bold text-slate-900">Portal Pasien</h1>
+        <p class="text-sm text-center mt-3">Masukkan NIM/NIP dan tanggal lahir <br> untuk cek riwayat</p>
 
-        <form class="flex flex-col gap-2 items-center mt-10" method="POST" action="/portal-pasien"
-            onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir');">
+        <?php if (null !== $error) { ?>
+            <p class="mt-4 rounded-2xl bg-red-50 px-4 py-2 text-center text-sm text-red-600"><?php echo e($error); ?></p>
+        <?php } ?>
 
-            <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+        <form class="flex flex-col gap-2 items-center mt-6" method="POST" action="/portal-pasien">
+
+            <?php echo csrf_field(); ?>
 
             <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[250px] relative gap-1"
                 x-data="{ 
@@ -101,13 +102,13 @@ include __DIR__ . '/../components/background-img.php';
                 <a href="#" class="text-teal-500 text-sm -mt-4 font-medium hover:text-teal-700 hover:underline">Bantuan?</a>
             </div>
 
-            <div class="flex flex-col items-center gap-3 mt-8">
+            <div class="flex flex-col items-center gap-2 mt-6 w-full">
                 <button type="submit" class="w-[188px] h-[52px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-600 transition-colors shadow-md">
                     <p class="text-base font-semibold text-white">Cari</p>
                     <i class="ph ph-magnifying-glass text-white text-[18px]"></i>
                 </button>
 
-                <a href="/" class="mt-2 font-medium text-gray-500 hover:text-teal-500 hover:underline"
+                <a href="/" class="text-sm font-medium text-slate-500 hover:text-teal-600 hover:underline"
                     onclick="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir');">
                     Batal
                 </a>
@@ -117,7 +118,7 @@ include __DIR__ . '/../components/background-img.php';
 
 
     <div>
-        <?php include __DIR__ . '/../components/subfooter.php'; ?>
+        <?php include __DIR__.'/../components/subfooter.php'; ?>
     </div>
 
 </div>

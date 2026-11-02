@@ -5,17 +5,28 @@ declare(strict_types=1);
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
+$finder = (new Finder())
+    ->in(__DIR__)
+    ->exclude([
+        'vendor',
+        'node_modules',
+        'public/assets',
+        '.git',
+        '.phpunit.cache',
+        'tests/Fixtures',
+    ])
+    ->name('*.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true);
+
 return (new Config())
     ->setRiskyAllowed(false)
     ->setRules([
-        '@auto' => true,
-        '@PhpCsFixer' => true
+        '@PSR12' => true,
+        '@PhpCsFixer' => true,
+        'ordered_imports' => true,
+        'no_unused_imports' => true,
+        'phpdoc_to_comment' => false,
     ])
-    // 💡 by default, Fixer looks for `*.php` files excluding `./vendor/` - here, you can groom this config
-    ->setFinder(
-        (new Finder())
-            // 💡 root folder to check
-            ->in(__DIR__)
-            
-    )
-;
+    ->setFinder($finder)
+    ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache');

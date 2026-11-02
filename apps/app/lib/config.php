@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Dotenv\Dotenv;
 
 /** Environment and path helpers. Functions only, no side effects. */
 
@@ -11,7 +12,7 @@ function app_path(string $path = ''): string
 {
     $base = dirname(__DIR__, 2);
 
-    return $path === '' ? $base : $base . '/' . ltrim($path, '/');
+    return '' === $path ? $base : $base.'/'.ltrim($path, '/');
 }
 
 /**
@@ -21,22 +22,22 @@ function env(string $key, ?string $default = null): ?string
 {
     static $loaded = false;
 
-    if ($loaded === false) {
+    if (false === $loaded) {
         $loaded = true;
         $autoload = app_path('vendor/autoload.php');
 
         if (is_file($autoload)) {
             require_once $autoload;
 
-            if (class_exists(\Dotenv\Dotenv::class) && is_file(app_path('.env'))) {
-                \Dotenv\Dotenv::createImmutable(app_path())->safeLoad();
+            if (class_exists(Dotenv::class) && is_file(app_path('.env'))) {
+                Dotenv::createImmutable(app_path())->safeLoad();
             }
         }
     }
 
     $value = $_ENV[$key] ?? getenv($key);
 
-    if ($value === false || $value === null || $value === '') {
+    if (false === $value || '' === $value) {
         return $default;
     }
 

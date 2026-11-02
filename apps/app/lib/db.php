@@ -10,7 +10,6 @@ declare(strict_types=1);
  * through Docker Compose (see docs). Schema changes go through
  * database/migrate.php, never through an auto-applied schema file.
  */
-
 function db(): PDO
 {
     static $pdo = null;
@@ -29,7 +28,7 @@ function db(): PDO
     if (!is_string($dsn) || !str_starts_with($dsn, 'pgsql:')) {
         throw new RuntimeException(
             'DB_DSN harus berupa DSN PostgreSQL (contoh: pgsql:host=db;port=5432;dbname=valenia). '
-            . 'Jalankan basis data melalui Docker Compose.'
+            .'Jalankan basis data melalui Docker Compose.'
         );
     }
 

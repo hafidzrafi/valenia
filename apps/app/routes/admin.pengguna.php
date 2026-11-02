@@ -23,7 +23,7 @@ return [
         ]);
     },
 
-    'POST' => static function (Request $request): string|Response {
+    'POST' => static function (Request $request): Response {
         $me = (string) $request->attribute('user_id');
         $aksi = request_input('aksi') ?? '';
         $id = request_input('id') ?? '';
@@ -41,7 +41,7 @@ return [
         };
 
         try {
-            if ($aksi === 'tambah') {
+            if ('tambah' === $aksi) {
                 $password = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
                 $result = create_user(
                     request_input('username') ?? '',
@@ -56,18 +56,18 @@ return [
                     : $fail((string) $result['error']);
             }
 
-            if ($aksi === 'nonaktif' || $aksi === 'aktif') {
-                if ($id === '' || $id === $me) {
+            if ('nonaktif' === $aksi || 'aktif' === $aksi) {
+                if ('' === $id || $id === $me) {
                     return $fail('Tidak dapat mengubah akun sendiri.');
                 }
 
-                return set_user_active($id, $aksi === 'aktif', $me)
-                    ? $done($aksi === 'aktif' ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.')
+                return set_user_active($id, 'aktif' === $aksi, $me)
+                    ? $done('aktif' === $aksi ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.')
                     : $fail('Akun tidak ditemukan.');
             }
 
-            if ($aksi === 'reset') {
-                if ($id === '' || $id === $me) {
+            if ('reset' === $aksi) {
+                if ('' === $id || $id === $me) {
                     return $fail('Gunakan halaman Ganti Sandi untuk akun sendiri.');
                 }
 
@@ -81,7 +81,7 @@ return [
 
             return $fail('Aksi tidak dikenal.');
         } catch (Throwable $exception) {
-            app_log('error', 'Kelola pengguna gagal: ' . $exception->getMessage());
+            app_log('error', 'Kelola pengguna gagal: '.$exception->getMessage());
 
             return $fail('Terjadi kesalahan. Coba lagi.');
         }

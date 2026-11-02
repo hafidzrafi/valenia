@@ -12,10 +12,10 @@ declare(strict_types=1);
  *   - the database stores only its SHA-256 hash (`token_hash`);
  *   - absolute lifetime is 12 hours (`expires_at`), idle timeout 30 minutes
  *     (`last_seen_at`), both enforced by the auth guard;
- *   - only authenticated sessions are persisted: PHP still ends anonymous page
- *     views with an empty write, which must never create owner-less rows.
+ *   - authenticated and anonymous sessions are persisted. Anonymous rows have
+ *     `user_id = NULL` and hold the public patient-flow draft/ticket/portal
+ *     state until it expires.
  */
-
 const SESSION_IDLE_SECONDS = 1800;
 const SESSION_ABSOLUTE_SECONDS = 43200;
 const SESSION_COOKIE = 'valenia_session';
@@ -32,7 +32,7 @@ final class DbSessionHandler implements SessionHandlerInterface
         return true;
     }
 
-    public function read(string $id): string|false
+    public function read(string $id): string
     {
         $stmt = db()->prepare(
             'SELECT payload FROM sessions WHERE token_hash = :hash AND expires_at > now()'
@@ -45,36 +45,31 @@ final class DbSessionHandler implements SessionHandlerInterface
 
     public function write(string $id, string $data): bool
     {
-        $userId = $_SESSION['user_id'] ?? null;
+        $rawUserId = $_SESSION['user_id'] ?? null;
+        $userId = is_string($rawUserId) && '' !== $rawUserId ? $rawUserId : null;
+        $hash = hash('sha256', $id);
 
-        if (!is_string($userId) || $userId === '') {
-            // Anonymous session: delete any stale row for this token and persist
-            // nothing (sessions.user_id is NOT NULL by design).
-            db()->prepare('DELETE FROM sessions WHERE token_hash = :hash')
-                ->execute(['hash' => hash('sha256', $id)]);
-
-            return true;
+        if (null === $userId) {
+            $updated = db()->prepare(
+                'UPDATE sessions SET payload = :payload, last_seen_at = now()
+                 WHERE token_hash = :hash AND user_id IS NULL'
+            );
+            $updated->execute(['payload' => $data, 'hash' => $hash]);
+        } else {
+            $updated = db()->prepare(
+                'UPDATE sessions SET payload = :payload, last_seen_at = now()
+                 WHERE token_hash = :hash AND user_id = :user'
+            );
+            $updated->execute(['payload' => $data, 'hash' => $hash, 'user' => $userId]);
         }
 
-        $updated = db()->prepare(
-            'UPDATE sessions SET payload = :payload, last_seen_at = now()
-             WHERE token_hash = :hash AND user_id = :user'
-        );
-        $updated->execute([
-            'payload' => $data,
-            'hash' => hash('sha256', $id),
-            'user' => $userId,
-        ]);
-
-        if ($updated->rowCount() === 0) {
-            // Row created explicitly at login time (see login_user()); this
-            // branch only covers the id being recycled after a restart.
+        if (0 === $updated->rowCount()) {
             db()->prepare(
                 'INSERT INTO sessions (user_id, token_hash, payload, ip_address, user_agent, expires_at)
                  VALUES (:user, :hash, :payload, :ip, :ua, now() + make_interval(secs => :lifetime))'
             )->execute([
                 'user' => $userId,
-                'hash' => hash('sha256', $id),
+                'hash' => $hash,
                 'payload' => $data,
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
                 'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
@@ -88,12 +83,13 @@ final class DbSessionHandler implements SessionHandlerInterface
     public function destroy(string $id): bool
     {
         db()->prepare('DELETE FROM sessions WHERE token_hash = :hash')
-            ->execute(['hash' => hash('sha256', $id)]);
+            ->execute(['hash' => hash('sha256', $id)])
+        ;
 
         return true;
     }
 
-    public function gc(int $maxlifetime): int|false
+    public function gc(int $maxlifetime): int
     {
         $stmt = db()->prepare('DELETE FROM sessions WHERE expires_at <= now()');
         $stmt->execute();
@@ -110,7 +106,7 @@ final class DbSessionHandler implements SessionHandlerInterface
  */
 function start_app_session(): void
 {
-    if (session_status() === PHP_SESSION_ACTIVE) {
+    if (PHP_SESSION_ACTIVE === session_status()) {
         return;
     }
 
@@ -125,7 +121,7 @@ function start_app_session(): void
         'path' => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure' => env('APP_ENV') === 'production',
+        'secure' => 'production' === env('APP_ENV'),
     ]);
     session_start();
 }

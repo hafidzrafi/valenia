@@ -18,14 +18,21 @@ function csrf_token(): string
     return Csrf::$token;
 }
 
+function csrf_field(): string
+{
+    return '<input type="hidden" name="_token" value="'
+        .htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8').'">';
+}
+
 Middleware::register('csrf', static function (Request $request, callable $next): Response {
     $token = $_COOKIE['csrf_token'] ?? '';
 
-    if (!is_string($token) || $token === '') {
+    if (!is_string($token) || '' === $token) {
         $token = bin2hex(random_bytes(32));
         setcookie('csrf_token', $token, [
             'httponly' => true,
             'samesite' => 'Lax',
+            'secure' => 'production' === env('APP_ENV'),
             'path' => '/',
         ]);
     }

@@ -81,7 +81,11 @@ docker compose exec app php database/seed.php              # seed services + adm
 
 ### Option 2: Without Docker (local PHP CLI)
 
-Requires local PHP 8.4+ with `pdo_pgsql` extension enabled and a reachable PostgreSQL instance.
+Requires local PHP **8.5.12+** with `pdo_pgsql` extension enabled and a reachable PostgreSQL instance.
+
+> **Security floor:** PHP **8.5.12** or newer is mandatory. It is the first
+> release that fixes PHP2Shell (CVE-2026-109618 and CVE-2026-109619). Do not
+> lower this floor or use a floating `php:8.5` image.
 
 #### 1. Install dependencies and build assets
 
@@ -132,6 +136,45 @@ php -S localhost:8000 -t public public/index.php
 Open <http://localhost:8000>. Routes: `/` (public), `/login` (staff sign-in),
 `/admin` and below (requires login as admin; the seeded admin from
 `php database/seed.php` forces a password change on first login).
+
+## Quality gates
+
+Run from `apps/`:
+
+```bash
+composer check          # code style + static analysis + tests
+composer cs             # php-cs-fixer --dry-run --diff
+composer stan           # phpstan level 6
+composer test:unit      # no database required
+composer test:integration
+```
+
+Integration tests need a migrated `valenia_test` database and `RUN_DB_TESTS=1`.
+
+## Patient flow
+
+Public patient routes:
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/` | GET | Landing page |
+| `/form` | GET/POST | Choose a poli and show the registration form |
+| `/ambil-tiket` | GET/POST | Validate identity and confirm registration |
+| `/muncul-qr` | GET/POST | Issue the queue number and show the QR ticket |
+| `/form-riwayat` | GET | Patient history lookup form |
+| `/portal-pasien` | GET/POST | Look up and display active visit/history |
+| `/portal-keluar` | POST | Clear the portal session |
+
+Anonymous visits use the inactive `guest` system account in `users`; the visit
+records `registration_source = 'guest'` and still has a non-null `created_by`.
+Queue dates use `app_today()` in the Asia/Jakarta timezone. Ticket numbers are
+stored as integers and displayed as service-prefixed codes (`PU-01`, `PG-01`,
+`PK-01`).
+
+In the portal, selecting a history row updates the right-hand detail card.
+Today's own `menunggu` visit can be cancelled through `POST /portal-batal`;
+cancellation is a status change, not a delete, and the queue number is not
+reused.
 
 ## Notes
 

@@ -17,37 +17,44 @@ declare(strict_types=1);
  * login (must_change_password = TRUE).
  */
 
-require_once __DIR__ . '/../app/lib/config.php';
-require_once __DIR__ . '/../app/lib/db.php';
+require_once __DIR__.'/../app/lib/config.php';
 
-const SEED_SERVICES = ['Poli Umum', 'Poli Gigi', 'Konseling/Psikologi'];
+require_once __DIR__.'/../app/lib/db.php';
+
+const SEED_SERVICES = ['Poli Umum' => 'PU', 'Poli Gigi' => 'PG', 'Konseling/Psikologi' => 'PK'];
 const SEED_ADMIN_USERNAME = 'admin';
 const SEED_ADMIN_FULL_NAME = 'Administrator';
 const SEED_ADMIN_ROLE = 'admin';
 const SEED_ADMIN_PASSWORD_DEFAULT = 'admin12345';
 
-if (env('APP_ENV') === 'production') {
+if ('production' === env('APP_ENV')) {
     fwrite(STDERR, "Seeder ditolak pada lingkungan produksi.\n");
+
     exit(1);
 }
 
 try {
     $pdo = db();
 } catch (Throwable $exception) {
-    fwrite(STDERR, 'Gagal terhubung ke basis data: ' . $exception->getMessage() . "\n");
+    fwrite(STDERR, 'Gagal terhubung ke basis data: '.$exception->getMessage()."\n");
+
     exit(1);
 }
 
 try {
     $pdo->beginTransaction();
 
-    // 1) Master poli.
-    $insertService = $pdo->prepare(
-        'INSERT INTO services (name) VALUES (?) ON CONFLICT (name) DO NOTHING'
+    // 1) Master poli. The prefix is written explicitly: relying on the 'XX'
+    //    column default would violate services_queue_prefix_idx on a fresh
+    //    database (every new row would default to 'XX'). DO UPDATE also heals
+    //    rows that were seeded before this fix.
+    $upsertService = $pdo->prepare(
+        'INSERT INTO services (name, queue_prefix) VALUES (?, ?)
+         ON CONFLICT (name) DO UPDATE SET queue_prefix = EXCLUDED.queue_prefix'
     );
 
-    foreach (SEED_SERVICES as $serviceName) {
-        $insertService->execute([$serviceName]);
+    foreach (SEED_SERVICES as $serviceName => $queuePrefix) {
+        $upsertService->execute([$serviceName, $queuePrefix]);
     }
 
     // 2) Admin user. The no-op DO UPDATE makes RETURNING id work whether the
@@ -80,13 +87,14 @@ try {
         $pdo->rollBack();
     }
 
-    fwrite(STDERR, 'Seeding gagal: ' . $exception->getMessage() . "\n");
+    fwrite(STDERR, 'Seeding gagal: '.$exception->getMessage()."\n");
+
     exit(1);
 }
 
 fwrite(
     STDOUT,
-    'Seeding selesai: ' . count(SEED_SERVICES) . " layanan dan akun admin ({$userId}) disiapkan.\n"
+    'Seeding selesai: '.count(SEED_SERVICES)." layanan dan akun admin ({$userId}) disiapkan.\n"
 );
 
 exit(0);
