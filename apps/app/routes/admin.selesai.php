@@ -20,9 +20,33 @@ return [
             return redirect('/admin');
         }
 
-        $result = complete_staff_visit($visitId, (string) $request->attribute('user_id'));
-        staff_flash($result['ok'] ? 'Antrean diselesaikan.' : (string) $result['error']);
+        $diagnosis = (string) (request_input('diagnosis') ?? '');
+        $treatment = (string) (request_input('treatment') ?? '');
+        $note = request_input('note');
 
-        return redirect('/admin');
+        $_SESSION['exam_input'] = [
+            'diagnosis' => $diagnosis,
+            'treatment' => $treatment,
+            'note' => is_string($note) ? $note : '',
+        ];
+
+        $result = complete_staff_visit(
+            $visitId,
+            (string) $request->attribute('user_id'),
+            $diagnosis,
+            $treatment,
+            is_string($note) ? $note : null
+        );
+
+        if (!$result['ok']) {
+            $_SESSION['exam_error'] = (string) $result['error'];
+
+            return redirect('/admin/periksa?visit='.rawurlencode($visitId));
+        }
+
+        unset($_SESSION['exam_input']);
+        staff_flash('Hasil tersimpan.');
+
+        return redirect('/admin/kunjungan?visit='.rawurlencode($visitId));
     },
 ];

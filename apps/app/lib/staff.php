@@ -201,16 +201,92 @@ function staff_queue_activity(int $limit = 20): array
 }
 
 /**
+ * A visit plus the context the examination input page needs: patient, service,
+ * queue code, complaint, and the doctor on duty for display.
+ *
+ * Returns null when the id is not a UUID, the visit is missing, or it is not a
+ * today visit. Callers decide which statuses they accept.
+ *
+ * @return null|array<string, mixed>
+ */
+function staff_visit_for_input(string $visitId): ?array
+{
+    if (1 !== preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $visitId)) {
+        return null;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at,
+                v.complaint, s.id AS service_id,
+                s.name AS service_name, s.queue_prefix,
+                p.full_name, p.identity_number,
+                (v.queue_date = app_today()) AS is_today
+         FROM visits v
+         JOIN services s ON s.id = v.service_id
+         JOIN patients p ON p.id = v.patient_id
+         WHERE v.id = :visit'
+    );
+    $stmt->execute(['visit' => $visitId]);
+    $visit = $stmt->fetch();
+
+    if (!is_array($visit) || !$visit['is_today']) {
+        return null;
+    }
+
+    $visit = add_queue_code($visit);
+    $visit['doctor_on_duty'] = staff_doctor_on_duty((int) $visit['service_id']);
+
+    return $visit;
+}
+
+/**
+ * The doctor shown as penanggung jawab medis: the active doctor of the poli
+ * who is marked hadir today, falling back to the first active doctor of the
+ * poli. Display context only; nothing is stored.
+ *
+ * @return null|array{full_name: string}
+ */
+function staff_doctor_on_duty(int $serviceId): ?array
+{
+    $stmt = db()->prepare(
+        'SELECT d.full_name
+         FROM doctors d
+         LEFT JOIN doctor_attendance a
+                ON a.doctor_id = d.id AND a.attendance_date = app_today()
+         WHERE d.service_id = :service
+           AND d.is_active
+         ORDER BY COALESCE(a.is_present, FALSE) DESC, d.full_name
+         LIMIT 1'
+    );
+    $stmt->execute(['service' => $serviceId]);
+    $row = $stmt->fetch();
+
+    return is_array($row) ? ['full_name' => (string) $row['full_name']] : null;
+}
+
+/**
  * Close a visit: only a visit that is currently being served today may be
- * completed. Writes the examination row and flips the status to selesai.
+ * completed. Writes the examination row (diagnosis, treatment, optional note)
+ * and flips the status to selesai.
+ *
+ * Diagnosis and treatment are required; the note is optional and stored in
+ * examinations.note (nullable, added in migration 0020).
  *
  * The actor context is set inside the same transaction so the audit trigger and
  * any future RLS policy see the acting user.
  *
  * @return array{ok: bool, error: ?string}
  */
-function complete_staff_visit(string $visitId, string $actorId): array
+function complete_staff_visit(string $visitId, string $actorId, string $diagnosis = '', string $treatment = '', ?string $note = null): array
 {
+    $diagnosis = trim($diagnosis);
+    $treatment = trim($treatment);
+    $note = null === $note || '' === trim($note) ? null : trim($note);
+
+    if ('' === $diagnosis || '' === $treatment) {
+        return ['ok' => false, 'error' => 'Diagnosis dan tindakan wajib diisi.'];
+    }
+
     $pdo = db();
     $pdo->beginTransaction();
 
@@ -256,12 +332,19 @@ function complete_staff_visit(string $visitId, string $actorId): array
         // allows, and it requires doctor_id to be NULL. recorded_by keeps the
         // real actor, whether that account is an admin or a perawat.
         $pdo->prepare(
-            "SELECT record_examination(:visit, 'perawat', NULL, :actor, :complaint, NULL, NULL, NULL)"
+            "SELECT record_examination(:visit, 'perawat', NULL, :actor, :complaint, :findings, :diagnosis, :treatment)"
         )->execute([
             'visit' => $visitId,
             'actor' => $actorId,
             'complaint' => $visit['complaint'],
+            'findings' => null,
+            'diagnosis' => $diagnosis,
+            'treatment' => $treatment,
         ]);
+
+        $pdo->prepare('UPDATE examinations SET note = :note WHERE visit_id = :visit')
+            ->execute(['note' => $note, 'visit' => $visitId])
+        ;
 
         $pdo->commit();
     } catch (Throwable $exception) {

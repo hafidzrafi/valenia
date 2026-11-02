@@ -134,7 +134,7 @@ final class StaffFlowTest extends DatabaseTestCase
 
         \advance_queue($service, $this->adminId());
 
-        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
         self::assertTrue($result['ok'], (string) $result['error']);
 
         $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
@@ -159,7 +159,7 @@ final class StaffFlowTest extends DatabaseTestCase
         $ticket = \issue_guest_ticket($patient, $this->serviceId('Poli Umum'), 'Demam');
         $this->visitIds[] = (string) $ticket['visit_id'];
 
-        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
 
         self::assertFalse($result['ok']);
         self::assertSame('Panggil antrean terlebih dahulu sebelum menyelesaikan.', $result['error']);
@@ -178,8 +178,8 @@ final class StaffFlowTest extends DatabaseTestCase
 
         \advance_queue($service, $this->adminId());
 
-        $first = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
-        $second = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        $first = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
+        $second = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
 
         self::assertTrue($first['ok'], (string) $first['error']);
         self::assertFalse($second['ok']);
@@ -208,7 +208,7 @@ final class StaffFlowTest extends DatabaseTestCase
         $visitId = (string) $stmt->fetchColumn();
         $this->visitIds[] = $visitId;
 
-        $result = \complete_staff_visit($visitId, $this->adminId());
+        $result = \complete_staff_visit($visitId, $this->adminId(), 'Demam', 'Istirahat');
 
         self::assertFalse($result['ok']);
         self::assertSame('Hanya antrean hari ini yang dapat diselesaikan.', $result['error']);
@@ -240,6 +240,63 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame('akun dihapus', $events[0]['actor']);
     }
 
+    public function testCompletionStoresDiagnosisTreatmentAndNote(): void
+    {
+        $patient = $this->patient('930000000013', 'Staff Exam Fields');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Demam');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+
+        $result = \complete_staff_visit(
+            (string) $ticket['visit_id'],
+            $this->adminId(),
+            'ISPA ringan',
+            'Istirahat dan obat',
+            'Kontrol bila tidak membaik'
+        );
+        self::assertTrue($result['ok'], (string) $result['error']);
+
+        $stmt = $this->pdo->prepare(
+            'SELECT diagnosis, treatment, note, complaint FROM examinations WHERE visit_id = :id'
+        );
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        $row = $stmt->fetch();
+
+        self::assertIsArray($row);
+        self::assertSame('ISPA ringan', $row['diagnosis']);
+        self::assertSame('Istirahat dan obat', $row['treatment']);
+        self::assertSame('Kontrol bila tidak membaik', $row['note']);
+        self::assertSame('Demam', $row['complaint']);
+    }
+
+    public function testCompletionRejectsMissingDiagnosisOrTreatment(): void
+    {
+        $patient = $this->patient('930000000014', 'Staff Empty Fields');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Batuk');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+
+        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), '', 'Istirahat');
+        self::assertFalse($result['ok']);
+        self::assertSame('Diagnosis dan tindakan wajib diisi.', $result['error']);
+
+        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Batuk pilek', '');
+        self::assertFalse($result['ok']);
+        self::assertSame('Diagnosis dan tindakan wajib diisi.', $result['error']);
+
+        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame('dilayani', $stmt->fetchColumn());
+
+        $count = $this->pdo->prepare('SELECT count(*) FROM examinations WHERE visit_id = :id');
+        $count->execute(['id' => $ticket['visit_id']]);
+        self::assertSame(0, (int) $count->fetchColumn());
+    }
+
     public function testBoardKeepsTheLastServedCodeAfterCompletion(): void
     {
         $patient = $this->patient('930000000007', 'Staff Board');
@@ -248,7 +305,7 @@ final class StaffFlowTest extends DatabaseTestCase
         $this->visitIds[] = (string) $ticket['visit_id'];
 
         \advance_queue($service, $this->adminId());
-        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
         self::assertTrue($result['ok'], (string) $result['error']);
 
         $board = $this->board('Poli Umum');
@@ -265,7 +322,7 @@ final class StaffFlowTest extends DatabaseTestCase
         $this->visitIds[] = (string) $ticket['visit_id'];
 
         \advance_queue($service, $this->adminId());
-        \complete_staff_visit((string) $ticket['visit_id'], $this->adminId());
+        \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
 
         $events = array_values(array_filter(
             \staff_queue_activity(),

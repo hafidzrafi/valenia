@@ -54,14 +54,10 @@ $statusLabel = [
                                 </span>
 
                                 <?php if ('dilayani' === $status) { ?>
-                                    <form method="POST" action="/admin/selesai">
-                                        <?php echo csrf_field(); ?>
-                                        <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
-                                        <button type="submit"
-                                            class="h-[22px] rounded-full bg-teal-600 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-teal-700">
-                                            Selesaikan
-                                        </button>
-                                    </form>
+                                    <a href="/admin/periksa?visit=<?php echo e((string) $row['id']); ?>"
+                                        class="inline-flex h-[22px] items-center rounded-full bg-teal-600 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-teal-700">
+                                        Isi Hasil
+                                    </a>
                                 <?php } ?>
                             </div>
                         </td>

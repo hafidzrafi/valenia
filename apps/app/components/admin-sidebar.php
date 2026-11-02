@@ -11,6 +11,7 @@ $role = $role ?? 'admin';
 $menu = [
     ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'ph-squares-four', 'href' => '/admin', 'roles' => ['admin', 'perawat']],
     ['key' => 'antrian', 'label' => 'Antrian', 'icon' => 'ph-users', 'href' => '/admin/antrean', 'roles' => ['admin', 'perawat']],
+    ['key' => 'input-hasil', 'label' => 'Input Hasil', 'icon' => 'ph-clipboard-text', 'href' => '/admin/periksa', 'roles' => ['admin', 'perawat']],
     ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => null, 'roles' => ['admin', 'perawat']],
     ['key' => 'data-master', 'label' => 'Data Master', 'icon' => 'ph-database', 'href' => null, 'roles' => ['admin']],
     ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => null, 'roles' => ['admin']],
