@@ -24,3 +24,252 @@ function take_staff_flash(): ?string
 
     return is_string($message) && '' !== $message ? $message : null;
 }
+
+/**
+ * Today's queue rows with patient and service context.
+ *
+ * Cancelled visits are excluded so the dashboard table only shows work that is
+ * still relevant to staff.
+ *
+ * @return list<array<string, mixed>>
+ */
+function staff_today_visits(): array
+{
+    $rows = db()->query(
+        "SELECT v.id, v.queue_number, v.queue_date, v.status, v.created_at, v.served_at,
+                v.complaint,
+                s.id AS service_id, s.name AS service_name, s.queue_prefix,
+                p.full_name, p.identity_number
+         FROM visits v
+         JOIN services s ON s.id = v.service_id
+         JOIN patients p ON p.id = v.patient_id
+         WHERE v.queue_date = app_today()
+           AND v.status <> 'batal'
+         ORDER BY s.id, v.queue_number"
+    )->fetchAll();
+
+    return array_map(
+        static fn (array $row): array => add_queue_code($row),
+        $rows
+    );
+}
+
+/**
+ * Dashboard summary: total active rows and a per service breakdown.
+ *
+ * Accepts the already fetched rows so callers can avoid a second query.
+ *
+ * @param null|list<array<string, mixed>> $visits
+ *
+ * @return array{total: int, by_service: array<string, int>}
+ */
+function staff_summary(?array $visits = null): array
+{
+    $visits ??= staff_today_visits();
+    $byService = [];
+
+    foreach ($visits as $visit) {
+        $service = (string) $visit['service_name'];
+        $byService[$service] = ($byService[$service] ?? 0) + 1;
+    }
+
+    return ['total' => count($visits), 'by_service' => $byService];
+}
+
+/**
+ * Active doctors with today's attendance state.
+ *
+ * @return list<array<string, mixed>>
+ */
+function staff_attendance_today(): array
+{
+    return db()->query(
+        'SELECT d.id, d.full_name,
+                s.id AS service_id, s.name AS service_name,
+                COALESCE(a.is_present, FALSE) AS is_present,
+                (a.doctor_id IS NOT NULL) AS recorded,
+                sch.start_time, sch.end_time
+         FROM doctors d
+         JOIN services s ON s.id = d.service_id
+         LEFT JOIN doctor_attendance a
+                ON a.doctor_id = d.id AND a.attendance_date = app_today()
+         LEFT JOIN LATERAL (
+                SELECT sc.start_time, sc.end_time
+                FROM doctor_schedules sc
+                WHERE sc.doctor_id = d.id
+                  AND sc.day_of_week = EXTRACT(ISODOW FROM app_today())::int
+                ORDER BY sc.start_time
+                LIMIT 1
+         ) sch ON TRUE
+         WHERE d.is_active
+         ORDER BY s.id, d.full_name'
+    )->fetchAll();
+}
+
+/**
+ * Record whether a doctor is present today (one row per doctor per day).
+ *
+ * Returns false when the doctor id is unknown or malformed.
+ */
+function set_staff_attendance(string $doctorId, bool $present, string $actorId): bool
+{
+    try {
+        $stmt = db()->prepare(
+            'INSERT INTO doctor_attendance (doctor_id, attendance_date, is_present, recorded_by)
+             VALUES (:doctor, app_today(), :present, :actor)
+             ON CONFLICT (doctor_id, attendance_date)
+             DO UPDATE SET is_present = EXCLUDED.is_present,
+                           recorded_by = EXCLUDED.recorded_by'
+        );
+        $stmt->execute([
+            'doctor' => $doctorId,
+            'present' => $present ? 'true' : 'false',
+            'actor' => $actorId,
+        ]);
+    } catch (Throwable $exception) {
+        app_log('warning', 'Kehadiran dokter gagal disimpan: '.$exception->getMessage());
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Today's queue activity, derived from the append-only audit trail.
+ *
+ * Only INSERT and UPDATE rows on visits are considered. Labels are mapped in
+ * PHP so the database holds no display text, and the actor falls back to a
+ * neutral label because audit_logs.actor_id has no foreign key.
+ *
+ * @return list<array{time: string, code: string, patient: string, event: string, actor: string}>
+ */
+function staff_queue_activity(int $limit = 20): array
+{
+    $limit = max(1, min($limit, 100));
+
+    $stmt = db()->prepare(
+        "SELECT a.created_at, a.action,
+                a.old_data->>'status' AS old_status,
+                a.new_data->>'status' AS new_status,
+                v.queue_number,
+                s.queue_prefix,
+                p.full_name,
+                u.username
+         FROM audit_logs a
+         JOIN visits v ON v.id = a.row_id
+         JOIN services s ON s.id = v.service_id
+         JOIN patients p ON p.id = v.patient_id
+         LEFT JOIN users u ON u.id = a.actor_id
+         WHERE a.table_name = 'visits'
+           AND a.action IN ('INSERT', 'UPDATE')
+           AND (a.created_at AT TIME ZONE 'Asia/Jakarta')::date = app_today()
+         ORDER BY a.created_at DESC, a.id DESC
+         LIMIT :take"
+    );
+    $stmt->bindValue('take', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $rows = $stmt->fetchAll();
+    $events = [];
+
+    foreach ($rows as $row) {
+        if ('INSERT' === $row['action']) {
+            $event = 'Didaftarkan';
+        } else {
+            $event = match ((string) ($row['new_status'] ?? '')) {
+                'dilayani' => 'Dipanggil',
+                'selesai' => 'Selesai',
+                'batal' => 'Dibatalkan',
+                default => 'Diperbarui',
+            };
+        }
+
+        $time = new DateTimeImmutable((string) $row['created_at']);
+        $time = $time->setTimezone(new DateTimeZone('Asia/Jakarta'));
+
+        $events[] = [
+            'time' => $time->format('H:i'),
+            'code' => queue_code((int) $row['queue_number'], (string) $row['queue_prefix']),
+            'patient' => (string) $row['full_name'],
+            'event' => $event,
+            'actor' => null !== $row['username'] ? (string) $row['username'] : 'akun dihapus',
+        ];
+    }
+
+    return $events;
+}
+
+/**
+ * Close a visit: only a visit that is currently being served today may be
+ * completed. Writes the examination row and flips the status to selesai.
+ *
+ * The actor context is set inside the same transaction so the audit trigger and
+ * any future RLS policy see the acting user.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function complete_staff_visit(string $visitId, string $actorId): array
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT status, complaint, (queue_date = app_today()) AS is_today
+             FROM visits
+             WHERE id = :id
+             FOR UPDATE'
+        );
+        $stmt->execute(['id' => $visitId]);
+        $visit = $stmt->fetch();
+
+        if (!is_array($visit)) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Antrean tidak ditemukan.'];
+        }
+
+        if (!$visit['is_today']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Hanya antrean hari ini yang dapat diselesaikan.'];
+        }
+
+        if ('selesai' === $visit['status']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Antrean ini sudah diselesaikan.'];
+        }
+
+        if ('dilayani' !== $visit['status']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Panggil antrean terlebih dahulu sebelum menyelesaikan.'];
+        }
+
+        $pdo->prepare("SELECT set_config('app.actor_id', :actor, true)")
+            ->execute(['actor' => $actorId])
+        ;
+
+        // examiner_role 'perawat' is the only non doctor value the schema
+        // allows, and it requires doctor_id to be NULL. recorded_by keeps the
+        // real actor, whether that account is an admin or a perawat.
+        $pdo->prepare(
+            "SELECT record_examination(:visit, 'perawat', NULL, :actor, :complaint, NULL, NULL, NULL)"
+        )->execute([
+            'visit' => $visitId,
+            'actor' => $actorId,
+            'complaint' => $visit['complaint'],
+        ]);
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        $pdo->rollBack();
+        app_log('error', 'Selesaikan antrean gagal: '.$exception->getMessage());
+
+        return ['ok' => false, 'error' => 'Terjadi kesalahan. Coba lagi.'];
+    }
+
+    return ['ok' => true, 'error' => null];
+}
