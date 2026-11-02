@@ -47,7 +47,13 @@ $exam = $exam ?? [];
                             <?php echo e('' !== (string) ($exam['note'] ?? '') ? (string) $exam['note'] : '-'); ?>
                         </p>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-3">
+                        <?php if ('dilayani' === (string) $visit['status']) { ?>
+                            <a href="/admin/periksa?visit=<?php echo e((string) $visit['id']); ?>"
+                                class="inline-flex h-[40px] items-center rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
+                                Isi Hasil
+                            </a>
+                        <?php } ?>
                         <a href="/admin"
                             class="inline-flex h-[40px] items-center rounded-full bg-[#d9d9d9] px-8 text-sm font-medium text-[#666] transition-colors hover:bg-slate-300">
                             Tutup

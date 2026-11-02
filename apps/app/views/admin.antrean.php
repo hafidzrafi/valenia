@@ -8,7 +8,7 @@ $headerTitle = 'Antrean Poliklinik';
 $adminNama = 'Petugas '.ucfirst($role);
 $adminUnit = 'Poliklinik Polinema';
 ?>
-<div class="flex min-h-screen flex-col lg:flex-row">
+<div class="flex min-h-screen flex-col lg:flex-row" x-data="{ confirmService: null, confirmCode: '' }">
     <?php include __DIR__.'/../components/admin-sidebar.php'; ?>
 
     <div class="flex min-h-screen min-w-0 flex-1 flex-col"
@@ -34,6 +34,32 @@ $adminUnit = 'Poliklinik Polinema';
                      hx-swap="innerHTML"
                      class="mt-6">
                     <?php include __DIR__.'/partials/queue-boards.php'; ?>
+                </div>
+
+                <div x-show="confirmService !== null" x-cloak
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+                    @keydown.escape.window="confirmService = null">
+                    <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
+                        @click.outside="confirmService = null">
+                        <h3 class="font-display text-[28px] font-bold text-slate-900">Panggil Pasien</h3>
+                        <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-teal-50 px-4 py-3">
+                            <p class="text-3xl font-black text-slate-900" x-text="confirmCode"></p>
+                        </div>
+                        <p class="mt-3 text-sm text-slate-600">
+                            Nomor antrean akan diumumkan dan status pasien berubah menjadi Dilayani.
+                        </p>
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <button type="button" @click="confirmService = null"
+                                class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                                Batal
+                            </button>
+                            <button type="button"
+                                @click="document.getElementById('panggil-' + confirmService).submit()"
+                                class="h-[40px] rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
+                                Panggil
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <p class="mt-6 text-sm text-white/80">

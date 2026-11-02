@@ -13,16 +13,19 @@ return [
 
     'GET' => static function (Request $request): string {
         $boards = queue_boards();
+        $visits = staff_today_visits();
 
         if ('true' === ($_SERVER['HTTP_HX_REQUEST'] ?? '')) {
             return render(app_path('app/views/partials/queue-boards.php'), [
                 'boards' => $boards,
+                'visits' => $visits,
             ]);
         }
 
         return view('admin.antrean', [
             'title' => 'Antrean',
             'boards' => $boards,
+            'visits' => $visits,
             'role' => (string) $request->attribute('role'),
             'token' => csrf_token(),
             'flash' => take_staff_flash(),
