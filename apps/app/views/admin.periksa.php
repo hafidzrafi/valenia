@@ -18,7 +18,7 @@ $statusLabel = [
     'batal' => 'Dibatalkan',
 ][(string) $visit['status']] ?? (string) $visit['status'];
 ?>
-<div class="flex min-h-screen flex-col lg:flex-row">
+<div class="flex min-h-screen flex-col lg:flex-row" x-data="{ confirmOpen: false, confirmed: false }">
     <?php include __DIR__.'/../components/admin-sidebar.php'; ?>
 
     <div class="flex min-h-screen min-w-0 flex-1 flex-col"
@@ -35,6 +35,29 @@ $statusLabel = [
             <p class="mt-6 text-sm text-white/80">
                 <a href="/admin" class="underline">&larr; Kembali ke dashboard</a>
             </p>
+        </div>
+
+        <div x-show="confirmOpen" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+            @keydown.escape.window="confirmOpen = false">
+            <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
+                @click.outside="confirmOpen = false">
+                <h3 class="font-display text-[28px] font-bold text-slate-900">Simpan Hasil?</h3>
+                <p class="mt-3 text-sm text-slate-600">
+                    Hasil penanganan akan masuk ke riwayat kunjungan pasien dan status
+                    <?php echo e((string) ($visit['queue_code'] ?? '')); ?> menjadi Selesai.
+                </p>
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button type="button" @click="confirmOpen = false"
+                        class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                        Batal
+                    </button>
+                    <button type="button" @click="confirmed = true; document.getElementById('pemeriksaan-form').requestSubmit()"
+                        class="h-[40px] rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
+                        Simpan
+                    </button>
+                </div>
+            </div>
         </div>
 
         <?php include __DIR__.'/../components/admin-footer.php'; ?>
