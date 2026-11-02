@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @var array $location
- * @var array $call_centers
+ * 
+ * 
  */
 $heroImage = '/images/kontak.jpg';
 $heroTitle = 'Kontak Poliklinik';
