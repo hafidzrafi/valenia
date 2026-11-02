@@ -21,7 +21,7 @@ require_once __DIR__.'/../app/lib/config.php';
 
 require_once __DIR__.'/../app/lib/db.php';
 
-const SEED_SERVICES = ['Poli Umum', 'Poli Gigi', 'Konseling/Psikologi'];
+const SEED_SERVICES = ['Poli Umum' => 'PU', 'Poli Gigi' => 'PG', 'Konseling/Psikologi' => 'PK'];
 const SEED_ADMIN_USERNAME = 'admin';
 const SEED_ADMIN_FULL_NAME = 'Administrator';
 const SEED_ADMIN_ROLE = 'admin';
@@ -44,13 +44,17 @@ try {
 try {
     $pdo->beginTransaction();
 
-    // 1) Master poli.
-    $insertService = $pdo->prepare(
-        'INSERT INTO services (name) VALUES (?) ON CONFLICT (name) DO NOTHING'
+    // 1) Master poli. The prefix is written explicitly: relying on the 'XX'
+    //    column default would violate services_queue_prefix_idx on a fresh
+    //    database (every new row would default to 'XX'). DO UPDATE also heals
+    //    rows that were seeded before this fix.
+    $upsertService = $pdo->prepare(
+        'INSERT INTO services (name, queue_prefix) VALUES (?, ?)
+         ON CONFLICT (name) DO UPDATE SET queue_prefix = EXCLUDED.queue_prefix'
     );
 
-    foreach (SEED_SERVICES as $serviceName) {
-        $insertService->execute([$serviceName]);
+    foreach (SEED_SERVICES as $serviceName => $queuePrefix) {
+        $upsertService->execute([$serviceName, $queuePrefix]);
     }
 
     // 2) Admin user. The no-op DO UPDATE makes RETURNING id work whether the

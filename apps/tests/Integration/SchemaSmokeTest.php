@@ -40,4 +40,14 @@ final class SchemaSmokeTest extends DatabaseTestCase
         self::assertContains('Poli Gigi', $names);
         self::assertContains('Konseling/Psikologi', $names);
     }
+
+    public function testSeededServicesHaveQueuePrefixes(): void
+    {
+        $rows = $this->pdo->query('SELECT name, queue_prefix FROM services')->fetchAll();
+        $prefixes = array_column($rows, 'queue_prefix', 'name');
+
+        self::assertSame('PU', $prefixes['Poli Umum']);
+        self::assertSame('PG', $prefixes['Poli Gigi']);
+        self::assertSame('PK', $prefixes['Konseling/Psikologi']);
+    }
 }

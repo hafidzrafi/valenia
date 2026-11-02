@@ -150,7 +150,31 @@ composer test:integration
 ```
 
 Integration tests need a migrated `valenia_test` database and `RUN_DB_TESTS=1`.
-See `docs/guides/src/11-testing.typ` for the setup.
+
+## Patient flow
+
+Public patient routes:
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/` | GET | Landing page |
+| `/form` | GET/POST | Choose a poli and show the registration form |
+| `/ambil-tiket` | GET/POST | Validate identity and confirm registration |
+| `/muncul-qr` | GET/POST | Issue the queue number and show the QR ticket |
+| `/form-riwayat` | GET | Patient history lookup form |
+| `/portal-pasien` | GET/POST | Look up and display active visit/history |
+| `/portal-keluar` | POST | Clear the portal session |
+
+Anonymous visits use the inactive `guest` system account in `users`; the visit
+records `registration_source = 'guest'` and still has a non-null `created_by`.
+Queue dates use `app_today()` in the Asia/Jakarta timezone. Ticket numbers are
+stored as integers and displayed as service-prefixed codes (`PU-01`, `PG-01`,
+`PK-01`).
+
+In the portal, selecting a history row updates the right-hand detail card.
+Today's own `menunggu` visit can be cancelled through `POST /portal-batal`;
+cancellation is a status change, not a delete, and the queue number is not
+reused.
 
 ## Notes
 

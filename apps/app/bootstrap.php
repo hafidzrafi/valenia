@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 require_once __DIR__.'/lib/config.php';
 
+date_default_timezone_set(env('APP_TIMEZONE', 'Asia/Jakarta') ?? 'Asia/Jakarta');
+
 require_once __DIR__.'/lib/log.php';
 
 require_once __DIR__.'/lib/request.php';
@@ -24,6 +26,8 @@ require_once __DIR__.'/lib/db.php';
 require_once __DIR__.'/lib/session.php';
 
 require_once __DIR__.'/lib/auth.php';
+
+require_once __DIR__.'/lib/registration.php';
 
 require_once __DIR__.'/lib/router.php';
 

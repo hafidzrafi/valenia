@@ -3,13 +3,15 @@
 declare(strict_types=1);
 
 return [
-    'GET' => static fn (Request $request): string => view('form-riwayat', [
-        'title' => 'Masuk Portal',
-    ]),
-    'POST' => static function (Request $request): Response {
-        // Proses penyimpanan data form di sini
+    'GET' => static function (Request $request): string {
+        $old = $_SESSION['portal_old'] ?? [];
+        $error = $_SESSION['portal_error'] ?? null;
+        unset($_SESSION['portal_old'], $_SESSION['portal_error']);
 
-        // Kembalikan Response redirect
-        return redirect('/form-riwayat');
+        return view('form-riwayat', [
+            'title' => 'Masuk Portal',
+            'old' => is_array($old) ? $old : [],
+            'error' => is_string($error) ? $error : null,
+        ]);
     },
 ];

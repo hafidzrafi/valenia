@@ -4,7 +4,7 @@ $token = $token ?? '';
 
 $menu = [
     ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'ph-squares-four', 'href' => '/admin'],
-    ['key' => 'antrian', 'label' => 'Antrian', 'icon' => 'ph-users', 'href' => '#'],
+    ['key' => 'antrian', 'label' => 'Antrian', 'icon' => 'ph-users', 'href' => '/admin/antrean'],
     ['key' => 'data-master', 'label' => 'Data Master', 'icon' => 'ph-database', 'href' => '#'],
     ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => '#'],
     ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => '#'],

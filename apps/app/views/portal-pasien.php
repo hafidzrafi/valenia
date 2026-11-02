@@ -7,8 +7,50 @@
  * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
  * view('home'), which would wrap it in layout.php and emit two <html> documents.
  */
-$heroform = $_SESSION['heroform'] ?? 'Default';
-$no_antrean = $no_antrean ?? 'P-11';
+$patient = $patient ?? [];
+$active = $active ?? null;
+$selected = $selected ?? $active;
+$history = $history ?? [];
+$boards = $boards ?? [];
+$flash = $flash ?? null;
+$isform = true;
+
+$patientName = (string) ($patient['full_name'] ?? '-');
+$identityNumber = (string) ($patient['identity_number'] ?? '-');
+$identityType = (string) ($patient['identity_type'] ?? '-');
+$activeQueue = isset($active['queue_code']) ? (string) $active['queue_code'] : '—';
+$activeService = (string) ($active['service_name'] ?? '-');
+$activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
+$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
+$activeStatus = (string) ($active['status'] ?? '');
+$activeTicketToken = (string) ($active['ticket_token'] ?? '');
+$activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128) : null;
+
+$selectedQueue = isset($selected['queue_code']) ? (string) $selected['queue_code'] : '—';
+$selectedService = (string) ($selected['service_name'] ?? '-');
+$selectedDate = isset($selected['created_at']) ? date('d M Y', strtotime((string) $selected['created_at'])) : '-';
+$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])).' WIB' : '-';
+$selectedStatus = (string) ($selected['status'] ?? '');
+$selectedIsActive = (bool) ($selected['is_active'] ?? false);
+$selectedTicketToken = (string) ($selected['ticket_token'] ?? '');
+$selectedQrSvg = $selectedIsActive && '' !== $selectedTicketToken
+    ? ticket_qr_svg($selectedTicketToken, 128)
+    : null;
+
+$statusMap = [
+    'menunggu' => ['positive', 'Menunggu'],
+    'dilayani' => ['negative', 'Dilayani'],
+    'selesai' => ['positive', 'Selesai'],
+    'batal' => ['disabled', 'Dibatalkan'],
+];
+
+$progressSteps = match ($activeStatus) {
+    'menunggu' => ['done', 'current', 'wait', 'wait'],
+    'dilayani' => ['done', 'done', 'current', 'wait'],
+    'selesai' => ['done', 'done', 'done', 'done'],
+    'batal' => ['done', 'done', 'wait', 'wait'],
+    default => ['current', 'wait', 'wait', 'wait'],
+};
 
 include __DIR__.'/../components/background-img.php';
 
@@ -25,120 +67,86 @@ $showCta = false;
 
 
 <body>
+    <?php if (null !== $flash) { ?>
+        <p class="mx-auto mt-4 w-fit rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700"><?php echo e($flash); ?></p>
+    <?php } ?>
     <div class="w-full h-130 flex items-center justify-center flex-row gap-8">
         <div
             class="w-90 h-100 smooth-corners-md rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] border-2 border-gray-400"
             style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
             <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Antrean Aktif</h1>
             <div class="flex flex-row justify-center items-center mt-10 gap-8">
-                <div class="flex justify-start  bg-[url(/images/qr-placeholder.jpg)] bg-cover bg-center smooth-corners-md rounded-2xl h-34 w-34"></div>
+                <div class="flex h-34 w-34 items-center justify-center rounded-2xl bg-white p-1">
+                    <?php if (null !== $activeQrSvg) { ?>
+                        <?php echo $activeQrSvg; ?>
+                    <?php } else { ?>
+                        <i class="ph ph-ticket text-[64px] text-teal-500"></i>
+                    <?php } ?>
+                </div>
 
                 <div class="flex justify-end  gap-4">
                     <div class="flex flex-col -translate-y-2 gap-1">
-                        <p class="text-[32px] font-black text-right text-slate-900"><?php echo $no_antrean; ?></p>
-                        <p class="text-sm  text-black text-right">Valenia Carlo</p>
-                        <p class="text-sm  text-black text-right"><?php echo $heroform; ?></p>
-                        <p class="text-sm  text-black text-right">28 September 2026</p>
-                        <p class="text-sm  text-black text-right">10:00 WIB</p>
+                        <p class="text-[32px] font-black font-display-expanded text-right text-slate-900"><?php echo e($activeQueue); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($patientName); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeService); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeDate); ?></p>
+                        <p class="text-sm  text-black text-right"><?php echo e($activeTime); ?></p>
                     </div>
                 </div>
             </div>
             <div class="flex flex-col justify-center items-center">
-                <p class="flex justify-center mt-8 text-[14px]">Tunjukkan QR Code saat periksa di poliklinik</p>
-                <button type="button" class="w-[148px] h-[48px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                    <p class="text-base font-medium text-white">Unduh</p>
-                    <i class="ph ph-download-simple text-white text-[18px]"></i>
-                </button>
+                <p class="flex justify-center mt-8 text-[14px]"><?php echo null === $active ? 'Tidak ada antrean aktif hari ini.' : 'Tunjukkan QR Code saat periksa di poliklinik'; ?></p>
+                <?php if (null !== $active) { ?>
+                    <a href="/muncul-qr?download=1" class="w-[148px] h-[48px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                        <p class="text-base font-medium text-white">Unduh</p>
+                        <i class="ph ph-download-simple text-white text-[18px]"></i>
+                    </a>
+                <?php } ?>
             </div>
         </div>
 
 
         <div
-            class="w-130 h-100 rounded-4xl smooth-corners-md bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] flex flex-col justify-center items-center border-2 border-gray-400"
+            class="w-130 h-100 rounded-4xl smooth-corners-md bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] flex flex-col justify-start border-2 border-gray-400 px-12 pt-10"
             style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
-            <div class="flex flex-row w-full">
+            <div class="flex w-full items-start justify-between gap-6">
+                <div class="min-w-0 pt-1">
+                    <h1 class="truncate text-[24px] font-medium leading-tight text-slate-900"
+                        title="<?php echo e($patientName); ?>"><?php echo e($patientName); ?></h1>
 
-                <div>
-                    <div class=" w-full h-5 flex justify-start ml-12">
-                        <h1 class="text-[24px]  flex w-50 font-medium text-slate-900">Valenia Carlo</h1>
-                    </div>
-
-                </div>
-
-                <div class=" w-full h-10 flex justify-end mr-12">
-                    <div class="border rounded-full w-30 h-30 flex "></div>
-                </div>
-
-            </div>
-
-            <div class=" w-104 translate-y-1  ">
-                <div class="border-t  w-65 h-20">
-                    <p class="text-sm  text-black pt-2">Mahasiswa</p>
-                    <p class="text-sm  text-black">D4-TI</p>
-                    <div class="scale-90 pt-2 flex -translate-x-3"><?php
-                                                                    $status_tag = 'positive';
+                    <div class="mt-5 border-t border-gray-400 pt-3">
+                        <p class="text-sm text-black"><?php echo e($identityType); ?></p>
+                        <p class="text-sm text-black"><?php echo e($identityNumber); ?></p>
+                        <div class="mt-3"><?php
+                        $status_tag = 'positive';
 $label_tag = 'Aktif';
 
 include __DIR__.'/../components/tag.php'; ?>
+                        </div>
                     </div>
-
                 </div>
+
+                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400"></div>
             </div>
 
-
-            <div class=" w-104 translate-y-18  ">
-                <div class="border-t  w-100 h-20">
-                    <p class="  text-black font-medium pt-2">Progres Antrean Aktif</p>
-                </div>
+            <div class="mt-7 w-full border-t border-gray-400 pt-3">
+                <p class="text-black font-medium">Progres Antrean Aktif</p>
             </div>
 
+            <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-6">
+                <?php foreach ([1, 2, 3, 4] as $index) { ?>
+                    <?php if ($index > 1) { ?>
+                        <span class=" w-[42px] h-[2px] bg-gray-500"></span>
+                    <?php } ?>
 
+                    <div class="flex justify-center items-center">
+                        <?php
+                        $status_step = $progressSteps[$index - 1];
+                    $step_text = (string) $index;
 
-
-
-
-
-            <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-10">
-                <div class="flex justify-center items-center">
-                    <?php
-                    $status_step = 'done';
-$step_text = '1';
-
-include __DIR__.'/../components/step.php'; ?>
-                </div>
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
-
-                <div class="flex justify-center items-center">
-                    <?php
-$status_step = 'done';
-$step_text = '2';
-
-include __DIR__.'/../components/step.php'; ?>
-
-
-
-                </div>
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
-
-                <div class=" flex justify-center items-center">
-                    <?php
-$status_step = 'current';
-$step_text = '3';
-
-include __DIR__.'/../components/step.php'; ?>
-
-                </div>
-
-                <span class=" w-[42px] h-[2px] bg-gray-500"></span>
-
-                <div class=" flex justify-center items-center">
-                    <?php
-$status_step = 'wait';
-$step_text = '4';
-
-include __DIR__.'/../components/step.php'; ?>
-
-                </div>
+                    include __DIR__.'/../components/step.php'; ?>
+                    </div>
+                <?php } ?>
 
             </div>
             <div class=" flex flex-row gap-10 items-center justify-center h-4 w-112">
@@ -160,113 +168,98 @@ include __DIR__.'/../components/step.php'; ?>
 
     </div>
 
-    <div class="flex flex-col relative w-full h-260 mt-5 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-15">
-        <h1 class="text-4xl  flex justify-center font-bold text-white mt-5">Riwayat Kunjungan</h1>
+    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] rounded-bl-none rounded-br-none bg-slate-900/70 items-center pt-15 pb-12">
+        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Sedang Dilayani</h1>
 
-        <p class="text-7xl font-black mt-30 text-white"><?php echo $no_antrean; ?></p>
-        <p class="  text-white mt-6 ">Nomor yang dilayani saat ini</p>
+        <div id="served-boards"
+             hx-get="/portal-boards"
+             hx-trigger="every 10s"
+             hx-swap="innerHTML"
+             class="mt-10">
+            <?php include __DIR__.'/partials/served-boards.php'; ?>
+        </div>
+        <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
+    </section>
+
+    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto smooth-corners-lg rounded-tl-none rounded-tr-none rounded-bl-[90px] rounded-br-[90px] bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
+        <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
 
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 max-w-5xl mx-auto mt-40">
             <div class="flex flex-col gap-3 space-y-2 col-span-2">
-                <div class="grid grid-cols-1 gap-2 place-items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-6 shadow-sm min-h-[324px]">
+                <div class="flex flex-col gap-3 items-center justify-start rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-6 shadow-sm min-h-[324px]">
 
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Umum</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-        $status_tag = 'negative';
-$label_tag = 'Ditangani';
+                    <?php if ([] === $history) { ?>
+                        <p class="text-sm text-gray-600">Belum ada riwayat kunjungan.</p>
+                    <?php } ?>
 
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Konseling</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'positive';
-$label_tag = 'Selesai';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Gigi</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'disabled';
-$label_tag = 'Dibatalkan';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 items-center px-8 h-15 w-130 border border-gray-500 rounded-3xl bg-white hover:bg-teal-100/80 hover:border-teal-500 active:bg-teal-200/80">
-                        <p class="text-lg font-medium text-black">Poli Umum</p>
-                        <p class="text-sm font-medium text-black text-center">28 Sep 2026</p>
-                        <p class="text-sm font-medium text-black text-center">10:00:00 WIB</p>
-                        <div class="flex justify-end scale-90">
-                            <?php
-$status_tag = 'positive';
-$label_tag = 'Selesai';
-
-include __DIR__.'/../components/tag.php'; ?>
-                        </div>
-                    </div>
+                    <?php foreach ($history as $visit) { ?>
+                        <?php
+                    [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
+                        $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
+                        ?>
+                        <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
+                           class="grid grid-cols-4 items-center px-8 h-15 w-130 rounded-3xl no-underline transition-colors border bg-white shadow-[0_2px_8px_rgba(30,60,55,0.08)] <?php echo $isSelected ? 'border-teal-500 ring-1 ring-teal-500' : 'border-gray-200 hover:border-teal-400'; ?>">
+                            <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
+                                <p class="truncate text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
+                                <p class="text-xs font-medium text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></p>
+                            </div>
+                            <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
+                            <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
+                            <div class="flex justify-end scale-90">
+                                <?php include __DIR__.'/../components/tag.php'; ?>
+                            </div>
+                        </a>
+                    <?php } ?>
 
                 </div>
+
+<?php
+$pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
+$selectedVisitId = $selectedVisitId ?? null;
+
+$pagerLink = static function (int $target) use ($selectedVisitId): string {
+    $query = ['page' => (string) $target];
+
+    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+        $query['visit'] = $selectedVisitId;
+    }
+
+    return '/portal-pasien?'.http_build_query($query);
+};
+?>
 
                 <div class="rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-sm flex flex-row items-center justify-center space-x-2">
 
                     <input type="text" id="filter" name="filter" placeholder="Cari..."
                         class="w-50 text-xs  text-left bg-transparent p-2 smooth-corners-lg rounded-2xl mr-8  border-[1.5px] border-gray-500 focus:outline-none focus:border-teal-500 focus:bg-teal-100/50 hover:bg-teal-100/50 ">
 
-                    <div
-                        x-data="{ 
-                            currentPage: 1, 
-                            totalPages: 4,
-                            goToPage(page) {
-                                if(page < 1 || page > this.totalPages) return;
-                                this.currentPage = page;
-                                // fetch data
-                                console.log('Fetching data for page:', this.currentPage);
-                            }
-                        }"
-                        class="flex items-center space-x-2 text-sm font-medium">
+                    <div class="flex items-center space-x-2 text-sm font-medium">
                         <!-- Previous button -->
-                        <button
-                            @click="goToPage(currentPage - 1)"
-                            :disabled="currentPage === 1"
-                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <a
+                            href="<?php echo e($pagerLink(max(1, $pagination['page'] - 1))); ?>"
+                            aria-label="Halaman sebelumnya"
+                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors <?php echo $pagination['page'] <= 1 ? 'opacity-40 pointer-events-none' : ''; ?>">
                             <i class="ph ph-caret-left text-[18px]"></i>
-                        </button>
+                        </a>
 
                         <!-- number -->
-                        <template x-for="i in totalPages" :key="i">
-                            <button
-                                @click="goToPage(i)"
-                                :class="currentPage === i ? 'bg-teal-400/50 text-white border-teal-500' : 'border-gray-500 hover:bg-teal-100'"
-                                class="w-9 h-9 flex items-center justify-center rounded-[8px] border transition-colors"
-                                x-text="i">
-                            </button>
-                        </template>
+                        <?php for ($pagerPage = 1; $pagerPage <= $pagination['pages']; ++$pagerPage) { ?>
+                            <a
+                                href="<?php echo e($pagerLink($pagerPage)); ?>"
+                                aria-label="Halaman <?php echo $pagerPage; ?>"
+                                class="w-9 h-9 flex items-center justify-center rounded-[8px] border transition-colors <?php echo $pagerPage === $pagination['page'] ? 'bg-teal-400/50 text-white border-teal-500' : 'border-gray-500 hover:bg-teal-100'; ?>">
+                                <?php echo $pagerPage; ?>
+                            </a>
+                        <?php } ?>
 
                         <!-- Next button -->
-                        <button
-                            @click="goToPage(currentPage + 1)"
-                            :disabled="currentPage === totalPages"
-                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                        <a
+                            href="<?php echo e($pagerLink(min($pagination['pages'], $pagination['page'] + 1))); ?>"
+                            aria-label="Halaman berikutnya"
+                            class="w-9 h-9 flex items-center justify-center rounded-[8px] border border-gray-500 hover:bg-teal-100 active:bg-teal-400/50 active:border-teal-500 transition-colors <?php echo $pagination['page'] >= $pagination['pages'] ? 'opacity-40 pointer-events-none' : ''; ?>">
                             <i class="ph ph-caret-right text-[18px]"></i>
-                        </button>
+                        </a>
                     </div>
 
                 </div>
@@ -277,42 +270,75 @@ include __DIR__.'/../components/tag.php'; ?>
 
 
             <div class="flex flex-col items-center rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-md min-h-[400px] min-w-70">
-                <h1 class="text-2xl flex justify-center  font-bold text-slate-900">Poli Umum</h1>
+                <?php [$selectedTag, $selectedLabel] = $statusMap[$selectedStatus] ?? ['disabled', 'Tidak aktif']; ?>
+                <h1 data-testid="selected-visit-service" class="text-2xl flex justify-center font-bold text-slate-900">
+                    <?php echo e(null === $selected ? 'Pilih riwayat kunjungan' : $selectedService); ?>
+                </h1>
 
-                <div class="w-50 h-55 flex justify-center items-center border-b-2 border-gray-500">
-                    <div class="flex    bg-[url(/images/qr-placeholder.jpg)] bg-cover bg-center smooth-corners-md rounded-2xl h-40 w-40 mb-3"></div>
+                <?php if (null !== $selected) { ?>
+                    <p data-testid="selected-visit-code" class="mt-1 text-sm font-medium text-slate-500"><?php echo e($selectedQueue); ?></p>
+                <?php } ?>
+
+                <div class="flex flex-col items-center">
+                    <div class="flex h-40 w-40 items-center justify-center rounded-2xl bg-white p-1">
+                        <?php if (null !== $selectedQrSvg) { ?>
+                            <?php echo $selectedQrSvg; ?>
+                        <?php } else { ?>
+                            <i class="ph ph-clock text-[72px] text-teal-500"></i>
+                        <?php } ?>
+                    </div>
+
+                    <?php if (null !== $selected) { ?>
+                        <div data-testid="selected-visit-status" class="mt-4">
+                            <?php $status_tag = $selectedTag;
+                        $label_tag = $selectedLabel;
+
+                        include __DIR__.'/../components/tag.php'; ?>
+                        </div>
+                    <?php } ?>
+
+                    <div class="mt-4 w-full border-t border-gray-400"></div>
                 </div>
-                <div class="absolute scale-110 translate-y-59  ">
-                    <?php
-                    $status_tag = 'negative';
-$label_tag = 'Ditangani';
-
-include __DIR__.'/../components/tag.php'; ?>
-                </div>
-
-                <p class="text-sm mt-6  text-black text-center">28 September 2026</p>
-                <p class="text-sm  text-black text-center">10:00 WIB</p>
+                <?php if (null !== $selected) { ?>
+                    <p class="text-sm mt-4 text-black text-center"><?php echo e($selectedDate); ?></p>
+                    <p class="text-sm text-black text-center"><?php echo e($selectedTime); ?></p>
+                <?php } else { ?>
+                    <p class="text-sm mt-4 text-black text-center">Klik salah satu riwayat untuk melihat detail.</p>
+                <?php } ?>
 
                 <div class="flex flex-row items-center justify-center gap-4">
 
-                    <button type="button" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl border-2 border-amber-500 bg-white/80 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white">
-                        <p class="font-medium ">Batal</p>
+                    <?php if (null !== $selected && 'menunggu' === $selectedStatus && $selectedIsActive) { ?>
+                        <form method="POST" action="/portal-batal"
+                              onsubmit="return confirm('Batalkan antrean ini?')">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="visit_id" value="<?php echo e((string) $selected['id']); ?>">
+                            <button type="submit" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl border-2 border-amber-500 bg-white/80 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white">
+                                <p class="font-medium ">Batal</p>
+                            </button>
+                        </form>
+                    <?php } ?>
 
-                    </button>
-
-                    <button type="button" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                        <p class="font-medium text-white">Unduh</p>
-                        <i class="ph ph-download-simple text-white text-[18px]"></i>
-                    </button>
+                    <?php if (null !== $selectedQrSvg) { ?>
+                        <a href="/muncul-qr?download=1" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                            <p class="font-medium text-white">Unduh</p>
+                            <i class="ph ph-download-simple text-white text-[18px]"></i>
+                        </a>
+                    <?php } ?>
 
                 </div>
+
+                <form method="POST" action="/portal-keluar" class="mt-6">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" class="text-sm font-medium text-gray-500 hover:text-teal-600 hover:underline">Keluar portal</button>
+                </form>
 
 
 
             </div>
         </div>
 
-    </div>
+    </section>
 
 
 </body>

@@ -7,5 +7,6 @@ return [
     // rendered raw instead of through the shared layout.
     'GET' => static fn (Request $request): string => render(app_path('app/views/home.php'), [
         'title' => 'VALENIA',
+        'boards' => queue_boards(),
     ]),
 ];

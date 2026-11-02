@@ -60,7 +60,7 @@
             <?php endif; ?>
             <span class="text-white text-base font-display"><?= e($u['username']) ?></span>
             <form method="POST" action="/logout" class="inline">
-                <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="smooth-corners-md rounded-3xl px-5 py-3 bg-slate-900 hover:bg-slate-700 text-white text-base font-display transition-colors">Keluar</button>
             </form>
         <?php endif;  */ ?>
