@@ -40,9 +40,9 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testLoginByUsernameStillWorks(): void
     {
-        $this->makeUser('login-user', 'login-user@example.test', 'E2e-Pass-123');
+        $this->makeUser('login-user', 'login-user@example.test', 'Test-Pass-123');
 
-        $result = \authenticate('login-user', 'E2e-Pass-123');
+        $result = \authenticate('login-user', 'Test-Pass-123');
 
         self::assertTrue($result['ok']);
         self::assertSame('login-user', $result['user']['username']);
@@ -50,9 +50,9 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testLoginByEmailIsCaseInsensitive(): void
     {
-        $this->makeUser('login-email', 'login-email@example.test', 'E2e-Pass-123');
+        $this->makeUser('login-email', 'login-email@example.test', 'Test-Pass-123');
 
-        $result = \authenticate('Login-Email@Example.TEST', 'E2e-Pass-123');
+        $result = \authenticate('Login-Email@Example.TEST', 'Test-Pass-123');
 
         self::assertTrue($result['ok']);
         self::assertSame('login-email', $result['user']['username']);
@@ -60,9 +60,9 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testLoginWorksForANumericNipUsername(): void
     {
-        $this->makeUser('254107020102', null, 'E2e-Pass-123');
+        $this->makeUser('254107020102', null, 'Test-Pass-123');
 
-        $result = \authenticate('254107020102', 'E2e-Pass-123');
+        $result = \authenticate('254107020102', 'Test-Pass-123');
 
         self::assertTrue($result['ok']);
         self::assertSame('254107020102', $result['user']['username']);
@@ -70,8 +70,8 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testUnknownEmailLooksExactlyLikeUnknownUsername(): void
     {
-        $byUsername = \authenticate('no-such-account', 'E2e-Pass-123');
-        $byEmail = \authenticate('no-such-account@example.test', 'E2e-Pass-123');
+        $byUsername = \authenticate('no-such-account', 'Test-Pass-123');
+        $byEmail = \authenticate('no-such-account@example.test', 'Test-Pass-123');
 
         self::assertSame($byUsername, $byEmail);
         self::assertFalse($byEmail['ok']);
@@ -100,7 +100,7 @@ final class IdentifierLoginTest extends DatabaseTestCase
             'case-user',
             'Case User',
             'perawat',
-            'E2e-Pass-123',
+            'Test-Pass-123',
             $this->adminId(),
             '  Case-User@Example.Test  ',
         );
@@ -116,7 +116,7 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testCreateUserRejectsAnInvalidEmail(): void
     {
-        $result = \create_user('bad-email', 'Bad Email', 'perawat', 'E2e-Pass-123', $this->adminId(), 'not-an-email');
+        $result = \create_user('bad-email', 'Bad Email', 'perawat', 'Test-Pass-123', $this->adminId(), 'not-an-email');
 
         self::assertFalse($result['ok']);
         self::assertSame('Format surel tidak valid.', $result['error']);
@@ -126,9 +126,9 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testCreateUserRejectsADuplicateEmail(): void
     {
-        $this->makeUser('dup-owner', 'dup@example.test', 'E2e-Pass-123');
+        $this->makeUser('dup-owner', 'dup@example.test', 'Test-Pass-123');
 
-        $result = \create_user('dup-second', 'Dup Second', 'perawat', 'E2e-Pass-123', $this->adminId(), 'DUP@example.test');
+        $result = \create_user('dup-second', 'Dup Second', 'perawat', 'Test-Pass-123', $this->adminId(), 'DUP@example.test');
 
         self::assertFalse($result['ok']);
         self::assertSame('Surel sudah dipakai.', $result['error']);
@@ -137,8 +137,8 @@ final class IdentifierLoginTest extends DatabaseTestCase
 
     public function testAccountsWithoutEmailDoNotCollide(): void
     {
-        $first = $this->makeUser('no-email-a', null, 'E2e-Pass-123');
-        $second = $this->makeUser('no-email-b', null, 'E2e-Pass-123');
+        $first = $this->makeUser('no-email-a', null, 'Test-Pass-123');
+        $second = $this->makeUser('no-email-b', null, 'Test-Pass-123');
 
         self::assertTrue($first['ok'], (string) $first['error']);
         self::assertTrue($second['ok'], (string) $second['error']);
