@@ -41,7 +41,7 @@ function current_user(): ?array
  */
 function is_public_path(string $path): bool
 {
-    return in_array($path, ['', 'login', 'logout', 'greeting', 'form', 'ambil-tiket', 'muncul-qr', 'portal-pasien', 'portal-batal', 'portal-keluar', 'portal-boards', 'papan-antrean', 'form-riwayat'], true);
+    return in_array($path, ['', 'login', 'logout', 'greeting', 'form', 'ambil-tiket', 'muncul-qr', 'portal-pasien', 'portal-batal', 'portal-keluar', 'portal-boards', 'papan-antrean', 'form-riwayat', 'kontak'], true);
 }
 
 /**
