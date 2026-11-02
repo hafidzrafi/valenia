@@ -8,7 +8,7 @@ $dashboardTitle = $headerTitle ?? ('admin' === $role ? 'Dashboard Admin' : 'Dash
     <h1 class="font-display text-[63px] font-bold leading-[75px] tracking-[0.5px] text-[#379a89]"><?php echo e($dashboardTitle); ?></h1>
     <p class="text-[22px] font-medium leading-[30px] text-[#379a89]">Layanan Poliklinik Politeknik Negeri Malang</p>
 
-    <div class="absolute right-0 top-[27px] flex h-[41px] w-[137px] items-center gap-[7px] rounded-full bg-white pl-[6px]">
+    <div class="mt-4 flex h-[41px] w-[137px] items-center gap-[7px] rounded-full bg-white pl-[6px] sm:absolute sm:right-0 sm:top-[27px] sm:mt-0">
         <div class="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-teal-500">
             <i class="ph ph-user text-[18px] text-white"></i>
         </div>

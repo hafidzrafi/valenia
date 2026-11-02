@@ -24,7 +24,7 @@ $kelola = [
 
 $visible = static fn (array $item): bool => in_array($role, $item['roles'], true);
 ?>
-<aside class="sticky top-0 z-10 flex h-screen w-64 shrink-0 flex-col justify-between bg-white px-[11px] pb-4 font-sans">
+<aside class="z-10 flex h-auto w-full shrink-0 flex-col justify-between bg-white px-[11px] pb-4 font-sans lg:sticky lg:top-0 lg:h-screen lg:w-64">
     <div>
         <div class="mb-[17px] flex items-center gap-4 pl-3 pt-6">
             <img src="/images/valenia-logo.svg" alt="VALENIA" class="h-[41px] w-[57px] object-contain"
