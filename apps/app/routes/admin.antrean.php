@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * /admin/antrean: per poli live boards with the staff "serve next" action.
+ *
+ * Rendered inside the shared staff shell. The htmx polling branch still returns
+ * only the boards partial so the swap stays cheap.
+ */
 return [
     '_middleware' => ['role:admin,perawat'],
 
@@ -14,13 +20,12 @@ return [
             ]);
         }
 
-        $flash = $_SESSION['admin_flash'] ?? null;
-        unset($_SESSION['admin_flash']);
-
         return view('admin.antrean', [
             'title' => 'Antrean',
             'boards' => $boards,
-            'flash' => is_string($flash) ? $flash : null,
+            'role' => (string) $request->attribute('role'),
+            'token' => csrf_token(),
+            'flash' => take_staff_flash(),
         ]);
     },
 
@@ -28,9 +33,9 @@ return [
         $serviceId = (int) (request_input('service_id', '0') ?? '0');
         $result = advance_queue($serviceId, (string) $request->attribute('user_id'));
 
-        $_SESSION['admin_flash'] = $result['advanced']
+        staff_flash($result['advanced']
             ? 'Memanggil '.$result['queue_code'].'.'
-            : 'Tidak ada antrean menunggu.';
+            : 'Tidak ada antrean menunggu.');
 
         return redirect('/admin/antrean');
     },

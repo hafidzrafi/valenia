@@ -1,12 +1,12 @@
 <?php
-$antreanAktif = $antreanAktif ?? [];
-$perPoli = array_count_values(array_column($antreanAktif, 'poli'));
+/** @var array{total: int, by_service: array<string, int>} $summary */
+$byService = $summary['by_service'];
 
 $ringkasan = [
-    ['label' => 'Total antrian', 'jumlah' => count($antreanAktif), 'icon' => 'ph-users'],
-    ['label' => 'Poli Umum', 'jumlah' => $perPoli['Umum'] ?? 0, 'icon' => 'ph-stethoscope'],
-    ['label' => 'Poli Gigi', 'jumlah' => $perPoli['Gigi'] ?? 0, 'icon' => 'ph-tooth'],
-    ['label' => 'Konseling', 'jumlah' => $perPoli['Konseling'] ?? 0, 'icon' => 'ph-brain'],
+    ['label' => 'Total antrian', 'jumlah' => $summary['total'], 'icon' => 'ph-users'],
+    ['label' => 'Poli Umum', 'jumlah' => $byService['Poli Umum'] ?? 0, 'icon' => 'ph-stethoscope'],
+    ['label' => 'Poli Gigi', 'jumlah' => $byService['Poli Gigi'] ?? 0, 'icon' => 'ph-tooth'],
+    ['label' => 'Konseling', 'jumlah' => $byService['Konseling/Psikologi'] ?? 0, 'icon' => 'ph-brain'],
 ];
 ?>
 <section class="smooth-corners-lg h-[292px] w-[292px] shrink-0 border-2 border-white/60 bg-white/40 px-6 pt-[17px] shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md font-sans"
