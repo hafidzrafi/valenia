@@ -373,10 +373,10 @@ function clear_session_data(): void
     }
 }
 
-/** Where a role lands after login: admins to /admin, everyone else to /. */
+/** Where a role lands after login: staff to /admin, everyone else to /. */
 function target_for_role(string $role): string
 {
-    return 'admin' === $role ? '/admin' : '/';
+    return in_array($role, ['admin', 'perawat'], true) ? '/admin' : '/';
 }
 
 /**
