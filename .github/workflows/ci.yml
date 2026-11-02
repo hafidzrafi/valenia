@@ -94,3 +94,21 @@ jobs:
 
       - name: Assert CSS output
         run: test -s public/assets/app.css
+
+  image:
+    name: Container image
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build runtime image
+        run: docker build -f docker/Dockerfile --target runtime -t valenia:ci .
+
+      - name: Assert runtime image contents
+        run: |
+          docker run --rm valenia:ci sh -c 'test -f vendor/autoload.php'
+          docker run --rm valenia:ci sh -c 'test -s public/assets/app.css'
+          test "$(docker run --rm valenia:ci id -u)" != "0"
