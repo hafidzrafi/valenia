@@ -1,9 +1,5 @@
 <?php
 
-/**
- * 
- * 
- */
 $heroImage = '/images/kontak.jpg';
 $heroTitle = 'Kontak Poliklinik';
 $heroDesc = 'Layanan Poliklinik Politeknik Negeri Malang';
