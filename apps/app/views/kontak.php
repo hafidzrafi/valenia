@@ -1,14 +1,8 @@
 <?php
 
 /**
- * 
  * @var array $location
  * @var array $call_centers
- * 
- * 
- * 
- *
- * 
  */
 $heroImage = '/images/kontak.jpg';
 $heroTitle = 'Kontak Poliklinik';
@@ -18,9 +12,9 @@ $showCta = false;
 
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
-<?php include __DIR__ . '/../components/header.php'; ?>
-<?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
@@ -36,7 +30,7 @@ $showCta = false;
                 @mouseenter="$dispatch('cursor-hide')"
                 @mouseleave="$dispatch('cursor-show')">
                 <iframe
-                    src="<?= htmlspecialchars($location['embed_url']) ?>"
+                    src="<?php echo htmlspecialchars($location['embed_url']); ?>"
                     class="h-full w-full border-0"
                     allowfullscreen
                     loading="lazy"
@@ -45,15 +39,15 @@ $showCta = false;
 
 
             <div class="grid grid-cols-1 gap-6 px-8 py-6  md:grid-cols-3">
-                <?php foreach ($call_centers as $cc): ?>
+                <?php foreach ($call_centers as $cc) { ?>
                     <div class="flex items-center justify-center gap-4">
                         <i class="ph ph-phone-call text-4xl text-teal-700"></i>
                         <div>
-                            <p class="text-sm font-medium text-teal-700"><?= htmlspecialchars($cc['label'], ENT_QUOTES, 'UTF-8') ?></p>
-                            <p class="text-xs tracking-wider text-slate-500"><?= htmlspecialchars($cc['number'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <p class="text-sm font-medium text-teal-700"><?php echo htmlspecialchars($cc['label'], ENT_QUOTES, 'UTF-8'); ?></p>
+                            <p class="text-xs tracking-wider text-slate-500"><?php echo htmlspecialchars($cc['number'], ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
-                <?php endforeach; ?>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -61,4 +55,4 @@ $showCta = false;
 
 
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>

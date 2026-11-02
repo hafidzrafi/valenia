@@ -19,7 +19,6 @@ return [
                 ['label' => 'Call Center', 'number' => 'xxxx - xxxx - xxxx'],
                 ['label' => 'Call Center', 'number' => 'xxxx - xxxx - xxxx'],
                 ['label' => 'Call Center', 'number' => 'xxxx - xxxx - xxxx'],
-
             ],
         ]);
     },
