@@ -5,7 +5,8 @@ $heroTitle = 'Kontak Poliklinik';
 $heroDesc = 'Layanan Poliklinik Politeknik Negeri Malang';
 $page = 'nonlanding';
 $showCta = false;
-
+$location = $location ?? ['embed_url' => ''];
+$call_centers = $call_centers ?? [];
 ?>
 
 <?php include __DIR__.'/../components/cursor.php'; ?>
