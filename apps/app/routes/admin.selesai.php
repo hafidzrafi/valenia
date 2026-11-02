@@ -39,9 +39,20 @@ return [
         );
 
         if (!$result['ok']) {
-            $_SESSION['exam_error'] = (string) $result['error'];
+            // Missing fields go back to the input page with values retained.
+            // Any other failure (unknown visit, wrong day, wrong status) goes
+            // to the dashboard, since the input page only serves visits that
+            // are being served right now.
+            if ('' === trim($diagnosis) || '' === trim($treatment)) {
+                $_SESSION['exam_error'] = (string) $result['error'];
 
-            return redirect('/admin/periksa?visit='.rawurlencode($visitId));
+                return redirect('/admin/periksa?visit='.rawurlencode($visitId));
+            }
+
+            unset($_SESSION['exam_input']);
+            staff_flash((string) $result['error']);
+
+            return redirect('/admin');
         }
 
         unset($_SESSION['exam_input']);
