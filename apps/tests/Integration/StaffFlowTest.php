@@ -43,6 +43,16 @@ final class StaffFlowTest extends DatabaseTestCase
             foreach ($this->doctorIds as $doctorId) {
                 $this->pdo->prepare('DELETE FROM doctor_attendance WHERE doctor_id = :id')->execute(['id' => $doctorId]);
             }
+
+            $this->pdo->exec(
+                'DELETE FROM queue_counters
+                 WHERE queue_date = app_today()
+                   AND NOT EXISTS (
+                       SELECT 1 FROM visits v
+                       WHERE v.service_id = queue_counters.service_id
+                         AND v.queue_date = queue_counters.queue_date
+                   )'
+            );
         }
 
         parent::tearDown();
@@ -272,6 +282,103 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame('Staff Activity', $called['patient']);
     }
 
+    public function testConcurrentAdvanceServesDistinctTickets(): void
+    {
+        $patient = $this->patient('930000000011', 'Staff Concurrent');
+        $service = $this->serviceId('Poli Umum');
+
+        $first = \issue_guest_ticket($patient, $service, 'Demam');
+        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $this->visitIds[] = (string) $first['visit_id'];
+        $this->visitIds[] = (string) $second['visit_id'];
+
+        $locked = $this->newConnection();
+        $other = $this->newConnection();
+
+        try {
+            // Hold the oldest waiting row open so the second connection has to
+            // skip it. This is exactly the situation FOR UPDATE SKIP LOCKED
+            // exists for: two staff pressing the button at the same moment.
+            $locked->beginTransaction();
+
+            $statement = $locked->prepare('SELECT advanced, queue_code, visit_id FROM advance_queue(:service, :actor)');
+            $statement->execute(['service' => $service, 'actor' => $this->adminId()]);
+            $firstResult = $statement->fetch();
+            $statement->closeCursor();
+
+            $statement = $other->prepare('SELECT advanced, queue_code, visit_id FROM advance_queue(:service, :actor)');
+            $statement->execute(['service' => $service, 'actor' => $this->adminId()]);
+            $secondResult = $statement->fetch();
+            $statement->closeCursor();
+
+            self::assertIsArray($firstResult);
+            self::assertIsArray($secondResult);
+            self::assertTrue((bool) $firstResult['advanced']);
+            self::assertTrue((bool) $secondResult['advanced']);
+            self::assertNotSame($firstResult['queue_code'], $secondResult['queue_code']);
+
+            $locked->commit();
+        } finally {
+            if ($locked->inTransaction()) {
+                $locked->rollBack();
+            }
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT count(*) FROM visits WHERE service_id = :service AND queue_date = app_today()
+             AND status = 'dilayani' AND id = ANY(:ids)"
+        );
+        $stmt->execute([
+            'service' => $service,
+            'ids' => '{'.$first['visit_id'].','.$second['visit_id'].'}',
+        ]);
+
+        self::assertSame(2, (int) $stmt->fetchColumn());
+
+        // Nothing left to serve, so a third call must report failure.
+        self::assertFalse(\advance_queue($service, $this->adminId())['advanced']);
+    }
+
+    public function testActivityShowsTheCancellationLabel(): void
+    {
+        $patient = $this->patient('930000000012', 'Staff Cancelled');
+        $ticket = \issue_guest_ticket($patient, $this->serviceId('Poli Gigi'), 'Sakit gigi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        self::assertTrue(\cancel_portal_visit($patient, (string) $ticket['visit_id']));
+
+        $events = array_values(array_filter(
+            \staff_queue_activity(),
+            static fn (array $event): bool => $event['code'] === $ticket['queue_code'] && 'Dibatalkan' === $event['event']
+        ));
+
+        self::assertCount(1, $events);
+        self::assertSame('Staff Cancelled', $events[0]['patient']);
+    }
+
+    public function testThreeDigitQueueNumbersAreNotTruncated(): void
+    {
+        $patient = $this->patient('930000000013', 'Staff Wide Code');
+        $service = $this->serviceId('Poli Gigi');
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO visits (patient_id, service_id, queue_number, queue_date, status, created_by, registration_source)
+             VALUES (:patient, :service, 105, app_today(), 'menunggu', :actor, 'staff')
+             RETURNING id"
+        );
+        $stmt->execute([
+            'patient' => $patient,
+            'service' => $service,
+            'actor' => $this->adminId(),
+        ]);
+        $this->visitIds[] = (string) $stmt->fetchColumn();
+
+        $board = $this->board('Poli Gigi');
+
+        self::assertSame(105, (int) $board['next_queue_number']);
+        self::assertSame('PG-105', $board['next_queue_code']);
+    }
+
     /**
      * @param list<array<string, mixed>> $visits
      *
@@ -340,5 +447,16 @@ final class StaffFlowTest extends DatabaseTestCase
         }
 
         self::fail('Board not found for '.$serviceName);
+    }
+
+    /** A second connection so two transactions can overlap. */
+    private function newConnection(): \PDO
+    {
+        return new \PDO(
+            (string) \env('DB_DSN'),
+            (string) \env('DB_USER'),
+            (string) \env('DB_PASSWORD'),
+            [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION],
+        );
     }
 }
