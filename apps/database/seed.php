@@ -133,13 +133,20 @@ try {
     }
 
     // 3) Admin user. The no-op DO UPDATE makes RETURNING id work whether the
-    //    row is newly inserted or already present.
+    //    row is newly inserted or already present. An email is only written when
+    //    SEED_ADMIN_EMAIL is provided, and an existing address is never
+    //    overwritten by a later seed run.
+    $adminEmail = env('SEED_ADMIN_EMAIL');
+    $adminEmail = is_string($adminEmail) && '' !== trim($adminEmail) ? strtolower(trim($adminEmail)) : null;
+
     $upsertUser = $pdo->prepare(
-        'INSERT INTO users (username, full_name, role) VALUES (?, ?, ?)
-         ON CONFLICT (username) DO UPDATE SET username = EXCLUDED.username
+        'INSERT INTO users (username, full_name, role, email) VALUES (?, ?, ?, ?)
+         ON CONFLICT (username) DO UPDATE
+             SET username = EXCLUDED.username,
+                 email = COALESCE(users.email, EXCLUDED.email)
          RETURNING id'
     );
-    $upsertUser->execute([SEED_ADMIN_USERNAME, SEED_ADMIN_FULL_NAME, SEED_ADMIN_ROLE]);
+    $upsertUser->execute([SEED_ADMIN_USERNAME, SEED_ADMIN_FULL_NAME, SEED_ADMIN_ROLE, $adminEmail]);
     $userId = (string) $upsertUser->fetchColumn();
 
     // 4) Credential (hashed; never overwritten on re-run).

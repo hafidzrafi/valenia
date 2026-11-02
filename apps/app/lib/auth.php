@@ -102,6 +102,11 @@ function hash_password(string $password): string
 /**
  * Verify credentials against users + credentials.
  *
+ * The identifier may be a username, an email address, or a NIP recorded as the
+ * username (the login field is labelled "EMAIL / NIP"). An exact username match
+ * wins over an email match so a username that looks like an address cannot be
+ * shadowed by someone else's email.
+ *
  * Generic on purpose: callers must not distinguish an unknown username from a
  * wrong password (FR-AUTH-01). Returns:
  *   ['ok' => bool, 'user' => ?array, 'locked' => bool, 'must_change' => bool]
@@ -118,9 +123,16 @@ function authenticate(string $username, string $password): array
                 c.failed_attempts, c.locked_until
          FROM users u
          JOIN credentials c ON c.user_id = u.id AND c.provider = \'credential\'
-         WHERE u.username = :username'
+         WHERE u.username = :identifier
+            OR (u.email IS NOT NULL AND lower(u.email) = lower(:identifier_email))
+         ORDER BY (u.username = :identifier_order) DESC
+         LIMIT 1'
     );
-    $stmt->execute(['username' => $username]);
+    $stmt->execute([
+        'identifier' => $username,
+        'identifier_email' => $username,
+        'identifier_order' => $username,
+    ]);
     $row = $stmt->fetch();
 
     if (!is_array($row) || !$row['is_active']) {
@@ -455,7 +467,7 @@ function change_password(string $userId, string $current, string $new): array
 function list_users(): array
 {
     return db()->query(
-        'SELECT u.id, u.username, u.full_name, u.role, u.is_active, u.created_at,
+        'SELECT u.id, u.username, u.email, u.full_name, u.role, u.is_active, u.created_at,
                 c.must_change_password, c.failed_attempts,
                 (c.locked_until IS NOT NULL AND c.locked_until > now()) AS locked
          FROM users u
@@ -470,13 +482,18 @@ function list_users(): array
  *
  * @return array{ok: bool, error: ?string}
  */
-function create_user(string $username, string $fullName, string $role, string $password, string $actorId): array
+function create_user(string $username, string $fullName, string $role, string $password, string $actorId, string $email = ''): array
 {
     $username = trim($username);
     $fullName = trim($fullName);
+    $email = strtolower(trim($email));
 
     if ('' === $username || '' === $fullName) {
         return ['ok' => false, 'error' => 'Nama pengguna dan nama lengkap wajib diisi.'];
+    }
+
+    if ('' !== $email && false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ['ok' => false, 'error' => 'Format surel tidak valid.'];
     }
 
     if ('admin' !== $role && 'perawat' !== $role) {
@@ -492,9 +509,14 @@ function create_user(string $username, string $fullName, string $role, string $p
 
     try {
         $ins = $pdo->prepare(
-            'INSERT INTO users (username, full_name, role) VALUES (:u, :n, :r) RETURNING id'
+            'INSERT INTO users (username, full_name, role, email) VALUES (:u, :n, :r, :e) RETURNING id'
         );
-        $ins->execute(['u' => $username, 'n' => $fullName, 'r' => $role]);
+        $ins->execute([
+            'u' => $username,
+            'n' => $fullName,
+            'r' => $role,
+            'e' => '' === $email ? null : $email,
+        ]);
         $userId = (string) $ins->fetchColumn();
 
         $pdo->prepare(
@@ -502,12 +524,18 @@ function create_user(string $username, string $fullName, string $role, string $p
              VALUES (:user, :hash, TRUE)'
         )->execute(['user' => $userId, 'hash' => hash_password($password)]);
 
-        audit_log('users', $userId, 'INSERT', $actorId, null, json_encode(['username' => $username, 'role' => $role]) ?: null);
+        audit_log('users', $userId, 'INSERT', $actorId, null, json_encode(['username' => $username, 'role' => $role, 'email' => $email ?: null]) ?: null);
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
 
         if ($exception instanceof PDOException && '23505' === $exception->getCode()) {
+            $message = $exception->getMessage();
+
+            if (str_contains($message, 'users_email_unique_idx')) {
+                return ['ok' => false, 'error' => 'Surel sudah dipakai.'];
+            }
+
             return ['ok' => false, 'error' => 'Nama pengguna sudah dipakai.'];
         }
 
