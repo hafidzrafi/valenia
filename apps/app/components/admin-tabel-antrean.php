@@ -26,7 +26,7 @@ $statusLabel = [
                     <th class="pl-2.5 pt-[11px] font-light">No</th>
                     <th class="pt-[11px] font-light">Nama</th>
                     <th class="pt-[11px] font-light">NIM/NIP</th>
-                    <th class="pt-[11px] font-light">Poli</th>
+                    <th class="pt-[11px] font-light">Keluhan</th>
                     <th class="pt-[11px] text-center font-light">Status</th>
                 </tr>
             </thead>
@@ -45,8 +45,8 @@ $statusLabel = [
                     <tr class="h-[54px] border-b border-slate-800 last:border-b-0">
                         <td class="pl-2.5"><?php echo e((string) ($row['queue_code'] ?? '')); ?></td>
                         <td class="truncate pr-2"><?php echo e((string) $row['full_name']); ?></td>
-                        <td><?php echo e((string) $row['identity_number']); ?></td>
-                        <td class="truncate pr-2"><?php echo e((string) $row['service_name']); ?></td>
+                        <td class="truncate pr-2"><?php echo e((string) $row['identity_number']); ?></td>
+                        <td class="truncate pr-2"><?php echo e((string) ($row['complaint'] ?? '-')); ?></td>
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <span class="inline-flex h-[22px] w-[90px] items-center justify-center rounded-full text-[10px] font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.25)] <?php echo $pillClass; ?>">

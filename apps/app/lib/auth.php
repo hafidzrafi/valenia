@@ -391,6 +391,16 @@ function target_for_role(string $role): string
     return in_array($role, ['admin', 'perawat'], true) ? '/admin' : '/';
 }
 
+/** Display name for the currently logged in staff account. */
+function staff_display_name(string $userId): string
+{
+    $stmt = db()->prepare('SELECT full_name FROM users WHERE id = :id');
+    $stmt->execute(['id' => $userId]);
+    $name = $stmt->fetchColumn();
+
+    return is_string($name) && '' !== $name ? $name : 'Petugas';
+}
+
 /**
  * Change a user's password. Returns ['ok' => bool, 'error' => ?string].
  * Also clears lockout state and revokes every *other* session.

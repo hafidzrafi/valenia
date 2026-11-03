@@ -88,6 +88,29 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame(2, $summary['total']);
         self::assertSame(1, $summary['by_service']['Poli Umum']);
         self::assertSame(1, $summary['by_service']['Poli Gigi']);
+        self::assertSame(2, $summary['by_status']['menunggu']);
+        self::assertSame(0, $summary['by_status']['dilayani']);
+        self::assertSame(0, $summary['by_status']['selesai']);
+    }
+
+    public function testSummaryCountsByStatusAcrossTransitions(): void
+    {
+        $patient = $this->patient('930000000015', 'Staff Status Mix');
+        $service = $this->serviceId('Poli Umum');
+        $first = \issue_guest_ticket($patient, $service, 'Demam');
+        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $this->visitIds[] = (string) $first['visit_id'];
+        $this->visitIds[] = (string) $second['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+        \complete_staff_visit((string) $first['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
+
+        $summary = \staff_summary();
+
+        self::assertSame(2, $summary['total']);
+        self::assertSame(1, $summary['by_status']['menunggu']);
+        self::assertSame(0, $summary['by_status']['dilayani']);
+        self::assertSame(1, $summary['by_status']['selesai']);
     }
 
     public function testCancelledVisitsAreExcludedFromTheDashboard(): void

@@ -55,25 +55,32 @@ function staff_today_visits(): array
 }
 
 /**
- * Dashboard summary: total active rows and a per service breakdown.
- *
- * Accepts the already fetched rows so callers can avoid a second query.
+ * Dashboard summary: total active rows plus per service and per status
+ * breakdowns, all derived from the same already fetched rows so the cards can
+ * never disagree with the table below them.
  *
  * @param null|list<array<string, mixed>> $visits
  *
- * @return array{total: int, by_service: array<string, int>}
+ * @return array{total: int, by_service: array<string, int>, by_status: array<string, int>}
  */
 function staff_summary(?array $visits = null): array
 {
     $visits ??= staff_today_visits();
     $byService = [];
+    $byStatus = ['menunggu' => 0, 'dilayani' => 0, 'selesai' => 0];
 
     foreach ($visits as $visit) {
         $service = (string) $visit['service_name'];
         $byService[$service] = ($byService[$service] ?? 0) + 1;
+
+        $status = (string) $visit['status'];
+
+        if (array_key_exists($status, $byStatus)) {
+            ++$byStatus[$status];
+        }
     }
 
-    return ['total' => count($visits), 'by_service' => $byService];
+    return ['total' => count($visits), 'by_service' => $byService, 'by_status' => $byStatus];
 }
 
 /**
