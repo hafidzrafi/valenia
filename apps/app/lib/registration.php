@@ -488,9 +488,6 @@ function ticket_qr_png(string $token, int $size = 220): ?string
 }
 
 /**
- * @return array{active: ?array<string, mixed>, history: list<array<string, mixed>>}
- */
-/**
  * @return list<array<string, mixed>>
  */
 function queue_boards(): array

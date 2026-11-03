@@ -1,5 +1,5 @@
 <?php
-/** @var list<array{id: string, username: string, full_name: string, role: string, is_active: bool, created_at: string, must_change_password: bool, failed_attempts: int|string, locked: bool}> $users */
+/** @var list<array{id: string, username: string, email: ?string, full_name: string, role: string, is_active: bool, created_at: string, must_change_password: bool, failed_attempts: int|string, locked: bool}> $users */
 /** @var string $token */
 /** @var null|string $flash */
 /** @var null|string $error */
@@ -23,6 +23,8 @@
            class="border border-slate-300 rounded px-2 py-1">
     <input type="text" name="full_name" placeholder="Nama lengkap" required
            class="border border-slate-300 rounded px-2 py-1">
+    <input type="email" name="email" placeholder="Surel (opsional)"
+           class="border border-slate-300 rounded px-2 py-1">
     <select name="role" class="border border-slate-300 rounded px-2 py-1">
         <option value="perawat">perawat</option>
         <option value="admin">admin</option>
@@ -45,7 +47,12 @@
     <tbody>
         <?php foreach ($users as $row) { ?>
             <tr class="border-b border-slate-200">
-                <td class="py-1"><?php echo e($row['username']); ?></td>
+                <td class="py-1">
+                    <?php echo e($row['username']); ?>
+                    <?php if (!empty($row['email'])) { ?>
+                        <span class="block text-xs text-slate-500"><?php echo e((string) $row['email']); ?></span>
+                    <?php } ?>
+                </td>
                 <td><?php echo e($row['full_name']); ?></td>
                 <td><?php echo e($row['role']); ?></td>
                 <td>

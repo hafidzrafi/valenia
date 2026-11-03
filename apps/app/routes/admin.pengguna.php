@@ -49,6 +49,7 @@ return [
                     request_input('role') ?? '',
                     $password,
                     $me,
+                    request_input('email') ?? '',
                 );
 
                 return $result['ok']

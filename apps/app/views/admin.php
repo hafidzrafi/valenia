@@ -1,19 +1,10 @@
 <?php
-$antreanAktif = [
-    ['no' => 'A-01', 'nama' => 'Raditya M.', 'nim' => '254107020102', 'poli' => 'Umum', 'status' => 'Selesai'],
-    ['no' => 'A-02', 'nama' => 'Galuh p.', 'nim' => '254107020127', 'poli' => 'Umum', 'status' => 'Menunggu'],
-    ['no' => 'A-03', 'nama' => 'Findi f.', 'nim' => '254107020016', 'poli' => 'Konseling', 'status' => 'Ditangani'],
-    ['no' => 'A-04', 'nama' => 'M. hafidz', 'nim' => '254107020084', 'poli' => 'Konseling', 'status' => 'Selesai'],
-];
-
-$kehadiranMedis = [
-    ['poli' => 'Poli Umum', 'jam' => '10:00:00 WIB', 'hadir' => true],
-    ['poli' => 'Poli Gigi', 'jam' => '-', 'hadir' => false],
-    ['poli' => 'Konseling', 'jam' => '10:00:00 WIB', 'hadir' => true],
-];
-
+/** @var list<array<string, mixed>> $visits */
+/** @var array{total: int, by_service: array<string, int>} $summary */
+/** @var list<array<string, mixed>> $attendance */
+/** @var null|string $flash */
 $active = 'dashboard';
-$token = function_exists('csrf_token') ? csrf_token() : '';
+$token = $token ?? '';
 
 $role = $role ?? 'admin';
 $adminNama = 'Petugas '.ucfirst($role);
@@ -29,6 +20,12 @@ $adminUnit = 'Poliklinik Polinema';
             <?php include __DIR__.'/../components/admin-header.php'; ?>
 
             <main class="mt-[21px]">
+                <?php if (null !== ($flash ?? null) && '' !== $flash) { ?>
+                    <p class="mb-4 rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+                        <?php echo e($flash); ?>
+                    </p>
+                <?php } ?>
+
                 <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
                     <?php include __DIR__.'/../components/admin-ringkasan-antrian.php'; ?>
                     <?php include __DIR__.'/../components/admin-kehadiran-medis.php'; ?>
@@ -37,6 +34,8 @@ $adminUnit = 'Poliklinik Polinema';
                 <div class="mt-8">
                     <?php include __DIR__.'/../components/admin-tabel-antrean.php'; ?>
                 </div>
+
+                <?php include __DIR__.'/../components/admin-aktivitas-antrian.php'; ?>
             </main>
         </div>
 

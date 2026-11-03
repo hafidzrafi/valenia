@@ -67,6 +67,26 @@ docker compose exec app composer install
 
 *Note: Environment variables default automatically in `docker-compose.yaml`; creating `.env` is optional unless overriding credentials.*
 
+#### 1a. Image targets
+
+`docker/Dockerfile` defines four targets:
+
+| Target | Used for |
+|--------|----------|
+| `dev` | local Compose (bind mounts `apps/` over `/srv`) |
+| `builder` | Composer dependencies and optimised autoloader |
+| `assets` | Tailwind build, produces `public/assets/app.css` |
+| `runtime` | deployable image, non-root, no Composer |
+
+`docker-compose.yaml` builds the `dev` target, so `docker compose exec app composer ...` keeps working. The `runtime` target deliberately has no Composer: build it directly when you need the deployable artefact.
+
+```bash
+docker build -f docker/Dockerfile --target runtime -t valenia:runtime .
+```
+
+The runtime image runs as an unprivileged user and ships only `libpq`, not the PostgreSQL build headers, which keeps it far smaller than the development image.
+
+
 #### 2. Migrations (Docker)
 
 ```bash

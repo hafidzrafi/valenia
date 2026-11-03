@@ -26,6 +26,13 @@ final class RoleMiddlewareTest extends TestCase
         self::assertSame(403, $this->runPipeline('guest', 'admin,perawat')->status);
     }
 
+    public function testStaffRolesLandOnTheDashboard(): void
+    {
+        self::assertSame('/admin', \target_for_role('admin'));
+        self::assertSame('/admin', \target_for_role('perawat'));
+        self::assertSame('/', \target_for_role('guest'));
+    }
+
     private function runPipeline(string $role, string $required): \Response
     {
         $request = new \Request('GET', '/admin');
