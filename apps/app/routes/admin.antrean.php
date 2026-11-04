@@ -12,6 +12,7 @@ return [
     '_middleware' => ['role:admin,perawat'],
 
     'GET' => static function (Request $request): string {
+         $visits = staff_today_visits();
         $boards = queue_boards();
 
         if ('true' === ($_SERVER['HTTP_HX_REQUEST'] ?? '')) {
@@ -25,6 +26,7 @@ return [
             'boards' => $boards,
             'role' => (string) $request->attribute('role'),
             'token' => csrf_token(),
+            'visits' => $visits,
             'flash' => take_staff_flash(),
         ]);
     },

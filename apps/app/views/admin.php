@@ -5,7 +5,6 @@
 /** @var null|string $flash */
 $active = 'dashboard';
 $token = $token ?? '';
-
 $role = $role ?? 'admin';
 $adminNama = 'Petugas '.ucfirst($role);
 $adminUnit = 'Poliklinik Polinema';
