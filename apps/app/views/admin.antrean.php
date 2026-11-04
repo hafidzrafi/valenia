@@ -47,7 +47,7 @@ $adminUnit = 'Poliklinik Polinema';
 
 
                 <!-- perlu dibikin component gak ini? V  -->
-
+                 
                 <?php
                 /** @var list<array<string, mixed>> $visits */
                 $statusClass = [
@@ -62,7 +62,7 @@ $adminUnit = 'Poliklinik Polinema';
                     'selesai' => 'Selesai',
                 ];
                 ?>
-                <section class="font-sans">
+                <section class="font-sans" x-data="{ confirmService: null, confirmCode: '' }">
                     <h2 class="mb-[22px] ml-3 mt-7 font-display text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian</h2>
 
                     <div class="smooth-corners-sm w-full overflow-x-auto bg-[#f0fffb] pb-[7px] shadow-[0_4px_14px_rgba(30,110,95,0.18)]"
@@ -97,6 +97,7 @@ $adminUnit = 'Poliklinik Polinema';
                                     $status = (string) $row['status'];
                                     $label = $statusLabel[$status] ?? $status;
                                     $pillClass = $statusClass[$status] ?? $statusClass['menunggu'];
+                                    $formId = 'panggil-visit-' . $row['id'];
                                     ?>
                                     <tr class="h-[54px] border-b border-slate-800 last:border-b-0">
                                         <td class="pl-2.5"><?php echo e((string) ($row['queue_code'] ?? '')); ?></td>
@@ -109,23 +110,74 @@ $adminUnit = 'Poliklinik Polinema';
                                                     <?php echo e($label); ?>
                                                 </span>
 
-                                                <?php if ('dilayani' === $status) { ?>
-                                                    <a href="/admin/periksa?visit=<?php echo e((string) $row['id']); ?>"
-                                                        class="inline-flex h-[22px] items-center rounded-full bg-teal-600 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-teal-700">
-                                                        Isi Hasil
-                                                    </a>
-                                                <?php } ?>
                                             </div>
                                         </td>
-                                        <td class="text-center">
+                                        <td>
+                                            <div class="flex flex-row justify-center gap-2">
+                                                <?php if ('selesai' === $status || 'dilayani' === $status) { ?>
+                                                    <!-- disabled -->
+                                                    <a class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">
+                                                        Panggil
+                                                    </a>
+                                                    <a class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">
+                                                        Batalkan
+                                                    </a>
 
+                                                <?php } else { ?>
+
+                                                    <form method="POST" action="/admin/antrean/panggil" id="<?php echo $formId; ?>" class="hidden">
+                                                        <?php echo csrf_field(); ?>
+                                                        <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
+                                                    </form>
+
+
+                                                    <button type="button"
+                                                        @click="confirmService = '<?php echo $formId; ?>'; confirmCode = '<?php echo e((string) $row['queue_code']); ?>'"
+                                                        class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-teal-500 px-3 text-[11px] font-medium text-white transition-colors hover:bg-teal-700">
+                                                        Panggil
+                                                    </button>
+
+                                                    <a href="#" class="inline-flex h-7 w-20 items-center justify-center rounded-2xl border border-red-500 px-3 text-[11px] font-medium text-red-500 hover:bg-red-500 hover:text-white">
+                                                        Batalkan
+                                                    </a>
+
+                                                <?php } ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php } ?>
                             </tbody>
                         </table>
                     </div>
-                </section>
+
+                    <div x-show="confirmService !== null" x-cloak
+                        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+                        @keydown.escape.window="confirmService = null">
+                        <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
+                            @click.outside="confirmService = null">
+                            <h3 class="font-display text-[28px] font-bold text-slate-900">Panggil Pasien</h3>
+                            <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-teal-50 px-4 py-3">
+                                <p class="text-3xl font-black text-slate-900" x-text="confirmCode"></p>
+                            </div>
+                            <p class="mt-3 text-sm text-slate-600">
+                                Nomor antrean akan diumumkan dan status pasien berubah menjadi Dilayani.
+                            </p>
+                            <div class="mt-6 flex items-center justify-center gap-3">
+                                <button type="button" @click="confirmService = null"
+                                    class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                                    Batal
+                                </button>
+                                <button type="button"
+                                    @click="document.getElementById('panggil-' + confirmService).submit()"
+                                    class="h-[40px] rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
+                                    Panggil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+
+        </section>
 
 
 
@@ -134,7 +186,9 @@ $adminUnit = 'Poliklinik Polinema';
 
 
 
-                <!--bosen dan gabut
+
+
+        <!--bosen dan gabut
                         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
                 █████╗ ███╗   ███╗██████╗  █████╗ ████████╗██╗   ██╗██╗  ██╗ █████╗ ███╗   ███╗
                 ██╔══██╗████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝██║   ██║██║ ██╔╝██╔══██╗████╗ ████║
@@ -149,12 +203,12 @@ $adminUnit = 'Poliklinik Polinema';
 
 
 
-                <p class="mt-6 text-sm text-white/80">
-                    <a href="/admin" class="underline">&larr; Kembali ke dashboard</a>
-                </p>
-            </main>
-        </div>
-
-        <?php include __DIR__ . '/../components/admin-footer.php'; ?>
+        <p class="mt-6 text-sm text-white/80">
+            <a href="/admin" class="underline">&larr; Kembali ke dashboard</a>
+        </p>
+        </main>
     </div>
+
+    <?php include __DIR__ . '/../components/admin-footer.php'; ?>
+</div>
 </div>
