@@ -17,8 +17,8 @@
                 Berikutnya: <?php echo e(null !== $board['next_queue_code'] ? (string) $board['next_queue_code'] : '—'); ?>
             </p>
 
-            <form method="POST" action="/admin/antrean" class="mt-5" id="panggil-<?php echo (int) $board['service_id']; ?>"
-                @submit.prevent="confirmService = '<?php echo (int) $board['service_id']; ?>'; confirmCode = '<?php echo e((string) ($board['next_queue_code'] ?? '')); ?>'">
+            <form method="POST" action="/admin/antrean" class="mt-5" id="panggil-service-<?php echo (int) $board['service_id']; ?>"
+                @submit.prevent="confirmForm = 'panggil-service-<?php echo (int) $board['service_id']; ?>'; confirmCode = '<?php echo e((string) ($board['next_queue_code'] ?? '')); ?>'">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="service_id" value="<?php echo e((string) $board['service_id']); ?>">
                 <button type="submit"
@@ -31,4 +31,3 @@
     <?php } ?>
 </div>
 
-<?php include __DIR__.'/admin-antrean-table.php'; ?>

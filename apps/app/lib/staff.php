@@ -208,6 +208,94 @@ function staff_queue_activity(int $limit = 20): array
 }
 
 /**
+ * Serve one specific waiting visit (the row "Panggil" action).
+ *
+ * Unlike advance_queue(), which always takes the oldest waiting ticket of a
+ * poli, this serves exactly the row the staff clicked. The guards are the same:
+ * today only, menunggu only. Returns the queue code so the caller can flash it.
+ *
+ * @return array{ok: bool, error: ?string, queue_code: ?string}
+ */
+function serve_staff_visit(string $visitId, string $actorId): array
+{
+    return transition_waiting_visit($visitId, $actorId, 'dilayani', 'Antrean tidak dapat dipanggil.');
+}
+
+/**
+ * Cancel one waiting visit from the staff area.
+ *
+ * @return array{ok: bool, error: ?string, queue_code: ?string}
+ */
+function cancel_staff_visit(string $visitId, string $actorId): array
+{
+    return transition_waiting_visit($visitId, $actorId, 'batal', 'Antrean tidak dapat dibatalkan.');
+}
+
+/**
+ * Shared guard for acting on a single waiting visit of today.
+ *
+ * @return array{ok: bool, error: ?string, queue_code: ?string}
+ */
+function transition_waiting_visit(string $visitId, string $actorId, string $targetStatus, string $failure): array
+{
+    if (1 !== preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $visitId)) {
+        return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
+    }
+
+    if (!in_array($targetStatus, ['dilayani', 'batal'], true)) {
+        return ['ok' => false, 'error' => 'Aksi tidak dikenal.', 'queue_code' => null];
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT v.status, v.queue_number, s.queue_prefix,
+                    (v.queue_date = app_today()) AS is_today
+             FROM visits v
+             JOIN services s ON s.id = v.service_id
+             WHERE v.id = :id
+             FOR UPDATE'
+        );
+        $stmt->execute(['id' => $visitId]);
+        $visit = $stmt->fetch();
+
+        if (!is_array($visit) || !$visit['is_today']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
+        }
+
+        if ('menunggu' !== $visit['status']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => $failure, 'queue_code' => null];
+        }
+
+        $pdo->prepare("SELECT set_config('app.actor_id', :actor, true)")
+            ->execute(['actor' => $actorId])
+        ;
+
+        $update = $pdo->prepare('UPDATE visits SET status = :status WHERE id = :id');
+        $update->execute(['status' => $targetStatus, 'id' => $visitId]);
+
+        $pdo->commit();
+
+        return [
+            'ok' => true,
+            'error' => null,
+            'queue_code' => queue_code((int) $visit['queue_number'], (string) $visit['queue_prefix']),
+        ];
+    } catch (Throwable $exception) {
+        $pdo->rollBack();
+        app_log('error', 'Aksi antrean gagal: '.$exception->getMessage());
+
+        return ['ok' => false, 'error' => 'Terjadi kesalahan. Coba lagi.', 'queue_code' => null];
+    }
+}
+
+/**
  * A visit plus the context the examination input page needs: patient, service,
  * queue code, complaint, and the doctor on duty for display.
  *
