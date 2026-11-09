@@ -3,10 +3,10 @@
  * Tabel rekap per minggu + tombol Unduh Laporan (VALENIA-42). Read-only.
  *
  * @var list<array{label: string, umum: int, gigi: int, konseling: int}> $minggu
- * @var int $totalUmum
- * @var int $totalGigi
- * @var int $totalKonseling
- * @var int $totalSemua
+ * @var int                                                              $totalUmum
+ * @var int                                                              $totalGigi
+ * @var int                                                              $totalKonseling
+ * @var int                                                              $totalSemua
  */
 ?>
 <section class="rounded-[40px] border-2 border-white/60 bg-white/70 p-6 font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md">
