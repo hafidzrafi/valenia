@@ -202,6 +202,17 @@ final class ReportHelpersTest extends TestCase
         self::assertStringEndsWith('.pdf', $filename);
     }
 
+    public function testDateLabelUsesIndonesianMonthNames(): void
+    {
+        self::assertSame('1 Juni 1987', \report_date_label('1987-06-01'));
+        self::assertSame('29 Juni 1987', \report_date_label('1987-06-29'));
+    }
+
+    public function testDateLabelFallsBackToTheInputWhenInvalid(): void
+    {
+        self::assertSame('nope', \report_date_label('nope'));
+    }
+
     /**
      * @param null|array{slug: string, name: string} $service
      *

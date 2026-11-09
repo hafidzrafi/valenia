@@ -110,6 +110,18 @@ function report_parse_date(?string $value): ?string
     return $value;
 }
 
+/** Human readable Indonesian date, for example "1 Juni 1987". */
+function report_date_label(string $date): string
+{
+    $parsed = DateTimeImmutable::createFromFormat('!Y-m-d', $date, report_timezone());
+
+    if (!$parsed instanceof DateTimeImmutable || $parsed->format('Y-m-d') !== $date) {
+        return $date;
+    }
+
+    return $parsed->format('j').' '.REPORT_MONTHS[(int) $parsed->format('n')].' '.$parsed->format('Y');
+}
+
 /**
  * Split a period into 7 day buckets counted from the start.
  *
