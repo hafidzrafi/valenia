@@ -122,6 +122,14 @@ function report_date_label(string $date): string
     return $parsed->format('j').' '.REPORT_MONTHS[(int) $parsed->format('n')].' '.$parsed->format('Y');
 }
 
+/** Human readable Indonesian timestamp, for example "9 November 2026 13:05". */
+function report_timestamp(?DateTimeImmutable $now = null): string
+{
+    $now ??= new DateTimeImmutable('now', report_timezone());
+
+    return $now->format('j').' '.REPORT_MONTHS[(int) $now->format('n')].' '.$now->format('Y H:i');
+}
+
 /**
  * Split a period into 7 day buckets counted from the start.
  *

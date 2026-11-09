@@ -213,6 +213,13 @@ final class ReportHelpersTest extends TestCase
         self::assertSame('nope', \report_date_label('nope'));
     }
 
+    public function testTimestampUsesIndonesianMonthNames(): void
+    {
+        $now = new \DateTimeImmutable('2026-11-09 13:05:00', \report_timezone());
+
+        self::assertSame('9 November 2026 13:05', \report_timestamp($now));
+    }
+
     /**
      * @param null|array{slug: string, name: string} $service
      *
