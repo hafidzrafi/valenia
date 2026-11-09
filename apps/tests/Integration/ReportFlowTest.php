@@ -21,12 +21,14 @@ final class ReportFlowTest extends DatabaseTestCase
         parent::setUp();
 
         $_POST = [];
+        $_GET = [];
         \Auth::$user = null;
     }
 
     protected function tearDown(): void
     {
         $_POST = [];
+        $_GET = [];
         \Auth::$user = null;
 
         parent::tearDown();
@@ -207,6 +209,43 @@ final class ReportFlowTest extends DatabaseTestCase
         self::assertSame(0, $snapshot['totals']['total']);
     }
 
+    public function testPageUsesTheRequestedMonth(): void
+    {
+        $patient = $this->createPatient('940000000007');
+
+        $this->visitOn('1987-06-02', $this->serviceId('Poli Umum'), 'selesai', $patient);
+        $this->visitOn('1987-06-15', $this->serviceId('Poli Gigi'), 'selesai', $patient);
+
+        $actorId = $this->adminActor();
+        $_GET = ['bulan' => '1987-06'];
+
+        $html = $this->page($actorId);
+
+        self::assertStringContainsString('Periode: Juni 1987', $html);
+        self::assertStringContainsString('Minggu 5', $html);
+        self::assertStringNotContainsString('Belum ada kunjungan pada periode ini.', $html);
+    }
+
+    public function testPageShowsTheEmptyNoteForAMonthWithoutVisits(): void
+    {
+        $actorId = $this->adminActor();
+        $_GET = ['bulan' => '1987-07'];
+
+        $html = $this->page($actorId);
+
+        self::assertStringContainsString('Periode: Juli 1987', $html);
+        self::assertStringContainsString('Belum ada kunjungan pada periode ini.', $html);
+    }
+
+    public function testPageFallsBackToTheCurrentMonth(): void
+    {
+        $actorId = $this->adminActor();
+
+        $html = $this->page($actorId);
+
+        self::assertStringContainsString('Periode: '.\report_month_bounds(null)['label'], $html);
+    }
+
     private function adminActor(): string
     {
         $id = $this->adminId();
@@ -235,6 +274,22 @@ final class ReportFlowTest extends DatabaseTestCase
         self::assertInstanceOf(\Response::class, $response);
 
         return $response;
+    }
+
+    private function page(string $actorId): string
+    {
+        /** @var array<string, callable> $route */
+        $route = require \app_path('app/routes/admin.rekap-bulanan.php');
+
+        $html = $route['GET'](new \Request('GET', 'admin/rekap-bulanan', [], [
+            'user_id' => $actorId,
+            'user' => 'admin',
+            'role' => 'admin',
+        ]));
+
+        self::assertIsString($html);
+
+        return $html;
     }
 
     /** @return null|array<string, mixed> */
