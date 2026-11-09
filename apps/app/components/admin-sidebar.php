@@ -14,7 +14,7 @@ $menu = [
     ['key' => 'input-hasil', 'label' => 'Input Hasil', 'icon' => 'ph-clipboard-text', 'href' => '/admin/periksa', 'roles' => ['admin', 'perawat']],
     ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => null, 'roles' => ['admin', 'perawat']],
     ['key' => 'data-master', 'label' => 'Data Master', 'icon' => 'ph-database', 'href' => null, 'roles' => ['admin']],
-    ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => null, 'roles' => ['admin']],
+    ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => '/admin/rekap-bulanan', 'roles' => ['admin']],
     ['key' => 'profil', 'label' => 'Profil', 'icon' => 'ph-user-circle', 'href' => null, 'roles' => ['admin']],
 ];
 
