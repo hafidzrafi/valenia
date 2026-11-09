@@ -26,7 +26,15 @@ final class SchemaSmokeTest extends DatabaseTestCase
 
         $names = array_column($tables, 'tablename');
 
-        foreach (['users', 'patients', 'services', 'visits', 'queue_counters', 'examinations'] as $table) {
+        foreach ([
+            'users',
+            'patients',
+            'services',
+            'visits',
+            'queue_counters',
+            'examinations',
+            'report_exports',
+        ] as $table) {
             self::assertContains($table, $names);
         }
     }
