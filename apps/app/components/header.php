@@ -1,7 +1,7 @@
 <div class="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-[80%] mt-6 h-20 px-8 py-4 bg-gradient-to-br from-white/90 to-white/60 rounded-[64px] shadow-[6px_7px_7px_0px_rgba(0,0,0,0.25)] outline outline-4 outline-offset-[-4px] outline-white/50 backdrop-blur-xl flex justify-between items-center smooth-corners-sm">
     <div class="flex items-center gap-3">
         <a href="/" class="flex flex-row gap-2">
-            <div class="size-16 relative overflow-hidden  flex items-center justify-center">
+            <div class="size-16 relative   flex items-center justify-center">
                 <img src="/images/valenia-logo.svg" alt="Logo Perusahaan" class="w-full h-full object-contain" />
             </div>
             <span class="text-teal-500 text-2xl font-light font-stretch:expanded font-display tracking-wider translate-y-4">
@@ -22,7 +22,7 @@
                     </svg>
                 </a>
                 <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible z-50">
-                    <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
+                    <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2">
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI UMUM">
@@ -67,8 +67,8 @@
                     </svg>
                 </a>
                 <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible  z-50">
-                    <div class="w-48 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 overflow-hidden">
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Ketentuan Berobat</a>
+                    <div class="w-48 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 ">
+                        <a href="/ketentuan-berobat" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Ketentuan Berobat</a>
                         <a href="/viewdoctor" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Jadwal Dokter</a>
                         <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Tentang Poliklinik</a>
                     </div>
