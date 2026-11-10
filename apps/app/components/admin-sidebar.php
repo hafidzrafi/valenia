@@ -15,7 +15,7 @@ $menu = [
     ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => null, 'roles' => ['admin', 'perawat']],
     ['key' => 'data-master', 'label' => 'Data Master', 'icon' => 'ph-database', 'href' => null, 'roles' => ['admin']],
     ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => '/admin/rekap-bulanan', 'roles' => ['admin']],
-    ['key' => 'profil', 'label' => 'Profil', 'icon' => 'ph-user-circle', 'href' => null, 'roles' => ['admin']],
+    ['key' => 'profil', 'label' => 'Profil', 'icon' => 'ph-user-circle', 'href' => '/admin/profil', 'roles' => ['admin']],
 ];
 
 $kelola = [
