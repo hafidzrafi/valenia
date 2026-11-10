@@ -117,7 +117,7 @@
             <div class="flex flex-col gap-1">
                 <span class="text-xs font-semibold text-slate-800">Rentang Tanggal</span>
                 <div class="relative" @click.outside="kalOpen = false; bulanOpen = false; tahunOpen = false">
-                    <button type="button" @click="kalOpen = !kalOpen"
+                    <button type="button" @click="kalOpen = !kalOpen" data-testid="rekap-rentang"
                         class="flex h-10 w-full items-center justify-between rounded-full border border-slate-500 bg-white pl-4 pr-4 text-xs text-slate-700 focus:border-teal-500 focus:outline-none"
                         aria-haspopup="dialog" :aria-expanded="kalOpen">
                         <span x-text="rentangLabel" :class="start === null ? 'text-slate-400' : ''"></span>
@@ -134,7 +134,7 @@
 
                             <div class="flex items-center gap-2">
                                 <div class="relative">
-                                    <button type="button" @click="bulanOpen = !bulanOpen; tahunOpen = false"
+                                    <button type="button" @click="bulanOpen = !bulanOpen; tahunOpen = false" data-testid="rekap-bulan"
                                         class="flex h-7 items-center gap-1 rounded-full border border-slate-500 bg-white px-3 text-[10px] text-slate-700">
                                         <span x-text="bulanList[viewMonth]"></span>
                                         <i class="ph ph-caret-down text-[10px]"></i>
@@ -151,7 +151,7 @@
                                 </div>
 
                                 <div class="relative">
-                                    <button type="button" @click="tahunOpen = !tahunOpen; bulanOpen = false"
+                                    <button type="button" @click="tahunOpen = !tahunOpen; bulanOpen = false" data-testid="rekap-tahun"
                                         class="flex h-7 items-center gap-1 rounded-full border border-slate-500 bg-white px-3 text-[10px] text-slate-700">
                                         <span x-text="viewYear"></span>
                                         <i class="ph ph-caret-down text-[10px]"></i>
@@ -179,7 +179,7 @@
                                 <span class="pb-1 text-[9px] font-bold text-slate-600" x-text="h"></span>
                             </template>
                             <template x-for="c in cells" :key="c.iso">
-                                <button type="button" @click="pick(c.iso)"
+                                <button type="button" @click="pick(c.iso)" :data-date="c.iso"
                                     class="mx-auto flex size-8 items-center justify-center rounded-lg text-[11px]"
                                     :class="isEdge(c.iso) ? 'bg-teal-700 font-bold text-white' : (inRange(c.iso) ? 'bg-teal-100 font-bold text-slate-800' : (c.other ? 'text-slate-400' : 'font-bold text-slate-800 hover:bg-teal-50'))"
                                     x-text="c.day"></button>
