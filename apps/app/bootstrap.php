@@ -31,6 +31,10 @@ require_once __DIR__.'/lib/registration.php';
 
 require_once __DIR__.'/lib/staff.php';
 
+require_once __DIR__.'/lib/reports.php';
+
+require_once __DIR__.'/lib/reports_pdf.php';
+
 require_once __DIR__.'/lib/router.php';
 
 require_once __DIR__.'/middleware/auth.php';

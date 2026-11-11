@@ -15,7 +15,7 @@ apps/
 │   ├── routes/        # one file per route (URL derived from the filename)
 │   ├── middleware/    # named guards: csrf, auth, password, role
 │   ├── lib/           # router, request, response, middleware, db, view,
-│   │                  #   config, session, auth, log
+│   │                  #   config, session, auth, log, reports, reports_pdf
 │   ├── components/    # reusable view partials
 │   └── views/         # layouts and page templates
 ├── database/          # migrations/, seeds/, migrate.php, seed.php
@@ -195,6 +195,30 @@ In the portal, selecting a history row updates the right-hand detail card.
 Today's own `menunggu` visit can be cancelled through `POST /portal-batal`;
 cancellation is a status change, not a delete, and the queue number is not
 reused.
+
+## Monthly recap
+
+Admin only. The page reads `?bulan=Y-m` and falls back to the current
+Asia/Jakarta month.
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/admin/rekap-bulanan` | GET | Weekly recap of registered visits per poli |
+| `/admin/rekap-bulanan/unduh` | POST | Stream the recap PDF and log the export |
+
+Counts are registered visits per `queue_date`, excluding `batal`. Weeks are 7
+day chunks counted from the period start, so a month reads as Minggu 1 (1-7),
+Minggu 2 (8-14), and so on.
+
+The PDF is rendered with dompdf and streamed from memory. It is never written
+to disk, `public/`, or object storage. `report_exports` keeps the metadata:
+period, service, actor, filename, byte size, a JSONB aggregate snapshot, and a
+SHA-256 checksum of the snapshot. The snapshot lets an old report be
+re-rendered exactly even when the underlying visits change later. It contains
+aggregate counts only, no patient level data.
+
+dompdf caches fonts in `sys_get_temp_dir()/valenia-dompdf`, so the non-root
+runtime image needs no writable application path.
 
 ## Notes
 

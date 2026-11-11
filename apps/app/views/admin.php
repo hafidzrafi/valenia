@@ -1,6 +1,6 @@
 <?php
 /** @var list<array<string, mixed>> $visits */
-/** @var array{total: int, by_service: array<string, int>} $summary */
+/** @var array{total: int, by_service: array<string, int>, by_status: array<string, int>} $summary */
 /** @var list<array<string, mixed>> $attendance */
 /** @var null|string $flash */
 $active = 'dashboard';
@@ -25,13 +25,21 @@ $adminUnit = 'Poliklinik Polinema';
                     </p>
                 <?php } ?>
 
-                <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
+                <div class="mt-2">
                     <?php include __DIR__.'/../components/admin-ringkasan-antrian.php'; ?>
-                    <?php include __DIR__.'/../components/admin-kehadiran-medis.php'; ?>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
+                    <?php include __DIR__.'/../components/admin-sedang-ditangani.php'; ?>
+                    <?php include __DIR__.'/../components/admin-status-tugas.php'; ?>
                 </div>
 
                 <div class="mt-8">
                     <?php include __DIR__.'/../components/admin-tabel-antrean.php'; ?>
+                </div>
+
+                <div class="mt-8">
+                    <?php include __DIR__.'/../components/admin-kehadiran-medis.php'; ?>
                 </div>
 
                 <?php include __DIR__.'/../components/admin-aktivitas-antrian.php'; ?>

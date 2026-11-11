@@ -7,10 +7,12 @@
  * @var int                                                              $totalGigi
  * @var int                                                              $totalKonseling
  * @var int                                                              $totalSemua
+ * @var string                                                           $bulan
  */
 ?>
 <section class="rounded-[40px] border-2 border-white/60 bg-white/70 p-6 font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md">
-    <div class="mb-3 flex justify-end">
+    <div class="mb-3 flex items-center justify-between gap-3">
+        <p class="text-xs font-semibold text-slate-600">Periode: <?php echo e($bulan); ?></p>
         <button type="button" @click="unduhOpen = true"
             class="inline-flex h-8 items-center gap-2 rounded-full bg-teal-500 px-4 text-xs font-medium text-white transition-colors hover:bg-teal-600">
             Unduh Laporan
@@ -54,4 +56,8 @@
             </tbody>
         </table>
     </div>
+
+    <?php if (0 === $totalSemua) { ?>
+        <p class="mt-3 text-sm text-slate-500">Belum ada kunjungan pada periode ini.</p>
+    <?php } ?>
 </section>

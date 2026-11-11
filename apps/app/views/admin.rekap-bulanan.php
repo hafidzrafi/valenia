@@ -1,5 +1,6 @@
 <?php
 /** @var list<array{label: string, umum: int, gigi: int, konseling: int}> $minggu */
+/** @var string $bulan */
 $active = 'rekap-bulanan';
 $token = $token ?? '';
 $role = $role ?? 'admin';
@@ -30,7 +31,8 @@ $totalSemua = $totalUmum + $totalGigi + $totalKonseling;
                         const data = new FormData(form);
                         const dari = data.get('dari') ? new Date(data.get('dari') + 'T00:00:00') : new Date();
                         const bulan = dari.toLocaleDateString('id-ID', { month: 'long' });
-                        this.toastFile = 'Rekap_kunjungan_' + bulan + '_' + dari.getFullYear() + '.pdf';
+                        const poli = { semua: 'Semua', umum: 'Umum', gigi: 'Gigi', konseling: 'Konseling' }[data.get('poli')] || 'Semua';
+                        this.toastFile = 'Rekap_Kunjungan_' + poli + '_' + bulan + '_' + dari.getFullYear() + '.pdf';
                         this.unduhOpen = false;
                         this.toastOpen = true;
                         setTimeout(() => { this.toastOpen = false; }, 4000);
