@@ -88,6 +88,29 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame(2, $summary['total']);
         self::assertSame(1, $summary['by_service']['Poli Umum']);
         self::assertSame(1, $summary['by_service']['Poli Gigi']);
+        self::assertSame(2, $summary['by_status']['menunggu']);
+        self::assertSame(0, $summary['by_status']['dilayani']);
+        self::assertSame(0, $summary['by_status']['selesai']);
+    }
+
+    public function testSummaryCountsByStatusAcrossTransitions(): void
+    {
+        $patient = $this->patient('930000000015', 'Staff Status Mix');
+        $service = $this->serviceId('Poli Umum');
+        $first = \issue_guest_ticket($patient, $service, 'Demam');
+        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $this->visitIds[] = (string) $first['visit_id'];
+        $this->visitIds[] = (string) $second['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+        \complete_staff_visit((string) $first['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
+
+        $summary = \staff_summary();
+
+        self::assertSame(2, $summary['total']);
+        self::assertSame(1, $summary['by_status']['menunggu']);
+        self::assertSame(0, $summary['by_status']['dilayani']);
+        self::assertSame(1, $summary['by_status']['selesai']);
     }
 
     public function testCancelledVisitsAreExcludedFromTheDashboard(): void
@@ -337,6 +360,78 @@ final class StaffFlowTest extends DatabaseTestCase
         /** @var array{time: string, code: string, patient: string, event: string, actor: string} $called */
         $called = array_values(array_filter($events, static fn (array $event): bool => 'Dipanggil' === $event['event']))[0];
         self::assertSame('Staff Activity', $called['patient']);
+    }
+
+    public function testServeStaffVisitServesThatExactTicket(): void
+    {
+        $patient = $this->patient('930000000020', 'Staff Serve Row');
+        $service = $this->serviceId('Poli Umum');
+
+        $first = \issue_guest_ticket($patient, $service, 'Demam');
+        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $this->visitIds[] = (string) $first['visit_id'];
+        $this->visitIds[] = (string) $second['visit_id'];
+
+        // Serve the second ticket out of order, which advance_queue() would never do.
+        $result = \serve_staff_visit((string) $second['visit_id'], $this->adminId());
+
+        self::assertTrue($result['ok'], (string) $result['error']);
+        self::assertSame($second['queue_code'], $result['queue_code']);
+
+        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $second['visit_id']]);
+        self::assertSame('dilayani', $stmt->fetchColumn());
+
+        $stmt->execute(['id' => $first['visit_id']]);
+        self::assertSame('menunggu', $stmt->fetchColumn());
+    }
+
+    public function testServeStaffVisitRejectsANonWaitingVisit(): void
+    {
+        $patient = $this->patient('930000000021', 'Staff Serve Twice');
+        $service = $this->serviceId('Poli Gigi');
+        $ticket = \issue_guest_ticket($patient, $service, 'Sakit gigi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        self::assertTrue(\serve_staff_visit((string) $ticket['visit_id'], $this->adminId())['ok']);
+
+        $second = \serve_staff_visit((string) $ticket['visit_id'], $this->adminId());
+
+        self::assertSame('Antrean tidak dapat dipanggil.', $second['error']);
+    }
+
+    public function testCancelStaffVisitMarksTheTicketCancelled(): void
+    {
+        $patient = $this->patient('930000000022', 'Staff Cancel Row');
+        $ticket = \issue_guest_ticket($patient, $this->serviceId('Konseling/Psikologi'), 'Konsultasi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        $result = \cancel_staff_visit((string) $ticket['visit_id'], $this->adminId());
+
+        self::assertTrue($result['ok'], (string) $result['error']);
+        self::assertSame($ticket['queue_code'], $result['queue_code']);
+
+        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame('batal', $stmt->fetchColumn());
+    }
+
+    public function testCancelStaffVisitRejectsAServedVisit(): void
+    {
+        $patient = $this->patient('930000000023', 'Staff Cancel Served');
+        $ticket = \issue_guest_ticket($patient, $this->serviceId('Poli Gigi'), 'Sakit gigi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        self::assertTrue(\serve_staff_visit((string) $ticket['visit_id'], $this->adminId())['ok']);
+
+        $result = \cancel_staff_visit((string) $ticket['visit_id'], $this->adminId());
+
+        self::assertFalse($result['ok']);
+        self::assertSame('Antrean tidak dapat dibatalkan.', $result['error']);
+
+        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame('dilayani', $stmt->fetchColumn());
     }
 
     public function testConcurrentAdvanceServesDistinctTickets(): void

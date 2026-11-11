@@ -1,28 +1,24 @@
 <?php
-/** @var array{total: int, by_service: array<string, int>} $summary */
-$byService = $summary['by_service'];
+/** @var array{total: int, by_service: array<string, int>, by_status: array<string, int>} $summary */
+$byStatus = $summary['by_status'];
 
 $ringkasan = [
     ['label' => 'Total antrian', 'jumlah' => $summary['total'], 'icon' => 'ph-users'],
-    ['label' => 'Poli Umum', 'jumlah' => $byService['Poli Umum'] ?? 0, 'icon' => 'ph-stethoscope'],
-    ['label' => 'Poli Gigi', 'jumlah' => $byService['Poli Gigi'] ?? 0, 'icon' => 'ph-tooth'],
-    ['label' => 'Konseling', 'jumlah' => $byService['Konseling/Psikologi'] ?? 0, 'icon' => 'ph-brain'],
+    ['label' => 'Menunggu', 'jumlah' => $byStatus['menunggu'], 'icon' => 'ph-hourglass-medium'],
+    ['label' => 'Ditangani', 'jumlah' => $byStatus['dilayani'], 'icon' => 'ph-stethoscope'],
+    ['label' => 'Selesai', 'jumlah' => $byStatus['selesai'], 'icon' => 'ph-check-circle'],
 ];
 ?>
-<section class="smooth-corners-lg h-[292px] w-[292px] shrink-0 border-2 border-white/60 bg-white/40 px-6 pt-[17px] shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md font-sans"
-    style="border-radius: 60px;">
-    <h2 class="mb-[14px] text-center font-display text-[28px] font-semibold leading-[34px] text-[#379a89]">Ringkasan Antrian</h2>
-    <div class="grid grid-cols-2 gap-4">
-        <?php foreach ($ringkasan as $item) { ?>
-            <div class="flex h-[90px] items-center gap-[7px] bg-[#effcf8] pl-4" style="border-radius: 24px;">
-                <div class="flex size-[35px] shrink-0 items-center justify-center rounded-full bg-[#d9f5ec]">
-                    <i class="ph <?php echo e($item['icon']); ?> text-[24px] text-slate-900"></i>
-                </div>
-                <div>
-                    <p class="h-[24px] w-min text-[10px] font-normal leading-[12px] text-slate-600"><?php echo e($item['label']); ?></p>
-                    <p class="mt-1 text-base font-semibold leading-none text-slate-900"><?php echo (int) $item['jumlah']; ?></p>
-                </div>
+<div class="flex flex-wrap gap-5 font-sans">
+    <?php foreach ($ringkasan as $item) { ?>
+        <div class="flex min-w-[228px] flex-1 items-center gap-4 rounded-full bg-white/90 py-5 pl-6 pr-10 shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md">
+            <div class="flex size-[52px] shrink-0 items-center justify-center rounded-full bg-[#d9f5ec]">
+                <i class="ph <?php echo e($item['icon']); ?> text-[30px] text-slate-900"></i>
             </div>
-        <?php } ?>
-    </div>
-</section>
+            <div>
+                <p class="text-sm font-normal text-slate-600"><?php echo e($item['label']); ?></p>
+                <p class="text-[28px] font-bold leading-tight text-slate-900"><?php echo (int) $item['jumlah']; ?></p>
+            </div>
+        </div>
+    <?php } ?>
+</div>

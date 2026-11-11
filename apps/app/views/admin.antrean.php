@@ -1,6 +1,7 @@
 <?php
 
 /** @var list<array<string, mixed>> $boards */
+/** @var list<array<string, mixed>> $visits */
 /** @var null|string $flash */
 $active = 'antrian';
 $token = $token ?? '';
@@ -8,8 +9,20 @@ $role = $role ?? 'admin';
 $headerTitle = 'Antrean Poliklinik';
 $adminNama = 'Petugas '.ucfirst($role);
 $adminUnit = 'Poliklinik Polinema';
+
+$statusClass = [
+    'menunggu' => 'bg-[#d9d9d9] text-[#666]',
+    'dilayani' => 'bg-amber-500 text-white',
+    'selesai' => 'bg-[#10b981] text-white',
+];
+
+$statusLabel = [
+    'menunggu' => 'Menunggu',
+    'dilayani' => 'Dilayani',
+    'selesai' => 'Selesai',
+];
 ?>
-<div class="flex min-h-screen flex-col lg:flex-row">
+<div class="flex min-h-screen flex-col lg:flex-row" x-data="{ confirmForm: null, confirmCode: '', cancelForm: null, cancelCode: '' }">
     <?php include __DIR__.'/../components/admin-sidebar.php'; ?>
 
     <div class="flex min-h-screen min-w-0 flex-1 flex-col"
@@ -160,40 +173,15 @@ $adminUnit = 'Poliklinik Polinema';
                 </div>
 
 
-
-
-
-                <!-- perlu dibikin component gak ini? V -->
-
-                <!-- kemungkinan perlu penyesuaian karena adamska reuse kode milik dashboard -->
-
-                <?php
-                /** @var list<array<string, mixed>> $visits */
-                $statusClass = [
-                    'menunggu' => 'bg-[#d9d9d9] text-[#666]',
-                    'dilayani' => 'bg-amber-500 text-white',
-                    'selesai' => 'bg-[#10b981] text-white',
-                ];
-
-$statusLabel = [
-    'menunggu' => 'Menunggu',
-    'dilayani' => 'Dilayani',
-    'selesai' => 'Selesai',
-];
-?>
-                <section class="font-sans" x-data="{ confirmService: null, confirmCode: '', cancelService: null, cancelCode: '' }">
+                <section class="font-sans" x-data="{ }">
                     <h2 class="mb-[22px] ml-3 mt-7 font-display text-[22px] font-semibold leading-[30px] text-white">Daftar Antrian</h2>
 
                     <div class="smooth-corners-sm w-full overflow-x-auto bg-[#f0fffb] pb-[7px] shadow-[0_4px_14px_rgba(30,110,95,0.18)]"
                         style="border-radius: 24px;">
-                        <table class="ml-[27px] w-[calc(100%-27px)] min-w-[760px] table-fixed border-collapse text-left text-[13px] text-black">
+                        <table class="ml-[27px] w-[calc(100%-27px)] min-w-[820px] table-fixed border-collapse text-left text-[13px] text-black">
                             <colgroup>
-                                <col style="width:122px">
-                                <col style="width:150px">
-                                <col style="width:170px">
-                                <col style="width:100px">
-                                <col style="width:140px">
-                                <col style="width:180px">
+                                <col style="width:122px"><col style="width:150px"><col style="width:170px">
+                                <col style="width:100px"><col style="width:120px"><col style="width:180px">
                             </colgroup>
                             <thead>
                                 <tr class="h-[45px] border-b border-slate-800 align-top text-[19px] font-light leading-[26px] text-[#555]">
@@ -208,69 +196,62 @@ $statusLabel = [
                             <tbody>
                                 <?php if ([] === $visits) { ?>
                                     <tr>
-                                        <td colspan="5" class="h-[54px] text-center text-slate-500">Belum ada antrean hari ini.</td>
+                                        <td colspan="6" class="h-[54px] text-center text-slate-500">Belum ada antrean hari ini.</td>
                                     </tr>
                                 <?php } ?>
+
                                 <?php foreach ($visits as $row) { ?>
                                     <?php
-                    $status = (string) $row['status'];
+                                    $status = (string) $row['status'];
                                     $label = $statusLabel[$status] ?? $status;
                                     $pillClass = $statusClass[$status] ?? $statusClass['menunggu'];
-                                    $formId = 'panggil-visit-'.$row['id'];
+                                    $formId = 'serve-'.$row['id'];
+                                    $cancelId = 'cancel-'.$row['id'];
+                                    $detailUrl = '/admin/kunjungan?visit='.rawurlencode((string) $row['id']);
                                     ?>
                                     <tr class="h-[54px] border-b border-slate-800 last:border-b-0">
-                                        <td class="pl-2.5"><?php echo e((string) ($row['queue_code'] ?? '')); ?></td>
-                                        <td class="truncate pr-2"><?php echo e((string) $row['full_name']); ?></td>
+                                        <td class="pl-2.5">
+                                            <a href="<?php echo e($detailUrl); ?>" class="font-semibold text-teal-700 hover:underline">
+                                                <?php echo e((string) ($row['queue_code'] ?? '')); ?>
+                                            </a>
+                                        </td>
+                                        <td class="truncate pr-2">
+                                            <a href="<?php echo e($detailUrl); ?>"><?php echo e((string) $row['full_name']); ?></a>
+                                        </td>
                                         <td><?php echo e((string) $row['identity_number']); ?></td>
                                         <td class="truncate pr-2"><?php echo e((string) $row['service_name']); ?></td>
                                         <td class="text-center">
-                                            <div class="flex items-center justify-center gap-2">
-                                                <span class="inline-flex h-[22px] w-[90px] items-center justify-center rounded-full text-[10px] font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.25)] <?php echo $pillClass; ?>">
-                                                    <?php echo e($label); ?>
-                                                </span>
-
-                                            </div>
+                                            <span class="inline-flex h-[22px] w-[90px] items-center justify-center rounded-full text-[10px] font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.25)] <?php echo $pillClass; ?>">
+                                                <?php echo e($label); ?>
+                                            </span>
                                         </td>
                                         <td>
                                             <div class="flex flex-row justify-center gap-2">
-                                                <?php if ('selesai' === $status || 'dilayani' === $status) { ?>
-                                                    <!-- disabled -->
-                                                    <a class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">
-                                                        Panggil
-                                                    </a>
-                                                    <a class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">
-                                                        Batalkan
-                                                    </a>
-
+                                                <?php if ('menunggu' !== $status) { ?>
+                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Panggil</span>
+                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Batalkan</span>
                                                 <?php } else { ?>
-
-                                                    <!-- Form Panggil -->
-                                                    <form method="POST" action="/admin/antrean" id="<?php echo $formId; ?>" class="hidden">
+                                                    <form method="POST" action="/admin/antrean" id="<?php echo e($formId); ?>" class="hidden">
                                                         <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
                                                         <input type="hidden" name="action" value="serve">
                                                     </form>
-
-                                                    <!-- Form Batal -->
-                                                    <form method="POST" action="/admin/antrean" id="cancel-<?php echo $formId; ?>" class="hidden">
+                                                    <form method="POST" action="/admin/antrean" id="<?php echo e($cancelId); ?>" class="hidden">
                                                         <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
                                                         <input type="hidden" name="action" value="cancel">
                                                     </form>
 
-
                                                     <button type="button"
-                                                        @click="confirmService = '<?php echo $formId; ?>'; confirmCode = '<?php echo e((string) $row['queue_code']); ?>'"
+                                                        @click="confirmForm = '<?php echo e($formId); ?>'; confirmCode = '<?php echo e((string) $row['queue_code']); ?>'"
                                                         class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-teal-500 px-3 text-[11px] font-medium text-white transition-colors hover:bg-teal-700">
                                                         Panggil
                                                     </button>
-
                                                     <button type="button"
-                                                        @click="cancelService = 'cancel-<?php echo $formId; ?>'; cancelCode = '<?php echo e((string) $row['queue_code']); ?>'"
+                                                        @click="cancelForm = '<?php echo e($cancelId); ?>'; cancelCode = '<?php echo e((string) $row['queue_code']); ?>'"
                                                         class="inline-flex h-7 w-20 items-center justify-center rounded-2xl border border-red-500 px-3 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500 hover:text-white">
                                                         Batalkan
                                                     </button>
-
                                                 <?php } ?>
                                             </div>
                                         </td>
@@ -279,76 +260,68 @@ $statusLabel = [
                             </tbody>
                         </table>
                     </div>
+                </section>
 
-                    <!-- panggil -->
-                    <div x-show="confirmService !== null" x-cloak
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-                        @keydown.escape.window="confirmService = null">
-                        <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
-                            @click.outside="confirmService = null">
-                            <h3 class="font-display text-[28px] font-bold text-slate-900">Panggil Pasien</h3>
-                            <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-teal-50 px-4 py-3">
-                                <p class="text-3xl font-black text-slate-900" x-text="confirmCode"></p>
-                            </div>
-                            <p class="mt-3 text-sm text-slate-600">
-                                Nomor antrean akan diumumkan dan status pasien berubah menjadi Dilayani.
-                            </p>
-                            <div class="mt-6 flex items-center justify-center gap-3">
-                                <button type="button" @click="confirmService = null"
-                                    class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
-                                    Batal
-                                </button>
-                                <button type="button"
-                                    @click="document.getElementById(confirmService).submit()"
-                                    class="h-[40px] rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
-                                    Panggil
-                                </button>
-                            </div>
+                <!-- Panggil confirm -->
+                <div x-show="confirmForm !== null" x-cloak data-testid="confirm-panggil"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+                    @keydown.escape.window="confirmForm = null">
+                    <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
+                        @click.outside="confirmForm = null">
+                        <h3 class="font-display text-[28px] font-bold text-slate-900">Panggil Pasien</h3>
+                        <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-teal-50 px-4 py-3">
+                            <p class="text-3xl font-black text-slate-900" x-text="confirmCode"></p>
+                        </div>
+                        <p class="mt-3 text-sm text-slate-600">
+                            Nomor antrean akan diumumkan dan status pasien berubah menjadi Dilayani.
+                        </p>
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <button type="button" @click="confirmForm = null"
+                                class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                                Batal
+                            </button>
+                            <button type="button"
+                                @click="document.getElementById(confirmForm).submit()"
+                                class="h-[40px] rounded-full bg-teal-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-teal-600">
+                                Panggil
+                            </button>
                         </div>
                     </div>
+                </div>
 
-
-
-                    <!-- batal -->
-
-
-                    <div x-show="cancelService !== null" x-cloak
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-                        @keydown.escape.window="cancelService = null">
-                        <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
-                            @click.outside="cancelService = null">
-                            <h3 class="font-display text-[28px] font-bold text-slate-900">Hapus Data Antrean</h3>
-                            <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-red-50 px-4 py-3">
-                                <p class="text-3xl font-black text-red-600" x-text="cancelCode"></p>
-                            </div>
-                            <p class="mt-3 text-sm text-slate-600">
-                                Apakah anda ingin membatalkan antrean ini? Antrean yang dibatalkan akan hilang dari daftar.
-                            </p>
-                            <div class="mt-6 flex items-center justify-center gap-3">
-                                <button type="button" @click="cancelService = null"
-                                    class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
-                                    Kembali
-                                </button>
-                                <button type="button"
-                                    @click="document.getElementById(cancelService).submit()"
-                                    class="h-[40px] rounded-full bg-red-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-red-600">
-                                    Batalkan
-                                </button>
-                            </div>
+                <!-- Batalkan confirm -->
+                <div x-show="cancelForm !== null" x-cloak data-testid="confirm-batal"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+                    @keydown.escape.window="cancelForm = null">
+                    <div class="w-full max-w-[420px] rounded-[36px] bg-white px-8 py-7 text-center shadow-2xl"
+                        @click.outside="cancelForm = null">
+                        <h3 class="font-display text-[28px] font-bold text-slate-900">Batalkan Antrean?</h3>
+                        <div class="mx-auto mt-4 max-w-[260px] rounded-2xl bg-red-50 px-4 py-3">
+                            <p class="text-3xl font-black text-slate-900" x-text="cancelCode"></p>
+                        </div>
+                        <p class="mt-3 text-sm text-slate-600">
+                            Antrean ini akan ditandai Dibatalkan dan tidak akan dipanggil.
+                        </p>
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <button type="button" @click="cancelForm = null"
+                                class="inline-flex h-[40px] items-center rounded-full border border-slate-300 px-8 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                                Kembali
+                            </button>
+                            <button type="button"
+                                @click="document.getElementById(cancelForm).submit()"
+                                class="h-[40px] rounded-full bg-red-500 px-8 text-sm font-semibold text-white shadow transition-colors hover:bg-red-600">
+                                Batalkan
+                            </button>
                         </div>
                     </div>
+                </div>
 
+                <p class="mt-6 text-sm text-white/80">
+                    <a href="/admin" class="underline">&larr; Kembali ke dashboard</a>
+                </p>
+            </main>
         </div>
 
-        </section>
-
-
-        <p class="m-10 mt-0 text-sm text-white/80">
-            <a href="/admin" class="underline">&larr; Kembali ke dashboard</a>
-        </p>
-        </main>
+        <?php include __DIR__.'/../components/admin-footer.php'; ?>
     </div>
-
-    <?php include __DIR__.'/../components/admin-footer.php'; ?>
-</div>
 </div>
