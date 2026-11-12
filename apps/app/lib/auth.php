@@ -593,8 +593,15 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
         }
 
         $pdo->prepare('UPDATE users SET is_active = :active WHERE id = :id')
-            ->execute(['active' => $active, 'id' => $userId])
+            ->execute(['active' => $active ? 'true' : 'false', 'id' => $userId])
         ;
+
+        if (!$active) {
+            $pdo->prepare('DELETE FROM sessions WHERE user_id = :user')
+                ->execute(['user' => $userId])
+            ;
+        }
+
         audit_log(
             'users',
             $userId,
@@ -645,6 +652,13 @@ function reset_user_password(string $userId, string $newPassword, string $actorI
                  failed_attempts = 0, locked_until = NULL, updated_at = now()
              WHERE id = :id'
         )->execute(['hash' => hash_password($newPassword), 'id' => $cred['id']]);
+
+        // A reset must invalidate every existing session, otherwise a stolen
+        // session survives the reset even though it is gated by must_change.
+        $pdo->prepare('DELETE FROM sessions WHERE user_id = :user')
+            ->execute(['user' => $userId])
+        ;
+
         audit_log('credentials', (string) $cred['id'], 'UPDATE', $actorId);
         record_auth_event('password_reset', null, $userId);
         $pdo->commit();

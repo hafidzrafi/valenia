@@ -41,6 +41,11 @@ final class StaffFlowTest extends DatabaseTestCase
             }
 
             foreach ($this->doctorIds as $doctorId) {
+                $this->pdo->prepare(
+                    "DELETE FROM audit_logs
+                     WHERE table_name = 'doctor_attendance'
+                       AND row_id IN (SELECT id FROM doctor_attendance WHERE doctor_id = :id)"
+                )->execute(['id' => $doctorId]);
                 $this->pdo->prepare('DELETE FROM doctor_attendance WHERE doctor_id = :id')->execute(['id' => $doctorId]);
             }
 
@@ -141,6 +146,27 @@ final class StaffFlowTest extends DatabaseTestCase
 
         self::assertSame(1, (int) $row['rows']);
         self::assertTrue((bool) $row['all_absent']);
+
+        $idStmt = $this->pdo->prepare(
+            'SELECT id FROM doctor_attendance WHERE doctor_id = :id AND attendance_date = app_today()'
+        );
+        $idStmt->execute(['id' => $doctorId]);
+        $attendanceId = (string) $idStmt->fetchColumn();
+
+        $audit = $this->pdo->prepare(
+            "SELECT count(*) FROM audit_logs
+             WHERE table_name = 'doctor_attendance' AND row_id = :id"
+        );
+        $audit->execute(['id' => $attendanceId]);
+        self::assertGreaterThanOrEqual(2, (int) $audit->fetchColumn());
+
+        $actor = $this->pdo->prepare(
+            "SELECT actor_id FROM audit_logs
+             WHERE table_name = 'doctor_attendance' AND row_id = :id
+             ORDER BY id DESC LIMIT 1"
+        );
+        $actor->execute(['id' => $attendanceId]);
+        self::assertSame($this->adminId(), (string) $actor->fetchColumn());
     }
 
     public function testAttendanceRejectsUnknownDoctor(): void
@@ -353,7 +379,7 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertTrue($result['ok'], (string) $result['error']);
 
         $stmt = $this->pdo->prepare(
-            'SELECT diagnosis, treatment, note, complaint FROM examinations WHERE visit_id = :id'
+            'SELECT diagnosis, treatment, note, complaint, updated_at FROM examinations WHERE visit_id = :id'
         );
         $stmt->execute(['id' => $ticket['visit_id']]);
         $row = $stmt->fetch();
@@ -363,6 +389,18 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame('Istirahat dan obat', $row['treatment']);
         self::assertSame('Kontrol bila tidak membaik', $row['note']);
         self::assertSame('Demam', $row['complaint']);
+
+        $before = (string) $row['updated_at'];
+
+        $this->pdo->prepare("UPDATE examinations SET note = 'Kontrol ulang' WHERE visit_id = :id")
+            ->execute(['id' => $ticket['visit_id']])
+        ;
+
+        $afterStmt = $this->pdo->prepare('SELECT updated_at FROM examinations WHERE visit_id = :id');
+        $afterStmt->execute(['id' => $ticket['visit_id']]);
+        $after = (string) $afterStmt->fetchColumn();
+
+        self::assertNotSame($before, $after);
     }
 
     public function testCompletionRejectsMissingDiagnosisOrTreatment(): void
@@ -482,9 +520,14 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertTrue($result['ok'], (string) $result['error']);
         self::assertSame($ticket['queue_code'], $result['queue_code']);
 
-        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt = $this->pdo->prepare('SELECT status, cancelled_at, cancelled_by FROM visits WHERE id = :id');
         $stmt->execute(['id' => $ticket['visit_id']]);
-        self::assertSame('batal', $stmt->fetchColumn());
+        $visit = $stmt->fetch();
+
+        self::assertIsArray($visit);
+        self::assertSame('batal', $visit['status']);
+        self::assertNotNull($visit['cancelled_at']);
+        self::assertSame($this->adminId(), (string) $visit['cancelled_by']);
     }
 
     public function testCancelStaffVisitRejectsAServedVisit(): void
@@ -569,6 +612,15 @@ final class StaffFlowTest extends DatabaseTestCase
         $this->visitIds[] = (string) $ticket['visit_id'];
 
         self::assertTrue(\cancel_portal_visit($patient, (string) $ticket['visit_id']));
+
+        $visitStmt = $this->pdo->prepare('SELECT cancelled_at, cancelled_by FROM visits WHERE id = :id');
+        $visitStmt->execute(['id' => $ticket['visit_id']]);
+        $cancelled = $visitStmt->fetch();
+        $guestId = $this->pdo->query("SELECT id FROM users WHERE username = 'guest'")->fetchColumn();
+
+        self::assertIsArray($cancelled);
+        self::assertNotNull($cancelled['cancelled_at']);
+        self::assertSame((string) $guestId, (string) $cancelled['cancelled_by']);
 
         $events = array_values(array_filter(
             \staff_queue_activity(),

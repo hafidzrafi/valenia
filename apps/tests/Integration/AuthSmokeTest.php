@@ -96,4 +96,77 @@ final class AuthSmokeTest extends DatabaseTestCase
         self::assertFalse($result['ok']);
         self::assertTrue($result['locked']);
     }
+
+    public function testResetPasswordRevokesEverySession(): void
+    {
+        $userId = $this->createTempUser('reset');
+
+        try {
+            $this->insertSession($userId);
+            $this->insertSession($userId);
+            self::assertSame(2, $this->sessionCount($userId));
+
+            $result = \reset_user_password($userId, 'New-Pass-123', $this->adminId());
+
+            self::assertTrue($result['ok'], (string) $result['error']);
+            self::assertSame(0, $this->sessionCount($userId));
+        } finally {
+            $this->deleteTempUser($userId);
+        }
+    }
+
+    public function testDeactivationRevokesEverySession(): void
+    {
+        $userId = $this->createTempUser('deactivate');
+
+        try {
+            $this->insertSession($userId);
+            self::assertSame(1, $this->sessionCount($userId));
+
+            self::assertTrue(\set_user_active($userId, false, $this->adminId()));
+            self::assertSame(0, $this->sessionCount($userId));
+        } finally {
+            $this->deleteTempUser($userId);
+        }
+    }
+
+    private function createTempUser(string $prefix): string
+    {
+        $username = $prefix.'-'.bin2hex(random_bytes(4));
+        $result = \create_user($username, 'Temp Auth', 'perawat', 'Start-Pass-123', $this->adminId());
+        self::assertTrue($result['ok'], (string) $result['error']);
+
+        $stmt = $this->pdo->prepare('SELECT id FROM users WHERE username = :username');
+        $stmt->execute(['username' => $username]);
+        $id = $stmt->fetchColumn();
+        self::assertIsString($id);
+
+        return $id;
+    }
+
+    private function insertSession(string $userId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO sessions (user_id, token_hash, expires_at)
+             VALUES (:user, :hash, now() + interval '1 hour')"
+        );
+        $stmt->execute([
+            'user' => $userId,
+            'hash' => hash('sha256', bin2hex(random_bytes(16))),
+        ]);
+    }
+
+    private function sessionCount(string $userId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT count(*) FROM sessions WHERE user_id = :user');
+        $stmt->execute(['user' => $userId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    private function deleteTempUser(string $userId): void
+    {
+        $this->pdo->prepare('DELETE FROM sessions WHERE user_id = :user')->execute(['user' => $userId]);
+        $this->pdo->prepare('DELETE FROM users WHERE id = :id')->execute(['id' => $userId]);
+    }
 }

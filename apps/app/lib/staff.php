@@ -121,8 +121,15 @@ function staff_attendance_today(): array
  */
 function set_staff_attendance(string $doctorId, bool $present, string $actorId): bool
 {
+    $pdo = db();
+    $pdo->beginTransaction();
+
     try {
-        $stmt = db()->prepare(
+        $pdo->prepare("SELECT set_config('app.actor_id', :actor, true)")
+            ->execute(['actor' => $actorId])
+        ;
+
+        $stmt = $pdo->prepare(
             'INSERT INTO doctor_attendance (doctor_id, attendance_date, is_present, recorded_by)
              SELECT d.id, app_today(), :present, :actor
              FROM doctors d
@@ -139,9 +146,17 @@ function set_staff_attendance(string $doctorId, bool $present, string $actorId):
         ]);
 
         if (0 === $stmt->rowCount()) {
+            $pdo->rollBack();
+
             return false;
         }
+
+        $pdo->commit();
     } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
         app_log('warning', 'Kehadiran dokter gagal disimpan: '.$exception->getMessage());
 
         return false;
@@ -285,8 +300,21 @@ function transition_waiting_visit(string $visitId, string $actorId, string $targ
             ->execute(['actor' => $actorId])
         ;
 
-        $update = $pdo->prepare('UPDATE visits SET status = :status WHERE id = :id');
-        $update->execute(['status' => $targetStatus, 'id' => $visitId]);
+        if ('batal' === $targetStatus) {
+            $update = $pdo->prepare(
+                'UPDATE visits
+                 SET status = :status, cancelled_at = now(), cancelled_by = :actor
+                 WHERE id = :id'
+            );
+            $update->execute([
+                'status' => $targetStatus,
+                'actor' => $actorId,
+                'id' => $visitId,
+            ]);
+        } else {
+            $update = $pdo->prepare('UPDATE visits SET status = :status WHERE id = :id');
+            $update->execute(['status' => $targetStatus, 'id' => $visitId]);
+        }
 
         $pdo->commit();
 
