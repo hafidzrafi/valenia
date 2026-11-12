@@ -91,7 +91,7 @@ $page = 'nonlanding';
             <div class="flex flex-col gap-6">
                 <div class="flex flex-col gap-2 p-6 w-120 h-55 bg-white rounded-2xl border border-teal-500">
                     <div class="flex w-12 h-12 rounded-2xl bg-teal-500 items-center justify-center text-white text-lg font-medium">
-                        <i class="ph ph-target text-white text-3xl"></i>
+                        <i class="ph ph-shield-check text-white text-3xl"></i>
                     </div>
                     <h6 class="text-teal-500 text-2xl font-medium tracking-tight">Visi</h6>
                     <p>Menjadi poliklinik kampus yang unggul, terpercaya, dan berorientasi pada kesehatan serta kesejahteraan seluruh civitas akademika.</p>
@@ -99,7 +99,7 @@ $page = 'nonlanding';
 
                 <div class="flex flex-col gap-2 p-6 w-120 h-75 bg-teal-500 rounded-2xl">
                     <div class="flex w-12 h-12 rounded-2xl bg-white items-center justify-center text-white text-lg font-medium">
-                        <i class="ph ph-shield-check text-teal-500 text-3xl"></i>
+                        <i class="ph ph-target text-teal-500 text-3xl"></i>
                     </div>
                     <h6 class="text-white text-2xl font-medium tracking-tight">Misi</h6>
                     <ol class="list-decimal pl-5 text-white">
