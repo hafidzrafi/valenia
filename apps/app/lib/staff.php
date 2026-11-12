@@ -67,7 +67,7 @@ function staff_summary(?array $visits = null): array
 {
     $visits ??= staff_today_visits();
     $byService = [];
-    $byStatus = ['menunggu' => 0, 'dilayani' => 0, 'selesai' => 0];
+    $byStatus = ['menunggu' => 0, 'dilayani' => 0, 'selesai' => 0, 'expired' => 0];
 
     foreach ($visits as $visit) {
         $service = (string) $visit['service_name'];
@@ -211,6 +211,7 @@ function staff_queue_activity(int $limit = 20): array
                 'dilayani' => 'Dipanggil',
                 'selesai' => 'Selesai',
                 'batal' => 'Dibatalkan',
+                'expired' => 'Kedaluwarsa',
                 default => 'Diperbarui',
             };
         }

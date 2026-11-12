@@ -14,12 +14,14 @@ $statusClass = [
     'menunggu' => 'bg-[#d9d9d9] text-[#666]',
     'dilayani' => 'bg-amber-500 text-white',
     'selesai' => 'bg-[#10b981] text-white',
+    'expired' => 'bg-slate-300 text-slate-700',
 ];
 
 $statusLabel = [
     'menunggu' => 'Menunggu',
     'dilayani' => 'Dilayani',
     'selesai' => 'Selesai',
+    'expired' => 'Kedaluwarsa',
 ];
 ?>
 <div class="flex min-h-screen flex-col lg:flex-row" x-data="{ confirmForm: null, confirmCode: '', cancelForm: null, cancelCode: '' }">

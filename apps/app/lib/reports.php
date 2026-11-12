@@ -11,8 +11,9 @@ declare(strict_types=1);
  * This matches the labels used by the report table without ISO weeks bleeding
  * into adjacent months.
  *
- * Counts are registered visits per queue_date, excluding 'batal'. A patient who
- * registered and is still waiting did come, so 'menunggu' is included.
+ * Counts are registered visits per queue_date, excluding 'batal' and 'expired'.
+ * A patient who registered and is still waiting did come, so 'menunggu' is
+ * included.
  *
  * The breakdown covers the three master polis in REPORT_SERVICES. Any other
  * service is ignored in the pivot; making the columns dynamic is a separate
@@ -277,18 +278,17 @@ function report_build_snapshot(string $start, string $end, ?string $serviceSlug)
         $index[$week['week']] = $position;
     }
 
-    $sql = 'SELECT ((v.queue_date - CAST(:bucket_start AS date)) / 7) + 1 AS week_no,
+    $sql = "SELECT ((v.queue_date - CAST(:bucket_start AS date)) / 7) + 1 AS week_no,
                    s.name AS service_name,
                    count(*) AS total
             FROM visits v
             JOIN services s ON s.id = v.service_id
             WHERE v.queue_date BETWEEN CAST(:range_start AS date) AND CAST(:range_end AS date)
-              AND v.status <> :status';
+              AND v.status NOT IN ('batal', 'expired')";
     $params = [
         'bucket_start' => $start,
         'range_start' => $start,
         'range_end' => $end,
-        'status' => 'batal',
     ];
 
     if (null !== $serviceId) {

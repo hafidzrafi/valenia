@@ -365,6 +365,7 @@ function load_session_user(string $userId): ?array
 
     if ($expired || $idle || !$row['is_active']) {
         db()->prepare('DELETE FROM sessions WHERE id = :id')->execute(['id' => $row['session_row_id']]);
+        audit_log('sessions', (string) $row['session_row_id'], 'DELETE', (string) $row['id']);
         clear_session_data();
 
         return null;

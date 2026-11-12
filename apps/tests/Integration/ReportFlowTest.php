@@ -105,6 +105,59 @@ final class ReportFlowTest extends DatabaseTestCase
         self::assertSame(3, $snapshot['totals']['total']);
     }
 
+    public function testSnapshotExcludesExpiredVisits(): void
+    {
+        $patient = $this->createPatient('940000000008');
+        $umum = $this->serviceId('Poli Umum');
+
+        $this->visitOn('1987-06-02', $umum, 'selesai', $patient);
+        $this->visitOn('1987-06-03', $umum, 'expired', $patient);
+
+        $snapshot = \report_build_snapshot('1987-06-01', '1987-06-30', null);
+
+        self::assertSame(1, $snapshot['totals']['umum']);
+        self::assertSame(1, $snapshot['totals']['total']);
+    }
+
+    public function testExpireStaleVisitsMarksPreviousDayRows(): void
+    {
+        $patient = $this->createPatient('940000000009');
+        $umum = $this->serviceId('Poli Umum');
+        $timezone = new \DateTimeZone('Asia/Jakarta');
+        $yesterday = (new \DateTimeImmutable('yesterday', $timezone))->format('Y-m-d');
+        $today = (new \DateTimeImmutable('now', $timezone))->format('Y-m-d');
+
+        $this->visitOn($yesterday, $umum, 'menunggu', $patient);
+        $this->visitOn($yesterday, $umum, 'dilayani', $patient);
+        $this->visitOn($yesterday, $umum, 'selesai', $patient);
+        $this->visitOn($today, $umum, 'menunggu', $patient);
+
+        $count = (int) $this->pdo->query('SELECT expire_stale_visits()')->fetchColumn();
+        self::assertGreaterThanOrEqual(2, $count);
+
+        $stmt = $this->pdo->prepare(
+            'SELECT status, expired_at FROM visits WHERE patient_id = :patient AND queue_date = :date'
+        );
+        $stmt->execute(['patient' => $patient, 'date' => $yesterday]);
+        $rows = $stmt->fetchAll();
+
+        $statuses = array_column($rows, 'status');
+        sort($statuses);
+        self::assertSame(['expired', 'expired', 'selesai'], $statuses);
+
+        foreach ($rows as $row) {
+            if ('expired' === $row['status']) {
+                self::assertNotNull($row['expired_at']);
+            }
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT status FROM visits WHERE patient_id = :patient AND queue_date = :date'
+        );
+        $stmt->execute(['patient' => $patient, 'date' => $today]);
+        self::assertSame('menunggu', $stmt->fetchColumn());
+    }
+
     public function testDownloadRouteStreamsAPdfAndLogsTheExport(): void
     {
         $patient = $this->createPatient('940000000005');

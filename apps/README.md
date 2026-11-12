@@ -206,9 +206,9 @@ Asia/Jakarta month.
 | `/admin/rekap-bulanan` | GET | Weekly recap of registered visits per poli |
 | `/admin/rekap-bulanan/unduh` | POST | Stream the recap PDF and log the export |
 
-Counts are registered visits per `queue_date`, excluding `batal`. Weeks are 7
-day chunks counted from the period start, so a month reads as Minggu 1 (1-7),
-Minggu 2 (8-14), and so on.
+Counts are registered visits per `queue_date`, excluding `batal` and
+`expired`. Weeks are 7 day chunks counted from the period start, so a month
+reads as Minggu 1 (1-7), Minggu 2 (8-14), and so on.
 
 The PDF is rendered with dompdf and streamed from memory. It is never written
 to disk, `public/`, or object storage. `report_exports` keeps the metadata:
@@ -219,6 +219,28 @@ aggregate counts only, no patient level data.
 
 dompdf caches fonts in `sys_get_temp_dir()/valenia-dompdf`, so the non-root
 runtime image needs no writable application path.
+
+## Scheduled maintenance
+
+Mark previous-day waiting or served visits as expired once per day:
+
+```bash
+php database/expire_visits.php
+```
+
+Example cron (Asia/Jakarta):
+
+```cron
+5 0 * * * cd /srv && php database/expire_visits.php >> /var/log/valenia-expire.log 2>&1
+```
+
+Expired visits are terminal and are excluded from monthly report totals.
+
+## Session expiry
+
+Session rows removed by idle or absolute expiry in the session handler are
+housekeeping and are not written to `audit_logs`. Explicit admin revoke,
+logout, password reset, and deactivation are audited.
 
 ## Notes
 
