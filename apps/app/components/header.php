@@ -70,7 +70,7 @@
                     <div class="w-48 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2 ">
                         <a href="/ketentuan-berobat" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Ketentuan Berobat</a>
                         <a href="/viewdoctor" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Jadwal Dokter</a>
-                        <a href="#" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Tentang Poliklinik</a>
+                        <a href="/tentang-poliklinik" class="block px-4 py-2 rounded-3xl hover:bg-teal-50 hover:text-teal-500 transition-colors  ">Tentang Poliklinik</a>
                     </div>
                 </div>
             </div>
