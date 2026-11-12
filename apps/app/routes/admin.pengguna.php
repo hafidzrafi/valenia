@@ -62,9 +62,11 @@ return [
                     return $fail('Tidak dapat mengubah akun sendiri.');
                 }
 
-                return set_user_active($id, 'aktif' === $aksi, $me)
+                $result = set_user_active($id, 'aktif' === $aksi, $me);
+
+                return $result['ok']
                     ? $done('aktif' === $aksi ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.')
-                    : $fail('Akun tidak ditemukan.');
+                    : $fail((string) $result['error']);
             }
 
             if ('reset' === $aksi) {

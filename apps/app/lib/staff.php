@@ -241,7 +241,7 @@ function staff_queue_activity(int $limit = 20): array
  */
 function serve_staff_visit(string $visitId, string $actorId): array
 {
-    return transition_waiting_visit($visitId, $actorId, 'dilayani', 'Antrean tidak dapat dipanggil.');
+    return transition_waiting_visit($visitId, $actorId, false, 'Antrean tidak dapat dipanggil.');
 }
 
 /**
@@ -251,23 +251,25 @@ function serve_staff_visit(string $visitId, string $actorId): array
  */
 function cancel_staff_visit(string $visitId, string $actorId): array
 {
-    return transition_waiting_visit($visitId, $actorId, 'batal', 'Antrean tidak dapat dibatalkan.');
+    return transition_waiting_visit($visitId, $actorId, true, 'Antrean tidak dapat dibatalkan.');
 }
 
 /**
- * Shared guard for acting on a single waiting visit of today.
+ * Shared guard for acting on a single visit of today.
+ *
+ * Serve is allowed only from menunggu. Cancel is allowed from menunggu and
+ * dilayani, so staff can stop a visit that is already being served.
  *
  * @return array{ok: bool, error: ?string, queue_code: ?string}
  */
-function transition_waiting_visit(string $visitId, string $actorId, string $targetStatus, string $failure): array
+function transition_waiting_visit(string $visitId, string $actorId, bool $isCancellation, string $failure): array
 {
     if (1 !== preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $visitId)) {
         return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
     }
 
-    if (!in_array($targetStatus, ['dilayani', 'batal'], true)) {
-        return ['ok' => false, 'error' => 'Aksi tidak dikenal.', 'queue_code' => null];
-    }
+    $targetStatus = $isCancellation ? 'batal' : 'dilayani';
+    $allowedFrom = $isCancellation ? ['menunggu', 'dilayani'] : ['menunggu'];
 
     $pdo = db();
     $pdo->beginTransaction();
@@ -290,7 +292,7 @@ function transition_waiting_visit(string $visitId, string $actorId, string $targ
             return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
         }
 
-        if ('menunggu' !== $visit['status']) {
+        if (!in_array((string) $visit['status'], $allowedFrom, true)) {
             $pdo->rollBack();
 
             return ['ok' => false, 'error' => $failure, 'queue_code' => null];
@@ -300,7 +302,10 @@ function transition_waiting_visit(string $visitId, string $actorId, string $targ
             ->execute(['actor' => $actorId])
         ;
 
-        if ('batal' === $targetStatus) {
+        // PHPStan analyzes the literal call sites and reports one branch as
+        // always false. Both branches are reachable at runtime.
+        // @phpstan-ignore if.alwaysFalse
+        if ($isCancellation) {
             $update = $pdo->prepare(
                 'UPDATE visits
                  SET status = :status, cancelled_at = now(), cancelled_by = :actor

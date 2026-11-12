@@ -530,7 +530,7 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertSame($this->adminId(), (string) $visit['cancelled_by']);
     }
 
-    public function testCancelStaffVisitRejectsAServedVisit(): void
+    public function testCancelStaffVisitCancelsAServedVisit(): void
     {
         $patient = $this->patient('930000000023', 'Staff Cancel Served');
         $ticket = \issue_guest_ticket($patient, $this->serviceId('Poli Gigi'), 'Sakit gigi');
@@ -540,12 +540,38 @@ final class StaffFlowTest extends DatabaseTestCase
 
         $result = \cancel_staff_visit((string) $ticket['visit_id'], $this->adminId());
 
+        self::assertTrue($result['ok'], (string) $result['error']);
+        self::assertSame($ticket['queue_code'], $result['queue_code']);
+
+        $stmt = $this->pdo->prepare('SELECT status, cancelled_at, cancelled_by FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        $visit = $stmt->fetch();
+
+        self::assertIsArray($visit);
+        self::assertSame('batal', $visit['status']);
+        self::assertNotNull($visit['cancelled_at']);
+        self::assertSame($this->adminId(), (string) $visit['cancelled_by']);
+    }
+
+    public function testCancelStaffVisitRejectsACompletedVisit(): void
+    {
+        $patient = $this->patient('930000000024', 'Staff Cancel Completed');
+        $ticket = \issue_guest_ticket($patient, $this->serviceId('Poli Gigi'), 'Sakit gigi');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        self::assertTrue(\serve_staff_visit((string) $ticket['visit_id'], $this->adminId())['ok']);
+        self::assertTrue(
+            \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Karies', 'Tambal')['ok']
+        );
+
+        $result = \cancel_staff_visit((string) $ticket['visit_id'], $this->adminId());
+
         self::assertFalse($result['ok']);
         self::assertSame('Antrean tidak dapat dibatalkan.', $result['error']);
 
         $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
         $stmt->execute(['id' => $ticket['visit_id']]);
-        self::assertSame('dilayani', $stmt->fetchColumn());
+        self::assertSame('selesai', $stmt->fetchColumn());
     }
 
     public function testConcurrentAdvanceServesDistinctTickets(): void

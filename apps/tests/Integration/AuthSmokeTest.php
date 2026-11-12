@@ -123,17 +123,38 @@ final class AuthSmokeTest extends DatabaseTestCase
             $this->insertSession($userId);
             self::assertSame(1, $this->sessionCount($userId));
 
-            self::assertTrue(\set_user_active($userId, false, $this->adminId()));
+            $result = \set_user_active($userId, false, $this->adminId());
+
+            self::assertTrue($result['ok'], (string) $result['error']);
             self::assertSame(0, $this->sessionCount($userId));
         } finally {
             $this->deleteTempUser($userId);
         }
     }
 
-    private function createTempUser(string $prefix): string
+    public function testTheLastActiveAdminCannotBeDisabled(): void
+    {
+        $adminId = $this->adminId();
+        $tempId = $this->createTempUser('last-admin', 'admin');
+
+        try {
+            $disableSeeded = \set_user_active($adminId, false, $tempId);
+            self::assertTrue($disableSeeded['ok'], (string) $disableSeeded['error']);
+
+            $result = \set_user_active($tempId, false, $adminId);
+
+            self::assertFalse($result['ok']);
+            self::assertSame('Tidak dapat menonaktifkan admin aktif terakhir.', $result['error']);
+        } finally {
+            \set_user_active($adminId, true, $tempId);
+            $this->deleteTempUser($tempId);
+        }
+    }
+
+    private function createTempUser(string $prefix, string $role = 'perawat'): string
     {
         $username = $prefix.'-'.bin2hex(random_bytes(4));
-        $result = \create_user($username, 'Temp Auth', 'perawat', 'Start-Pass-123', $this->adminId());
+        $result = \create_user($username, 'Temp Auth', $role, 'Start-Pass-123', $this->adminId());
         self::assertTrue($result['ok'], (string) $result['error']);
 
         $stmt = $this->pdo->prepare('SELECT id FROM users WHERE username = :username');

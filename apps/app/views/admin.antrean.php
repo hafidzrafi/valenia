@@ -227,31 +227,34 @@ $statusLabel = [
                                         </td>
                                         <td>
                                             <div class="flex flex-row justify-center gap-2">
-                                                <?php if ('menunggu' !== $status) { ?>
-                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Panggil</span>
-                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Batalkan</span>
-                                                <?php } else { ?>
+                                                <?php if ('menunggu' === $status) { ?>
                                                     <form method="POST" action="/admin/antrean" id="<?php echo e($formId); ?>" class="hidden">
                                                         <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
                                                         <input type="hidden" name="action" value="serve">
                                                     </form>
-                                                    <form method="POST" action="/admin/antrean" id="<?php echo e($cancelId); ?>" class="hidden">
-                                                        <?php echo csrf_field(); ?>
-                                                        <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
-                                                        <input type="hidden" name="action" value="cancel">
-                                                    </form>
-
                                                     <button type="button"
                                                         @click="confirmForm = '<?php echo e($formId); ?>'; confirmCode = '<?php echo e((string) $row['queue_code']); ?>'"
                                                         class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-teal-500 px-3 text-[11px] font-medium text-white transition-colors hover:bg-teal-700">
                                                         Panggil
                                                     </button>
+                                                <?php } else { ?>
+                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Panggil</span>
+                                                <?php } ?>
+
+                                                <?php if ('menunggu' === $status || 'dilayani' === $status) { ?>
+                                                    <form method="POST" action="/admin/antrean" id="<?php echo e($cancelId); ?>" class="hidden">
+                                                        <?php echo csrf_field(); ?>
+                                                        <input type="hidden" name="visit_id" value="<?php echo e((string) $row['id']); ?>">
+                                                        <input type="hidden" name="action" value="cancel">
+                                                    </form>
                                                     <button type="button"
                                                         @click="cancelForm = '<?php echo e($cancelId); ?>'; cancelCode = '<?php echo e((string) $row['queue_code']); ?>'"
                                                         class="inline-flex h-7 w-20 items-center justify-center rounded-2xl border border-red-500 px-3 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500 hover:text-white">
                                                         Batalkan
                                                     </button>
+                                                <?php } else { ?>
+                                                    <span class="inline-flex h-7 w-20 items-center justify-center rounded-2xl bg-gray-200 px-3 text-[11px] font-medium text-gray-400">Batalkan</span>
                                                 <?php } ?>
                                             </div>
                                         </td>
@@ -300,7 +303,7 @@ $statusLabel = [
                             <p class="text-3xl font-black text-slate-900" x-text="cancelCode"></p>
                         </div>
                         <p class="mt-3 text-sm text-slate-600">
-                            Antrean ini akan ditandai Dibatalkan dan tidak akan dipanggil.
+                            Antrean ini akan ditandai Dibatalkan. Antrean yang sedang dilayani juga dapat dibatalkan dan tidak akan dipanggil lagi.
                         </p>
                         <div class="mt-6 flex items-center justify-center gap-3">
                             <button type="button" @click="cancelForm = null"

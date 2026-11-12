@@ -575,21 +575,46 @@ function create_user(string $username, string $fullName, string $role, string $p
     return ['ok' => true, 'error' => null];
 }
 
-/** Enable/disable an account. Returns false when nothing changed. */
-function set_user_active(string $userId, bool $active, string $actorId): bool
+/**
+ * Enable or disable an account.
+ *
+ * Refuses to disable the last active admin. Returns a result array so the
+ * caller can show a specific message.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function set_user_active(string $userId, bool $active, string $actorId): array
 {
     $pdo = db();
     $pdo->beginTransaction();
 
     try {
-        $sel = $pdo->prepare('SELECT is_active FROM users WHERE id = :id');
+        $sel = $pdo->prepare('SELECT is_active, role FROM users WHERE id = :id FOR UPDATE');
         $sel->execute(['id' => $userId]);
-        $old = $sel->fetchColumn();
+        $row = $sel->fetch();
 
-        if (false === $old) {
+        if (!is_array($row)) {
             $pdo->rollBack();
 
-            return false;
+            return ['ok' => false, 'error' => 'Akun tidak ditemukan.'];
+        }
+
+        $wasActive = (bool) $row['is_active'];
+        $role = (string) $row['role'];
+
+        if (!$active && $wasActive && 'admin' === $role) {
+            $others = $pdo->prepare(
+                "SELECT id FROM users
+                 WHERE role = 'admin' AND is_active AND id <> :id
+                 FOR UPDATE"
+            );
+            $others->execute(['id' => $userId]);
+
+            if (false === $others->fetch()) {
+                $pdo->rollBack();
+
+                return ['ok' => false, 'error' => 'Tidak dapat menonaktifkan admin aktif terakhir.'];
+            }
         }
 
         $pdo->prepare('UPDATE users SET is_active = :active WHERE id = :id')
@@ -607,7 +632,7 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
             $userId,
             'UPDATE',
             $actorId,
-            json_encode(['is_active' => (bool) $old]) ?: null,
+            json_encode(['is_active' => $wasActive]) ?: null,
             json_encode(['is_active' => $active]) ?: null,
         );
         $pdo->commit();
@@ -617,7 +642,7 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
         throw $exception;
     }
 
-    return true;
+    return ['ok' => true, 'error' => null];
 }
 
 /**
