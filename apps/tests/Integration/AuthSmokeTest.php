@@ -55,4 +55,45 @@ final class AuthSmokeTest extends DatabaseTestCase
 
         self::assertGreaterThanOrEqual(1, (int) $stmt->fetchColumn());
     }
+
+    public function testFifthFailedLoginLocksTheAccount(): void
+    {
+        $this->pdo->exec(
+            "UPDATE credentials
+             SET failed_attempts = 4, locked_until = NULL
+             WHERE user_id = (SELECT id FROM users WHERE username = 'admin')"
+        );
+
+        $result = \authenticate('admin', 'definitely-not-the-password');
+
+        self::assertFalse($result['ok']);
+        self::assertTrue($result['locked']);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT failed_attempts, locked_until
+             FROM credentials
+             WHERE user_id = (SELECT id FROM users WHERE username = 'admin')"
+        );
+        $stmt->execute();
+        $row = $stmt->fetch();
+
+        self::assertIsArray($row);
+        self::assertSame(5, (int) $row['failed_attempts']);
+        self::assertNotNull($row['locked_until']);
+    }
+
+    public function testLockedAccountRejectsTheCorrectPassword(): void
+    {
+        $this->pdo->exec(
+            "UPDATE credentials
+             SET failed_attempts = 5, locked_until = now() + interval '15 minutes'
+             WHERE user_id = (SELECT id FROM users WHERE username = 'admin')"
+        );
+
+        $password = getenv('SEED_ADMIN_PASSWORD') ?: 'admin12345';
+        $result = \authenticate('admin', $password);
+
+        self::assertFalse($result['ok']);
+        self::assertTrue($result['locked']);
+    }
 }

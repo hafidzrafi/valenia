@@ -148,6 +148,73 @@ final class StaffFlowTest extends DatabaseTestCase
         self::assertFalse(\set_staff_attendance('00000000-0000-0000-0000-000000000000', true, $this->adminId()));
     }
 
+    public function testAttendanceRejectsAnInactiveDoctor(): void
+    {
+        $service = $this->serviceId('Poli Umum');
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO doctors (full_name, service_id, is_active)
+             VALUES ('Inactive Doctor', :service, FALSE)
+             RETURNING id"
+        );
+        $stmt->execute(['service' => $service]);
+        $doctorId = (string) $stmt->fetchColumn();
+
+        try {
+            self::assertFalse(\set_staff_attendance($doctorId, true, $this->adminId()));
+
+            $check = $this->pdo->prepare('SELECT count(*) FROM doctor_attendance WHERE doctor_id = :id');
+            $check->execute(['id' => $doctorId]);
+            self::assertSame(0, (int) $check->fetchColumn());
+        } finally {
+            $this->pdo->prepare('DELETE FROM doctors WHERE id = :id')->execute(['id' => $doctorId]);
+        }
+    }
+
+    public function testRecordExaminationRejectsANonServedVisit(): void
+    {
+        $patient = $this->patient('930000000016', 'Staff Guard');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Demam');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        $call = function () use ($ticket): void {
+            $stmt = $this->pdo->prepare(
+                "SELECT record_examination(
+                    :visit, 'perawat', NULL, :actor,
+                    'Demam', NULL, 'Diagnosis', 'Istirahat'
+                 )"
+            );
+            $stmt->execute([
+                'visit' => $ticket['visit_id'],
+                'actor' => $this->adminId(),
+            ]);
+        };
+
+        try {
+            $call();
+            self::fail('record_examination accepted a menunggu visit');
+        } catch (\PDOException $exception) {
+            self::assertSame('P0001', $exception->getCode());
+        }
+
+        self::assertTrue(\cancel_portal_visit($patient, (string) $ticket['visit_id']));
+
+        try {
+            $call();
+            self::fail('record_examination accepted a batal visit');
+        } catch (\PDOException $exception) {
+            self::assertSame('P0001', $exception->getCode());
+        }
+
+        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame('batal', $stmt->fetchColumn());
+
+        $stmt = $this->pdo->prepare('SELECT count(*) FROM examinations WHERE visit_id = :id');
+        $stmt->execute(['id' => $ticket['visit_id']]);
+        self::assertSame(0, (int) $stmt->fetchColumn());
+    }
+
     public function testCompleteVisitWritesExaminationAndClosesTheVisit(): void
     {
         $patient = $this->patient('930000000004', 'Staff Complete');
@@ -160,9 +227,13 @@ final class StaffFlowTest extends DatabaseTestCase
         $result = \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat');
         self::assertTrue($result['ok'], (string) $result['error']);
 
-        $stmt = $this->pdo->prepare('SELECT status FROM visits WHERE id = :id');
+        $stmt = $this->pdo->prepare('SELECT status, completed_at FROM visits WHERE id = :id');
         $stmt->execute(['id' => $ticket['visit_id']]);
-        self::assertSame('selesai', $stmt->fetchColumn());
+        $visit = $stmt->fetch();
+
+        self::assertIsArray($visit);
+        self::assertSame('selesai', $visit['status']);
+        self::assertNotNull($visit['completed_at']);
 
         $exam = $this->pdo->prepare(
             'SELECT examiner_role, doctor_id, recorded_by FROM examinations WHERE visit_id = :id'

@@ -152,29 +152,49 @@ function authenticate(string $username, string $password): array
     }
 
     if (!password_verify($password, (string) $row['password_hash'])) {
-        $failed = (int) $row['failed_attempts'] + 1;
         $pdo = db();
         $pdo->beginTransaction();
 
         try {
-            if ($failed >= AUTH_MAX_FAILED_ATTEMPTS) {
-                $pdo->prepare(
-                    'UPDATE credentials
-                     SET failed_attempts = :n, locked_until = now() + make_interval(mins => :m), updated_at = now()
-                     WHERE id = :id'
-                )->execute(['n' => $failed, 'm' => AUTH_LOCK_MINUTES, 'id' => $row['credential_id']]);
-            } else {
-                $pdo->prepare(
-                    'UPDATE credentials SET failed_attempts = :n, updated_at = now() WHERE id = :id'
-                )->execute(['n' => $failed, 'id' => $row['credential_id']]);
-            }
+            // Increment in one statement so concurrent failures cannot lose
+            // counts. The CASE reads the pre-update value, so the fifth
+            // failure locks the account exactly once.
+            $stmt = $pdo->prepare(
+                'UPDATE credentials
+                 SET failed_attempts = failed_attempts + 1,
+                     locked_until = CASE
+                         WHEN failed_attempts + 1 >= :max_attempts
+                         THEN now() + make_interval(mins => :lock_minutes)
+                         ELSE locked_until
+                     END,
+                     updated_at = now()
+                 WHERE id = :id
+                 RETURNING failed_attempts, locked_until'
+            );
+            $stmt->execute([
+                'max_attempts' => AUTH_MAX_FAILED_ATTEMPTS,
+                'lock_minutes' => AUTH_LOCK_MINUTES,
+                'id' => $row['credential_id'],
+            ]);
+            $failure = $stmt->fetch();
+            $failed = is_array($failure)
+                ? (int) $failure['failed_attempts']
+                : ((int) $row['failed_attempts'] + 1);
+            $lockedUntil = is_array($failure) ? $failure['locked_until'] : null;
+
             audit_log(
                 'credentials',
                 (string) $row['credential_id'],
                 'UPDATE',
                 (string) $row['id'],
-                json_encode(['failed_attempts' => (int) $row['failed_attempts']]) ?: null,
-                json_encode(['failed_attempts' => $failed]) ?: null,
+                json_encode([
+                    'failed_attempts' => (int) $row['failed_attempts'],
+                    'locked_until' => $row['locked_until'],
+                ]) ?: null,
+                json_encode([
+                    'failed_attempts' => $failed,
+                    'locked_until' => $lockedUntil,
+                ]) ?: null,
             );
             record_auth_event('login_failure', $username, (string) $row['id']);
             $pdo->commit();

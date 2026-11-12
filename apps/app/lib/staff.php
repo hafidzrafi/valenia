@@ -116,14 +116,18 @@ function staff_attendance_today(): array
 /**
  * Record whether a doctor is present today (one row per doctor per day).
  *
- * Returns false when the doctor id is unknown or malformed.
+ * Only active doctors may be recorded. Returns false when the doctor id is
+ * unknown, malformed, or inactive.
  */
 function set_staff_attendance(string $doctorId, bool $present, string $actorId): bool
 {
     try {
         $stmt = db()->prepare(
             'INSERT INTO doctor_attendance (doctor_id, attendance_date, is_present, recorded_by)
-             VALUES (:doctor, app_today(), :present, :actor)
+             SELECT d.id, app_today(), :present, :actor
+             FROM doctors d
+             WHERE d.id = :doctor
+               AND d.is_active
              ON CONFLICT (doctor_id, attendance_date)
              DO UPDATE SET is_present = EXCLUDED.is_present,
                            recorded_by = EXCLUDED.recorded_by'
@@ -133,6 +137,10 @@ function set_staff_attendance(string $doctorId, bool $present, string $actorId):
             'present' => $present ? 'true' : 'false',
             'actor' => $actorId,
         ]);
+
+        if (0 === $stmt->rowCount()) {
+            return false;
+        }
     } catch (Throwable $exception) {
         app_log('warning', 'Kehadiran dokter gagal disimpan: '.$exception->getMessage());
 
