@@ -192,6 +192,14 @@ final class StaffFlowTest extends DatabaseTestCase
             $check = $this->pdo->prepare('SELECT count(*) FROM doctor_attendance WHERE doctor_id = :id');
             $check->execute(['id' => $doctorId]);
             self::assertSame(0, (int) $check->fetchColumn());
+
+            $audit = $this->pdo->prepare(
+                "SELECT count(*) FROM audit_logs
+                 WHERE table_name = 'doctor_attendance'
+                   AND new_data->>'doctor_id' = :id"
+            );
+            $audit->execute(['id' => $doctorId]);
+            self::assertSame(0, (int) $audit->fetchColumn());
         } finally {
             $this->pdo->prepare('DELETE FROM doctors WHERE id = :id')->execute(['id' => $doctorId]);
         }
@@ -240,6 +248,100 @@ final class StaffFlowTest extends DatabaseTestCase
         $stmt = $this->pdo->prepare('SELECT count(*) FROM examinations WHERE visit_id = :id');
         $stmt->execute(['id' => $ticket['visit_id']]);
         self::assertSame(0, (int) $stmt->fetchColumn());
+    }
+
+    public function testRecordExaminationRejectsCompletedAndExpiredVisits(): void
+    {
+        $patient = $this->patient('930000000028', 'Staff Guard Terminal');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Demam');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+        self::assertTrue(
+            \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat')['ok']
+        );
+
+        try {
+            $this->recordExaminationDirect((string) $ticket['visit_id']);
+            self::fail('record_examination accepted a selesai visit');
+        } catch (\PDOException $exception) {
+            self::assertSame('P0001', $exception->getCode());
+        }
+
+        $expiredPatient = $this->patient('930000000029', 'Staff Guard Expired');
+        $expired = \issue_guest_ticket($expiredPatient, $service, 'Batuk');
+        $this->visitIds[] = (string) $expired['visit_id'];
+        $this->pdo->prepare(
+            "UPDATE visits
+             SET status = 'expired', expired_at = now(), queue_date = app_today() - 1
+             WHERE id = :id"
+        )->execute(['id' => $expired['visit_id']]);
+
+        try {
+            $this->recordExaminationDirect((string) $expired['visit_id']);
+            self::fail('record_examination accepted an expired visit');
+        } catch (\PDOException $exception) {
+            self::assertSame('P0001', $exception->getCode());
+        }
+    }
+
+    public function testDuplicateActiveRegistrationAcrossConnectionsIsRejected(): void
+    {
+        $patient = $this->patient('930000000030', 'Staff Duplicate Conn');
+        $service = $this->serviceId('Poli Umum');
+        $first = $this->newConnection();
+        $second = $this->newConnection();
+
+        $stmt = $first->prepare(
+            "SELECT * FROM register_guest_visit(:patient, :service, 'Demam')"
+        );
+        $stmt->execute(['patient' => $patient, 'service' => $service]);
+        $row = $stmt->fetch();
+
+        self::assertIsArray($row);
+        $this->visitIds[] = (string) $row['visit_id'];
+
+        $stmt = $second->prepare(
+            "SELECT * FROM register_guest_visit(:patient, :service, 'Batuk')"
+        );
+
+        try {
+            $stmt->execute(['patient' => $patient, 'service' => $service]);
+            self::fail('A duplicate active visit was accepted');
+        } catch (\PDOException $exception) {
+            self::assertSame('23505', $exception->getCode());
+            self::assertStringContainsString(
+                'visits_one_active_per_patient_service_day',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testExaminationIsUniquePerVisit(): void
+    {
+        $patient = $this->patient('930000000031', 'Staff Exam Unique');
+        $service = $this->serviceId('Poli Umum');
+        $ticket = \issue_guest_ticket($patient, $service, 'Demam');
+        $this->visitIds[] = (string) $ticket['visit_id'];
+
+        \advance_queue($service, $this->adminId());
+        self::assertTrue(
+            \complete_staff_visit((string) $ticket['visit_id'], $this->adminId(), 'Demam', 'Istirahat')['ok']
+        );
+
+        try {
+            $this->pdo->prepare(
+                "INSERT INTO examinations (visit_id, examiner_role, recorded_by, diagnosis, treatment)
+                 VALUES (:visit, 'perawat', :actor, 'Duplikat', 'Duplikat')"
+            )->execute([
+                'visit' => $ticket['visit_id'],
+                'actor' => $this->adminId(),
+            ]);
+            self::fail('A second examination for the same visit was accepted');
+        } catch (\PDOException $exception) {
+            self::assertSame('23505', $exception->getCode());
+        }
     }
 
     public function testCompleteVisitWritesExaminationAndClosesTheVisit(): void
@@ -751,6 +853,20 @@ final class StaffFlowTest extends DatabaseTestCase
         }
 
         self::fail('Board not found for '.$serviceName);
+    }
+
+    private function recordExaminationDirect(string $visitId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT record_examination(
+                :visit, 'perawat', NULL, :actor,
+                'Demam', NULL, 'Diagnosis', 'Istirahat'
+             )"
+        );
+        $stmt->execute([
+            'visit' => $visitId,
+            'actor' => $this->adminId(),
+        ]);
     }
 
     /** A second connection so two transactions can overlap. */

@@ -160,6 +160,21 @@ final class ReportFlowTest extends DatabaseTestCase
         self::assertSame('menunggu', $stmt->fetchColumn());
     }
 
+    public function testExpireStaleVisitsIsIdempotent(): void
+    {
+        $patient = $this->createPatient('940000000010');
+        $umum = $this->serviceId('Poli Umum');
+        $yesterday = (new \DateTimeImmutable('yesterday', new \DateTimeZone('Asia/Jakarta')))->format('Y-m-d');
+
+        $this->visitOn($yesterday, $umum, 'menunggu', $patient);
+
+        $first = (int) $this->pdo->query('SELECT expire_stale_visits()')->fetchColumn();
+        self::assertGreaterThanOrEqual(1, $first);
+
+        $second = (int) $this->pdo->query('SELECT expire_stale_visits()')->fetchColumn();
+        self::assertSame(0, $second);
+    }
+
     public function testDownloadRouteStreamsAPdfAndLogsTheExport(): void
     {
         $patient = $this->createPatient('940000000005');

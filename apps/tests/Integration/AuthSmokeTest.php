@@ -151,6 +151,91 @@ final class AuthSmokeTest extends DatabaseTestCase
         }
     }
 
+    public function testLockExpiryAllowsLoginAndClearsTheCounter(): void
+    {
+        $this->pdo->exec(
+            "UPDATE credentials
+             SET failed_attempts = 5, locked_until = now() - interval '1 minute'
+             WHERE user_id = (SELECT id FROM users WHERE username = 'admin')"
+        );
+
+        $password = getenv('SEED_ADMIN_PASSWORD') ?: 'admin12345';
+        $result = \authenticate('admin', $password);
+
+        self::assertTrue($result['ok']);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT failed_attempts, locked_until
+             FROM credentials
+             WHERE user_id = (SELECT id FROM users WHERE username = 'admin')"
+        );
+        $stmt->execute();
+        $row = $stmt->fetch();
+
+        self::assertIsArray($row);
+        self::assertSame(0, (int) $row['failed_attempts']);
+        self::assertNull($row['locked_until']);
+    }
+
+    public function testChangePasswordRevokesOtherSessions(): void
+    {
+        $userId = $this->createTempUser('change');
+
+        try {
+            $this->insertSession($userId);
+            $this->insertSession($userId);
+            self::assertSame(2, $this->sessionCount($userId));
+
+            $result = \change_password($userId, 'Start-Pass-123', 'New-Pass-123');
+
+            self::assertTrue($result['ok'], (string) $result['error']);
+            self::assertSame(0, $this->sessionCount($userId));
+
+            $stmt = $this->pdo->prepare(
+                'SELECT must_change_password::int FROM credentials WHERE user_id = :id'
+            );
+            $stmt->execute(['id' => $userId]);
+            self::assertSame(0, (int) $stmt->fetchColumn());
+        } finally {
+            $this->deleteTempUser($userId);
+        }
+    }
+
+    public function testRevokeSessionRemovesTheRow(): void
+    {
+        $userId = $this->createTempUser('revoke');
+
+        try {
+            $this->insertSession($userId);
+
+            $stmt = $this->pdo->prepare('SELECT id FROM sessions WHERE user_id = :user LIMIT 1');
+            $stmt->execute(['user' => $userId]);
+            $sessionId = (string) $stmt->fetchColumn();
+
+            self::assertTrue(\revoke_session($sessionId, $this->adminId()));
+            self::assertSame(0, $this->sessionCount($userId));
+        } finally {
+            $this->deleteTempUser($userId);
+        }
+    }
+
+    public function testForcedPasswordGateRedirectsToChangePassword(): void
+    {
+        $pipeline = \Middleware::pipeline(
+            ['password'],
+            static fn (\Request $request): \Response => new \Response('ok'),
+        );
+
+        $blocked = $pipeline(new \Request('GET', 'admin', [], ['must_change' => true]));
+
+        self::assertSame(302, $blocked->status);
+        self::assertSame('/ganti-sandi', $blocked->headers['Location']);
+
+        $allowed = $pipeline(new \Request('GET', 'admin', [], ['must_change' => false]));
+
+        self::assertSame('ok', $allowed->body);
+    }
+
     private function createTempUser(string $prefix, string $role = 'perawat'): string
     {
         $username = $prefix.'-'.bin2hex(random_bytes(4));
