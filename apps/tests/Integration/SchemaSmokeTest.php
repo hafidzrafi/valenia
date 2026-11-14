@@ -58,4 +58,17 @@ final class SchemaSmokeTest extends DatabaseTestCase
         self::assertSame('PG', $prefixes['Poli Gigi']);
         self::assertSame('PK', $prefixes['Konseling/Psikologi']);
     }
+
+    public function testDeadVisitColumnIsGone(): void
+    {
+        $stmt = $this->pdo->query(
+            "SELECT count(*)
+             FROM information_schema.columns
+             WHERE table_schema = 'public'
+               AND table_name = 'visits'
+               AND column_name = 'handled_by_nurse'"
+        );
+
+        self::assertSame(0, (int) $stmt->fetchColumn());
+    }
 }
