@@ -196,6 +196,46 @@ Today's own `menunggu` visit can be cancelled through `POST /portal-batal`;
 cancellation is a status change, not a delete, and the queue number is not
 reused.
 
+## Visit state model
+
+`visits.status` is one of:
+
+```text
+menunggu -> dilayani -> selesai
+    |           |
+    |           +------> batal
+    +------------------> batal
+
+menunggu or dilayani from a previous day -> expired
+```
+
+Terminal states are `selesai`, `batal`, and `expired`.
+
+Lifecycle columns:
+
+| Column | Set when |
+|---|---|
+| `served_at` | the visit is called or served |
+| `completed_at` | the visit is completed and an examination is written |
+| `cancelled_at`, `cancelled_by` | the visit is cancelled by staff or the portal |
+| `expired_at` | the daily expiry job closes a previous-day visit |
+
+Rules:
+
+- Only one active visit is allowed per patient, poli, and queue date. A second active registration is rejected with a clear message.
+- `expired` visits are closed by `php database/expire_visits.php` and excluded from monthly report totals.
+- `visits.handled_by_nurse` was removed because the status and examination record already carry that information.
+- `record_examination()` rejects every status except `dilayani`, including direct calls outside the normal completion helper.
+
+## Account and session state
+
+- New accounts and admin password resets set `must_change_password`; the account can only access `/ganti-sandi` and `/logout` until the password changes.
+- Five failed logins lock the account for 15 minutes. The counter is incremented atomically.
+- Password reset and deactivation delete every session for the account.
+- The last active admin cannot be disabled.
+- Sessions expire after 30 minutes idle or 12 hours absolute. Idle and absolute expiry are housekeeping; explicit revoke, logout, reset, and deactivation are audited.
+- Doctor attendance changes are recorded in `audit_logs` through the `doctor_attendance` UUID id, and attendance is rejected for inactive doctors.
+
 ## Monthly recap
 
 Admin only. The page reads `?bulan=Y-m` and falls back to the current
