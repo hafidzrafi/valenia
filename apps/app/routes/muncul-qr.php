@@ -42,8 +42,14 @@ return [
             return redirect('/form');
         }
 
-        if (($draft['duplicate'] ?? false) === true && '1' !== request_input('confirm_duplicate')) {
-            return redirect('/ambil-tiket');
+        $duplicateError = 'Pasien sudah memiliki antrean aktif untuk poli ini hari ini. Selesaikan atau batalkan antrean tersebut terlebih dahulu.';
+
+        if (($draft['duplicate'] ?? false) === true) {
+            return new Response(view('ambil-tiket', [
+                'title' => 'Ambil Tiket',
+                'draft' => $draft,
+                'error' => $duplicateError,
+            ]), 422);
         }
 
         try {
@@ -52,6 +58,25 @@ return [
                 (int) $draft['service_id'],
                 (string) $draft['complaint'],
             );
+        } catch (PDOException $exception) {
+            if ('23505' === $exception->getCode()
+                && str_contains($exception->getMessage(), 'visits_one_active_per_patient_service_day')) {
+                app_log('warning', 'Penerbitan tiket ditolak: antrean aktif sudah ada');
+
+                return new Response(view('ambil-tiket', [
+                    'title' => 'Ambil Tiket',
+                    'draft' => $draft,
+                    'error' => $duplicateError,
+                ]), 422);
+            }
+
+            app_log('error', 'Penerbitan tiket gagal: '.$exception->getMessage());
+
+            return new Response(view('ambil-tiket', [
+                'title' => 'Ambil Tiket',
+                'draft' => $draft,
+                'error' => 'Gagal menerbitkan nomor antrean. Coba lagi.',
+            ]), 500);
         } catch (Throwable $exception) {
             app_log('error', 'Penerbitan tiket gagal: '.$exception->getMessage());
 

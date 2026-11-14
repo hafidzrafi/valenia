@@ -42,6 +42,9 @@ final class PortalInteractiveTest extends DatabaseTestCase
     {
         $patientId = $this->createPatient('910000000004');
         $first = \issue_guest_ticket($patientId, $this->serviceId(), 'Demam');
+        $this->pdo->prepare("UPDATE visits SET status = 'selesai' WHERE id = :id")
+            ->execute(['id' => $first['visit_id']])
+        ;
         $second = \issue_guest_ticket($patientId, $this->serviceId(), 'Batuk');
 
         $data = \portal_data($patientId, (string) $first['visit_id']);
@@ -108,7 +111,10 @@ final class PortalInteractiveTest extends DatabaseTestCase
         $patientId = $this->createPatient('910000000010');
 
         for ($i = 0; $i < 7; ++$i) {
-            \issue_guest_ticket($patientId, $this->serviceId(), 'Kontrol '.$i);
+            $ticket = \issue_guest_ticket($patientId, $this->serviceId(), 'Kontrol '.$i);
+            $this->pdo->prepare("UPDATE visits SET status = 'selesai' WHERE id = :id")
+                ->execute(['id' => $ticket['visit_id']])
+            ;
         }
 
         $first = \portal_data($patientId, null, 1, 5);

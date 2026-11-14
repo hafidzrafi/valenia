@@ -42,6 +42,7 @@ $statusMap = [
     'dilayani' => ['negative', 'Dilayani'],
     'selesai' => ['positive', 'Selesai'],
     'batal' => ['disabled', 'Dibatalkan'],
+    'expired' => ['disabled', 'Kedaluwarsa'],
 ];
 
 $progressSteps = match ($activeStatus) {
@@ -49,6 +50,7 @@ $progressSteps = match ($activeStatus) {
     'dilayani' => ['done', 'done', 'current', 'wait'],
     'selesai' => ['done', 'done', 'done', 'done'],
     'batal' => ['done', 'done', 'wait', 'wait'],
+    'expired' => ['done', 'done', 'wait', 'wait'],
     default => ['current', 'wait', 'wait', 'wait'],
 };
 

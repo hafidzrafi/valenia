@@ -46,7 +46,8 @@ final class RegistrationFlowTest extends DatabaseTestCase
         self::assertNull(\has_active_visit_today($patientId, $serviceId));
 
         $first = \issue_guest_ticket($patientId, $serviceId, 'Sakit kepala');
-        $second = \issue_guest_ticket($patientId, $serviceId, 'Sakit kepala');
+        $secondPatientId = $this->createPatient('123456789022');
+        $second = \issue_guest_ticket($secondPatientId, $serviceId, 'Sakit kepala');
 
         self::assertSame((int) $first['queue_number'] + 1, (int) $second['queue_number']);
         self::assertMatchesRegularExpression('/^PU-\d{2,}$/', (string) $first['queue_code']);
@@ -74,6 +75,38 @@ final class RegistrationFlowTest extends DatabaseTestCase
         );
 
         self::assertNotNull(\has_active_visit_today($patientId, $serviceId));
+    }
+
+    public function testSecondActiveTicketForSamePatientAndServiceIsRejected(): void
+    {
+        $patientId = $this->createPatient('123456789020');
+        $serviceId = $this->serviceId();
+
+        \issue_guest_ticket($patientId, $serviceId, 'Demam');
+
+        try {
+            \issue_guest_ticket($patientId, $serviceId, 'Batuk');
+            self::fail('A second active ticket was issued');
+        } catch (\PDOException $exception) {
+            self::assertSame('23505', $exception->getCode());
+            self::assertStringContainsString(
+                'visits_one_active_per_patient_service_day',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    public function testCancelledVisitFreesTheActiveSlot(): void
+    {
+        $patientId = $this->createPatient('123456789021');
+        $serviceId = $this->serviceId();
+        $first = \issue_guest_ticket($patientId, $serviceId, 'Demam');
+
+        self::assertTrue(\cancel_portal_visit($patientId, (string) $first['visit_id']));
+
+        $second = \issue_guest_ticket($patientId, $serviceId, 'Batuk');
+
+        self::assertNotSame($first['visit_id'], $second['visit_id']);
     }
 
     public function testInactiveServiceIsRejected(): void
