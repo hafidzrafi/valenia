@@ -123,13 +123,15 @@ final class ReportFlowTest extends DatabaseTestCase
     {
         $patient = $this->createPatient('940000000009');
         $umum = $this->serviceId('Poli Umum');
+        $gigi = $this->serviceId('Poli Gigi');
+        $konseling = $this->serviceId('Konseling/Psikologi');
         $timezone = new \DateTimeZone('Asia/Jakarta');
         $yesterday = (new \DateTimeImmutable('yesterday', $timezone))->format('Y-m-d');
         $today = (new \DateTimeImmutable('now', $timezone))->format('Y-m-d');
 
         $this->visitOn($yesterday, $umum, 'menunggu', $patient);
-        $this->visitOn($yesterday, $umum, 'dilayani', $patient);
-        $this->visitOn($yesterday, $umum, 'selesai', $patient);
+        $this->visitOn($yesterday, $gigi, 'dilayani', $patient);
+        $this->visitOn($yesterday, $konseling, 'selesai', $patient);
         $this->visitOn($today, $umum, 'menunggu', $patient);
 
         $count = (int) $this->pdo->query('SELECT expire_stale_visits()')->fetchColumn();

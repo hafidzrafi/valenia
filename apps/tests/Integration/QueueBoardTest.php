@@ -32,7 +32,8 @@ final class QueueBoardTest extends DatabaseTestCase
         $service = $this->serviceId('Poli Umum');
 
         $first = \issue_guest_ticket($patient, $service, 'Demam');
-        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $secondPatient = $this->createPatient('920000000101');
+        $second = \issue_guest_ticket($secondPatient, $service, 'Batuk');
 
         $result = \advance_queue($service, $this->adminId());
 
@@ -67,7 +68,8 @@ final class QueueBoardTest extends DatabaseTestCase
         $service = $this->serviceId('Poli Umum');
 
         $first = \issue_guest_ticket($patient, $service, 'Demam');
-        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $secondPatient = $this->createPatient('920000000102');
+        $second = \issue_guest_ticket($secondPatient, $service, 'Batuk');
 
         \advance_queue($service, $this->adminId());
         \advance_queue($service, $this->adminId());

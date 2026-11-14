@@ -103,7 +103,8 @@ final class StaffFlowTest extends DatabaseTestCase
         $patient = $this->patient('930000000015', 'Staff Status Mix');
         $service = $this->serviceId('Poli Umum');
         $first = \issue_guest_ticket($patient, $service, 'Demam');
-        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $secondPatient = $this->patient('930000000025', 'Staff Status Mix B');
+        $second = \issue_guest_ticket($secondPatient, $service, 'Batuk');
         $this->visitIds[] = (string) $first['visit_id'];
         $this->visitIds[] = (string) $second['visit_id'];
 
@@ -477,7 +478,8 @@ final class StaffFlowTest extends DatabaseTestCase
         $service = $this->serviceId('Poli Umum');
 
         $first = \issue_guest_ticket($patient, $service, 'Demam');
-        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $secondPatient = $this->patient('930000000027', 'Staff Serve Row B');
+        $second = \issue_guest_ticket($secondPatient, $service, 'Batuk');
         $this->visitIds[] = (string) $first['visit_id'];
         $this->visitIds[] = (string) $second['visit_id'];
 
@@ -580,7 +582,8 @@ final class StaffFlowTest extends DatabaseTestCase
         $service = $this->serviceId('Poli Umum');
 
         $first = \issue_guest_ticket($patient, $service, 'Demam');
-        $second = \issue_guest_ticket($patient, $service, 'Batuk');
+        $secondPatient = $this->patient('930000000026', 'Staff Concurrent B');
+        $second = \issue_guest_ticket($secondPatient, $service, 'Batuk');
         $this->visitIds[] = (string) $first['visit_id'];
         $this->visitIds[] = (string) $second['visit_id'];
 
