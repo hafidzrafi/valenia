@@ -96,3 +96,233 @@ function set_service_active(int $serviceId, bool $active): array
         : ['ok' => false, 'error' => 'Poli tidak ditemukan.'];
 }
 
+/** doctors.id is UUID: a forged id raises 22P02 instead of missing. */
+function valid_medic_id(string $medicId): bool
+{
+    return 1 === preg_match(
+        '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+        $medicId
+    );
+}
+
+/** The STR format is not validated: a guessed pattern would reject valid numbers. */
+function medic_error(string $fullName, string $strNumber, int $serviceId): ?string
+{
+    $fullName = trim($fullName);
+
+    if (strlen($fullName) < 2 || strlen($fullName) > 120) {
+        return 'Nama tenaga medis wajib diisi (2-120 karakter).';
+    }
+
+    if (strlen(trim($strNumber)) > 32) {
+        return 'Nomor STR maksimal 32 karakter.';
+    }
+
+    if ($serviceId <= 0) {
+        return 'Poli wajib dipilih.';
+    }
+
+    if (!valid_service_id($serviceId)) {
+        return 'Poli tidak ditemukan.';
+    }
+
+    return null;
+}
+
+/** Map a constraint violation to a message, or null so the caller rethrows. */
+function medic_write_error(Throwable $exception): ?string
+{
+    if (!$exception instanceof PDOException) {
+        return null;
+    }
+
+    return match ((string) $exception->getCode()) {
+        '23505' => 'Nomor STR sudah dipakai tenaga medis lain.',
+        '23503' => 'Poli tidak ditemukan.',
+        default => null,
+    };
+}
+
+/**
+ * An empty STR is stored as NULL: the unique index is partial on IS NOT NULL.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function create_medic(string $fullName, string $strNumber, int $serviceId, string $actorId): array
+{
+    $error = medic_error($fullName, $strNumber, $serviceId);
+
+    if (null !== $error) {
+        return ['ok' => false, 'error' => $error];
+    }
+
+    $fullName = trim($fullName);
+    $strNumber = trim($strNumber);
+    $storedStr = '' === $strNumber ? null : $strNumber;
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $insert = $pdo->prepare(
+            'INSERT INTO doctors (full_name, str_number, service_id)
+             VALUES (:name, :str, :service)
+             RETURNING id'
+        );
+        $insert->execute(['name' => $fullName, 'str' => $storedStr, 'service' => $serviceId]);
+        $medicId = (string) $insert->fetchColumn();
+
+        audit_log('doctors', $medicId, 'INSERT', $actorId, null, json_encode([
+            'full_name' => $fullName,
+            'str_number' => $storedStr,
+            'service_id' => $serviceId,
+        ]) ?: null);
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        $mapped = medic_write_error($exception);
+
+        if (null !== $mapped) {
+            return ['ok' => false, 'error' => $mapped];
+        }
+
+        throw $exception;
+    }
+
+    return ['ok' => true, 'error' => null];
+}
+
+/**
+ * The row is read FOR UPDATE so the audit holds the values actually replaced.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function update_medic(
+    string $medicId,
+    string $fullName,
+    string $strNumber,
+    int $serviceId,
+    string $actorId,
+): array {
+    if (!valid_medic_id($medicId)) {
+        return ['ok' => false, 'error' => 'Tenaga medis tidak ditemukan.'];
+    }
+
+    $error = medic_error($fullName, $strNumber, $serviceId);
+
+    if (null !== $error) {
+        return ['ok' => false, 'error' => $error];
+    }
+
+    $fullName = trim($fullName);
+    $strNumber = trim($strNumber);
+    $storedStr = '' === $strNumber ? null : $strNumber;
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $find = $pdo->prepare(
+            'SELECT full_name, str_number, service_id FROM doctors WHERE id = :id FOR UPDATE'
+        );
+        $find->execute(['id' => $medicId]);
+        $old = $find->fetch();
+
+        if (!is_array($old)) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Tenaga medis tidak ditemukan.'];
+        }
+
+        $pdo->prepare(
+            'UPDATE doctors
+                SET full_name = :name, str_number = :str, service_id = :service
+              WHERE id = :id'
+        )->execute([
+            'name' => $fullName,
+            'str' => $storedStr,
+            'service' => $serviceId,
+            'id' => $medicId,
+        ]);
+
+        audit_log('doctors', $medicId, 'UPDATE', $actorId, json_encode([
+            'full_name' => (string) $old['full_name'],
+            'str_number' => $old['str_number'],
+            'service_id' => (int) $old['service_id'],
+        ]) ?: null, json_encode([
+            'full_name' => $fullName,
+            'str_number' => $storedStr,
+            'service_id' => $serviceId,
+        ]) ?: null);
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        $mapped = medic_write_error($exception);
+
+        if (null !== $mapped) {
+            return ['ok' => false, 'error' => $mapped];
+        }
+
+        throw $exception;
+    }
+
+    return ['ok' => true, 'error' => null];
+}
+
+/**
+ * Deactivation is the delete path: examinations reference doctors with ON DELETE RESTRICT.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function set_medic_active(string $medicId, bool $active, string $actorId): array
+{
+    if (!valid_medic_id($medicId)) {
+        return ['ok' => false, 'error' => 'Tenaga medis tidak ditemukan.'];
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $find = $pdo->prepare('SELECT is_active FROM doctors WHERE id = :id FOR UPDATE');
+        $find->execute(['id' => $medicId]);
+        $row = $find->fetch();
+
+        if (!is_array($row)) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Tenaga medis tidak ditemukan.'];
+        }
+
+        $pdo->prepare('UPDATE doctors SET is_active = :active WHERE id = :id')
+            ->execute(['active' => $active ? 'true' : 'false', 'id' => $medicId])
+        ;
+
+        audit_log(
+            'doctors',
+            $medicId,
+            'UPDATE',
+            $actorId,
+            json_encode(['is_active' => (bool) $row['is_active']]) ?: null,
+            json_encode(['is_active' => $active]) ?: null,
+        );
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $exception;
+    }
+
+    return ['ok' => true, 'error' => null];
+}
