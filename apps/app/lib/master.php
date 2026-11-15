@@ -38,3 +38,61 @@ function list_medics(): array
     )->fetchAll();
 }
 
+/** services.id is SMALLINT: an id outside it raises 22003 instead of missing. */
+function valid_service_id(int $serviceId): bool
+{
+    return $serviceId >= 1 && $serviceId <= 32767;
+}
+
+/**
+ * The queue prefix is not editable: tickets are rebuilt from it on render.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function update_service(int $serviceId, string $name): array
+{
+    if (!valid_service_id($serviceId)) {
+        return ['ok' => false, 'error' => 'Poli tidak ditemukan.'];
+    }
+
+    $name = trim($name);
+
+    if (strlen($name) < 2 || strlen($name) > 60) {
+        return ['ok' => false, 'error' => 'Nama poli wajib diisi (2-60 karakter).'];
+    }
+
+    try {
+        $stmt = db()->prepare('UPDATE services SET name = :name WHERE id = :id');
+        $stmt->execute(['name' => $name, 'id' => $serviceId]);
+    } catch (Throwable $exception) {
+        if ($exception instanceof PDOException && '23505' === (string) $exception->getCode()) {
+            return ['ok' => false, 'error' => 'Nama poli sudah dipakai.'];
+        }
+
+        throw $exception;
+    }
+
+    return $stmt->rowCount() > 0
+        ? ['ok' => true, 'error' => null]
+        : ['ok' => false, 'error' => 'Poli tidak ditemukan.'];
+}
+
+/**
+ * Deactivation is the delete path: visits reference services with NO ACTION.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function set_service_active(int $serviceId, bool $active): array
+{
+    if (!valid_service_id($serviceId)) {
+        return ['ok' => false, 'error' => 'Poli tidak ditemukan.'];
+    }
+
+    $stmt = db()->prepare('UPDATE services SET is_active = :active WHERE id = :id');
+    $stmt->execute(['active' => $active ? 'true' : 'false', 'id' => $serviceId]);
+
+    return $stmt->rowCount() > 0
+        ? ['ok' => true, 'error' => null]
+        : ['ok' => false, 'error' => 'Poli tidak ditemukan.'];
+}
+
