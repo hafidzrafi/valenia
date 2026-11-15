@@ -34,19 +34,19 @@ final class Router
         $path = trim($path, '/');
 
         foreach ($this->routes[$method] ?? [] as $pattern => $route) {
-            if (1 === preg_match('#^'.$pattern.'$#', $path, $matches)) {
+            if (1 === preg_match('#^' . $pattern . '$#', $path, $matches)) {
                 return $this->run($route, $method, $path, $matches);
             }
         }
 
         return $this->pathExists($path)
             ? new Response('405 Method Not Allowed', 405)
-            : new Response('404 Not Found', 404);
+            : new Response(view('404', ['title' => 'Halaman tidak ditemukan']), 404);
     }
 
     private function load(): void
     {
-        foreach (glob($this->dir.'/*.php') ?: [] as $file) {
+        foreach (glob($this->dir . '/*.php') ?: [] as $file) {
             $pattern = self::toPattern(basename($file, '.php'));
             $definition = require $file;
 
@@ -70,7 +70,7 @@ final class Router
     {
         $segments = array_filter(
             explode('.', $name),
-            static fn (string $segment): bool => '_index' !== $segment,
+            static fn(string $segment): bool => '_index' !== $segment,
         );
 
         if ([] === $segments) {
@@ -78,8 +78,8 @@ final class Router
         }
 
         return implode('/', array_map(
-            static fn (string $segment): string => str_starts_with($segment, '$')
-                ? '(?P<'.substr($segment, 1).'>[^/]+)'
+            static fn(string $segment): string => str_starts_with($segment, '$')
+                ? '(?P<' . substr($segment, 1) . '>[^/]+)'
                 : preg_quote($segment, '#'),
             $segments,
         ));
@@ -96,7 +96,7 @@ final class Router
 
         $pipeline = Middleware::pipeline(
             $names,
-            static fn (Request $request): Response => Response::from(($route['handler'])($request)),
+            static fn(Request $request): Response => Response::from(($route['handler'])($request)),
         );
 
         return $pipeline(new Request($method, $path, $params));
@@ -106,7 +106,7 @@ final class Router
     {
         foreach ($this->routes as $patterns) {
             foreach (array_keys($patterns) as $pattern) {
-                if (1 === preg_match('#^'.$pattern.'$#', $path)) {
+                if (1 === preg_match('#^' . $pattern . '$#', $path)) {
                     return true;
                 }
             }
