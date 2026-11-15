@@ -122,7 +122,7 @@ include __DIR__.'/../components/step.php'; ?>
 
                     <?php if (($draft['duplicate'] ?? false) === true) { ?>
                         <p class="mt-4 mx-8 rounded-2xl bg-amber-50 px-4 py-2 text-center text-sm text-amber-700">
-                            Pasien sudah terdaftar pada poli ini hari ini. Klik <strong>Ambil</strong> untuk tetap membuat antrean baru.
+                            Pasien sudah memiliki antrean aktif pada poli ini hari ini. Selesaikan atau batalkan antrean tersebut sebelum mendaftar lagi.
                         </p>
                     <?php } ?>
 
@@ -153,19 +153,18 @@ include __DIR__.'/../components/step.php'; ?>
                     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/muncul-qr"
                         onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir'); localStorage.removeItem('keluhan');">
                         <?php echo csrf_field(); ?>
-                        <?php if (($draft['duplicate'] ?? false) === true) { ?>
-                            <input type="hidden" name="confirm_duplicate" value="1">
-                        <?php } ?>
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
                             <button type="button" onclick="window.history.back()" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-amber-500 border-amber-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-amber-500 hover:text-white">
                                 <p class="text-base font-semibold ">Batal</p>
                             </button>
-                            <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
-                                <p class="text-base font-semibold text-white">Ambil</p>
-                                <i class="ph ph-qr-code  text-white text-[1.25rem]"></i>
-                            </button>
+                            <?php if (($draft['duplicate'] ?? false) !== true) { ?>
+                                <button type="submit" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
+                                    <p class="text-base font-semibold text-white">Ambil</p>
+                                    <i class="ph ph-qr-code  text-white text-[1.25rem]"></i>
+                                </button>
+                            <?php } ?>
                         </div>
                     </form>
                 </div>

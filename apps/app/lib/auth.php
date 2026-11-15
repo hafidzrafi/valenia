@@ -152,29 +152,49 @@ function authenticate(string $username, string $password): array
     }
 
     if (!password_verify($password, (string) $row['password_hash'])) {
-        $failed = (int) $row['failed_attempts'] + 1;
         $pdo = db();
         $pdo->beginTransaction();
 
         try {
-            if ($failed >= AUTH_MAX_FAILED_ATTEMPTS) {
-                $pdo->prepare(
-                    'UPDATE credentials
-                     SET failed_attempts = :n, locked_until = now() + make_interval(mins => :m), updated_at = now()
-                     WHERE id = :id'
-                )->execute(['n' => $failed, 'm' => AUTH_LOCK_MINUTES, 'id' => $row['credential_id']]);
-            } else {
-                $pdo->prepare(
-                    'UPDATE credentials SET failed_attempts = :n, updated_at = now() WHERE id = :id'
-                )->execute(['n' => $failed, 'id' => $row['credential_id']]);
-            }
+            // Increment in one statement so concurrent failures cannot lose
+            // counts. The CASE reads the pre-update value, so the fifth
+            // failure locks the account exactly once.
+            $stmt = $pdo->prepare(
+                'UPDATE credentials
+                 SET failed_attempts = failed_attempts + 1,
+                     locked_until = CASE
+                         WHEN failed_attempts + 1 >= :max_attempts
+                         THEN now() + make_interval(mins => :lock_minutes)
+                         ELSE locked_until
+                     END,
+                     updated_at = now()
+                 WHERE id = :id
+                 RETURNING failed_attempts, locked_until'
+            );
+            $stmt->execute([
+                'max_attempts' => AUTH_MAX_FAILED_ATTEMPTS,
+                'lock_minutes' => AUTH_LOCK_MINUTES,
+                'id' => $row['credential_id'],
+            ]);
+            $failure = $stmt->fetch();
+            $failed = is_array($failure)
+                ? (int) $failure['failed_attempts']
+                : ((int) $row['failed_attempts'] + 1);
+            $lockedUntil = is_array($failure) ? $failure['locked_until'] : null;
+
             audit_log(
                 'credentials',
                 (string) $row['credential_id'],
                 'UPDATE',
                 (string) $row['id'],
-                json_encode(['failed_attempts' => (int) $row['failed_attempts']]) ?: null,
-                json_encode(['failed_attempts' => $failed]) ?: null,
+                json_encode([
+                    'failed_attempts' => (int) $row['failed_attempts'],
+                    'locked_until' => $row['locked_until'],
+                ]) ?: null,
+                json_encode([
+                    'failed_attempts' => $failed,
+                    'locked_until' => $lockedUntil,
+                ]) ?: null,
             );
             record_auth_event('login_failure', $username, (string) $row['id']);
             $pdo->commit();
@@ -345,6 +365,7 @@ function load_session_user(string $userId): ?array
 
     if ($expired || $idle || !$row['is_active']) {
         db()->prepare('DELETE FROM sessions WHERE id = :id')->execute(['id' => $row['session_row_id']]);
+        audit_log('sessions', (string) $row['session_row_id'], 'DELETE', (string) $row['id']);
         clear_session_data();
 
         return null;
@@ -555,32 +576,64 @@ function create_user(string $username, string $fullName, string $role, string $p
     return ['ok' => true, 'error' => null];
 }
 
-/** Enable/disable an account. Returns false when nothing changed. */
-function set_user_active(string $userId, bool $active, string $actorId): bool
+/**
+ * Enable or disable an account.
+ *
+ * Refuses to disable the last active admin. Returns a result array so the
+ * caller can show a specific message.
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function set_user_active(string $userId, bool $active, string $actorId): array
 {
     $pdo = db();
     $pdo->beginTransaction();
 
     try {
-        $sel = $pdo->prepare('SELECT is_active FROM users WHERE id = :id');
+        $sel = $pdo->prepare('SELECT is_active, role FROM users WHERE id = :id FOR UPDATE');
         $sel->execute(['id' => $userId]);
-        $old = $sel->fetchColumn();
+        $row = $sel->fetch();
 
-        if (false === $old) {
+        if (!is_array($row)) {
             $pdo->rollBack();
 
-            return false;
+            return ['ok' => false, 'error' => 'Akun tidak ditemukan.'];
+        }
+
+        $wasActive = (bool) $row['is_active'];
+        $role = (string) $row['role'];
+
+        if (!$active && $wasActive && 'admin' === $role) {
+            $others = $pdo->prepare(
+                "SELECT id FROM users
+                 WHERE role = 'admin' AND is_active AND id <> :id
+                 FOR UPDATE"
+            );
+            $others->execute(['id' => $userId]);
+
+            if (false === $others->fetch()) {
+                $pdo->rollBack();
+
+                return ['ok' => false, 'error' => 'Tidak dapat menonaktifkan admin aktif terakhir.'];
+            }
         }
 
         $pdo->prepare('UPDATE users SET is_active = :active WHERE id = :id')
-            ->execute(['active' => $active, 'id' => $userId])
+            ->execute(['active' => $active ? 'true' : 'false', 'id' => $userId])
         ;
+
+        if (!$active) {
+            $pdo->prepare('DELETE FROM sessions WHERE user_id = :user')
+                ->execute(['user' => $userId])
+            ;
+        }
+
         audit_log(
             'users',
             $userId,
             'UPDATE',
             $actorId,
-            json_encode(['is_active' => (bool) $old]) ?: null,
+            json_encode(['is_active' => $wasActive]) ?: null,
             json_encode(['is_active' => $active]) ?: null,
         );
         $pdo->commit();
@@ -590,7 +643,7 @@ function set_user_active(string $userId, bool $active, string $actorId): bool
         throw $exception;
     }
 
-    return true;
+    return ['ok' => true, 'error' => null];
 }
 
 /**
@@ -625,6 +678,13 @@ function reset_user_password(string $userId, string $newPassword, string $actorI
                  failed_attempts = 0, locked_until = NULL, updated_at = now()
              WHERE id = :id'
         )->execute(['hash' => hash_password($newPassword), 'id' => $cred['id']]);
+
+        // A reset must invalidate every existing session, otherwise a stolen
+        // session survives the reset even though it is gated by must_change.
+        $pdo->prepare('DELETE FROM sessions WHERE user_id = :user')
+            ->execute(['user' => $userId])
+        ;
+
         audit_log('credentials', (string) $cred['id'], 'UPDATE', $actorId);
         record_auth_event('password_reset', null, $userId);
         $pdo->commit();
