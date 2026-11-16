@@ -9,9 +9,9 @@ $page = 'nonlanding';
 <div class="relative bg-cover bg-center bg-no-repeat " style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
 
-    <?php include __DIR__.'/../components/cursor.php'; ?>
-    <?php include __DIR__.'/../components/header.php'; ?>
-    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/cursor.php'; ?>
+    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
     <div class="relative w-full h-410 overflow-hidden">
 
@@ -43,7 +43,7 @@ $page = 'nonlanding';
             </div>
         </div>
         <i class="ph ph-bed absolute text-5xl z-10 text-teal-500/30 left-1/2 -translate-y-5 -translate-x-50 -rotate-15""></i>
-        <i class="ph ph-first-aid-kit absolute text-6xl z-10 text-teal-500/30 left-1/2 -translate-y-5 translate-x-30 rotate-10"></i>
+        <i class=" ph ph-first-aid-kit absolute text-6xl z-10 text-teal-500/30 left-1/2 -translate-y-5 translate-x-30 rotate-10"></i>
 
         <h2 class="relative text-center text-teal-700  text-lg font-medium">Prinsip Kami</h2>
 
@@ -78,14 +78,14 @@ $page = 'nonlanding';
         </svg>
 
         <i class="ph ph-heartbeat absolute text-7xl z-10 text-teal-500/30 right-65 -rotate-20"></i>
-         <i class="ph ph-stethoscope absolute text-8xl z-10 text-teal-500/30 right-40 rotate-30"></i>
+        <i class="ph ph-stethoscope absolute text-8xl z-10 text-teal-500/30 right-40 rotate-30"></i>
 
         <div class="relative ml-45 mb-10">
             <h2 class="  text-teal-700  text-lg font-medium">Arah Kami</h2>
             <span class=" text-teal-700  text-5xl font-black tracking-tight">Visi & Misi</span>
 
         </div>
-       
+
 
         <div class="relative flex flex-row gap-30  justify-center">
             <div class="flex flex-col gap-6">
@@ -117,7 +117,7 @@ $page = 'nonlanding';
 
         </div>
 
-          
+
 
         <svg viewBox="0 0 200 200" class="absolute opacity-30 w-140 h-140 right-15 bottom-0  rotate-30">
             <path fill="#14B8A6" d="M23.4,-43C28.4,-33.2,29.3,-23.5,36.1,-14.7C42.9,-5.9,55.6,2,60.7,13.1C65.9,24.2,63.4,38.5,56,50.5C48.6,62.5,36.3,72.1,21.6,78.7C7,85.3,-10.1,88.8,-14.5,75.5C-18.8,62.2,-10.6,32.1,-7.2,16.9C-3.8,1.7,-5.3,1.3,-16.7,-4.4C-28.1,-10.2,-49.5,-21.3,-55.5,-32.5C-61.5,-43.8,-52.1,-55.1,-40.3,-61.8C-28.5,-68.5,-14.2,-70.5,-2.5,-66.6C9.2,-62.7,18.4,-52.8,23.4,-43Z" transform="translate(100 100)" />
@@ -130,4 +130,4 @@ $page = 'nonlanding';
 
 
 </div>
-<?php include __DIR__.'/../components/footer.php'; ?>
+<?php include __DIR__ . '/../components/footer.php'; ?>

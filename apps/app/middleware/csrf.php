@@ -43,7 +43,8 @@ Middleware::register('csrf', static function (Request $request, callable $next):
         $submitted = $_POST['_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
 
         if (!is_string($submitted) || !hash_equals($token, $submitted)) {
-            return new Response('419 Page Expired', 419);
+            return new Response(view('errors', ['code' => 419]), 419);
+            
         }
     }
 

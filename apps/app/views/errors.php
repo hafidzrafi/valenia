@@ -1,25 +1,27 @@
 <?php
 // Default fallback
+
 $code   = $code ?? 404;
 $title  = $title ?? match ($code) {
     404 => 'Halaman tidak ditemukan',
-    405 => 'Method Not Allowed',
+    419 => 'Form Kadaluarsa',
     default => 'Error',
 };
 
 $desc  = $desc ?? match ($code) {
     404 => 'Maaf, halaman yang Anda cari tidak tersedia. Silakan kembali ke beranda.',
-    405 => 'def',
+    419 => 'Maaf, halaman sudah kadaluarsa. Silahkan refresh halaman atau kembali ke beranda',
     default => '',
 };
+
 ?>
 
 
 
 <div class="relative bg-cover bg-center bg-no-repeat " style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-14 inset-x-20 bg-teal-100/80 rounded-4xl" aria-hidden="true"></div>
+    <?php include __DIR__ . '/../components/header-error.php'; ?>
     <?php include __DIR__ . '/../components/cursor.php'; ?>
-    <?php include __DIR__ . '/../components/header.php'; ?>
 
     <div class="relative min-h-screen flex items-center overflow-hidden">
 
@@ -31,7 +33,7 @@ $desc  = $desc ?? match ($code) {
         <div
             class="absolute left-35 flex flex-col gap-6   min-w-120 w-auto h-auto p-8 rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]"
             style="box-shadow: -5px 10px 5px 0 rgba(0,0,0,0.1);">
-            <h1 class="text-5xl font-black text-left w-[50vh]  text-slate-900"><?= $title ?></h1>
+            <h1 class="text-5xl font-black text-left w-[50vh]  text-teal-900"><?= $title ?></h1>
             <p class="text-left text-base w-[50vh] mb-2"><?= $desc ?></p>
             <a href="/" class="w-40 h-10 bg-teal-500 flex items-center justify-center rounded-2xl text-white transition duration-150  hover:bg-teal-700 hover:scale-110  ">Kembali ke Beranda</a>
         </div>
@@ -43,9 +45,9 @@ $desc  = $desc ?? match ($code) {
 
         <h1 class="absolute  right-55 text-[11rem] font-black text-left tracking-tight text-teal-700/30 rotate-8 pointer-events-none"><?= $code ?></h1>
         <i class="ph ph-magnifying-glass-plus absolute text-5xl z-10 text-teal-500/30  left-175 top-35  "></i>
-        <i class="ph ph-flower-lotus absolute text-7xl z-10 text-teal-500/30  left-128 top-110 -rotate-8  "></i>
+        <i class="ph ph-smiley-sad absolute text-8xl z-10  text-amber-500  left-120 top-100 -rotate-8  "></i>
         <i class="ph ph-first-aid absolute text-7xl z-10 text-teal-500/30 bottom-12 right-18 m-10 rotate-2"></i>
-        <i class="ph ph-file-x absolute text-6xl z-10 text-teal-700/30 top-52 right-57 m-10 rotate-20"></i>
+        <i class="ph ph-file-x absolute text-8xl z-10 text-teal-700/20 top-38 right-50 m-10 rotate-20"></i>
         <i class="ph ph-ambulance absolute text-6xl z-10 text-teal-500/30 bottom-14 left-20 m-10 rotate-2"></i>
         <div class="z-1">
             <?php include __DIR__ . '/../components/subfooter.php'; ?>

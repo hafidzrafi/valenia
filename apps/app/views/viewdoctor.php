@@ -5,15 +5,16 @@ $heroTitle = 'Jadwal Dokter';
 $heroDesc = 'Informasi jam praktik dan ketersediaan dokter Poliklinik';
 $showCta = false;
 $attendance = $attendance ?? [];
+$page = 'nonlanding';
 ?>
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-0 bg-white/40" aria-hidden="true"></div>
 
-    <?php include __DIR__.'/../components/cursor.php'; ?>
-    <?php include __DIR__.'/../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
+<?php include __DIR__ . '/../components/cursor.php'; ?>
     <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
-    <div id="papan-featured" class="flex justify-center scale-90 mt-12">
+    <div id="papan-featured" class="flex justify-center scale-90 -mt-25">
         <?php include __DIR__.'/../views/partials/papan-antrean.php'; ?>
     </div>
 
