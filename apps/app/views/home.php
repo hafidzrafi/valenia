@@ -173,7 +173,7 @@ ob_start();
             <h2 class="grow-0 shrink-0 w-[40%] text-[64px] text-center font-black font-display-expanded text-white">
                 Pantau Antrean Real Time
             </h2>
-            <div class="mt-16 w-full max-w-[1285px] overflow-x-auto pb-4">
+            <div class="mt-16  pb-4 scale-90">
                 <?php include __DIR__ . '/../components/live-antrean.php'; ?>
             </div>
 
