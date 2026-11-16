@@ -61,8 +61,8 @@ $heroTitle = 'Portal Pasien';
 $heroDesc = 'Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA';
 $showCta = false;
 ?>
-<?php include __DIR__.'/../components/cursor.php'; ?>
 <?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 <div class="overflow-hidden">
     <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 </div>
@@ -120,7 +120,7 @@ $showCta = false;
                         <p class="text-sm text-black"><?php echo e($identityType); ?></p>
                         <p class="text-sm text-black"><?php echo e($identityNumber); ?></p>
                         <div class="mt-3"><?php
-                        $status_tag = 'positive';
+                                            $status_tag = 'positive';
 $label_tag = 'Aktif';
 
 include __DIR__.'/../components/tag.php'; ?>
@@ -174,10 +174,10 @@ include __DIR__.'/../components/tag.php'; ?>
         <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Sedang Dilayani</h1>
 
         <div id="served-boards"
-             hx-get="/portal-boards"
-             hx-trigger="every 10s"
-             hx-swap="innerHTML"
-             class="mt-10">
+            hx-get="/portal-boards"
+            hx-trigger="every 10s"
+            hx-swap="innerHTML"
+            class="mt-10">
             <?php include __DIR__.'/partials/served-boards.php'; ?>
         </div>
         <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
@@ -201,7 +201,7 @@ include __DIR__.'/../components/tag.php'; ?>
                         $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
                         ?>
                         <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
-                           class="grid grid-cols-4 items-center px-8 h-15 w-130 rounded-3xl no-underline transition-colors border bg-white shadow-[0_2px_8px_rgba(30,60,55,0.08)] <?php echo $isSelected ? 'border-teal-500 ring-1 ring-teal-500' : 'border-gray-200 hover:border-teal-400'; ?>">
+                            class="grid grid-cols-4 items-center px-8 h-15 w-130 rounded-3xl no-underline transition-colors border bg-white shadow-[0_2px_8px_rgba(30,60,55,0.08)] <?php echo $isSelected ? 'border-teal-500 ring-1 ring-teal-500' : 'border-gray-200 hover:border-teal-400'; ?>">
                             <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
                                 <p class="truncate text-lg font-medium text-black"><?php echo e($visit['service_name']); ?></p>
                                 <p class="text-xs font-medium text-slate-500"><?php echo e($visit['queue_code'] ?? ''); ?></p>
@@ -216,8 +216,8 @@ include __DIR__.'/../components/tag.php'; ?>
 
                 </div>
 
-<?php
-$pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
+                <?php
+                $pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
 $selectedVisitId = $selectedVisitId ?? null;
 
 $pagerLink = static function (int $target) use ($selectedVisitId): string {
@@ -312,7 +312,7 @@ $pagerLink = static function (int $target) use ($selectedVisitId): string {
 
                     <?php if (null !== $selected && 'menunggu' === $selectedStatus && $selectedIsActive) { ?>
                         <form method="POST" action="/portal-batal"
-                              onsubmit="return confirm('Batalkan antrean ini?')">
+                            onsubmit="return confirm('Batalkan antrean ini?')">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="visit_id" value="<?php echo e((string) $selected['id']); ?>">
                             <button type="submit" class="w-[105px] h-[40px] mt-6 smooth-corners-md rounded-3xl border-2 border-amber-500 bg-white/80 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white">

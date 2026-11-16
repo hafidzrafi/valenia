@@ -41,7 +41,7 @@ final class Router
 
         return $this->pathExists($path)
             ? new Response('405 Method Not Allowed', 405)
-            : new Response('404 Not Found', 404);
+            : new Response(view('errors', ['code' => 404]), 404);
     }
 
     private function load(): void

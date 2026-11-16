@@ -2,16 +2,16 @@
 $heroTitle = $heroTitle ?? 'Lorem adalah sahabat Pak Ipsum';
 $heroDesc = $heroDesc ?? 'Deskripsi default website.';
 $heroImage = $heroImage ?? '../assets/img/default-img.jpg';
-$ctaPrimaryText = $ctaPrimaryText ?? 'Mulai Sekarang';
+$ctaPrimaryText = $ctaPrimaryText ?? 'Lorem';
 $ctaPrimaryLink = $ctaPrimaryLink ?? '#';
-$ctaSecondaryText = $ctaSecondaryText ?? 'Pelajari Lebih Lanjut';
+$ctaSecondaryText = $ctaSecondaryText ?? 'Lorem';
 $ctaSecondaryLink = $ctaSecondaryLink ?? '#';
 $showCta = $showCta ?? true;
 $page = $page ?? '';
 ?>
 
 <?php if ('nonlanding' == $page) { ?>
-    <section class="relative  md:h-[80vh] w-full flex items-center justify-center border-b-3 border-gray-400 ">
+    <section class="relative  md:h-[60vh] w-full flex items-center justify-center border-b-3 border-gray-400 ">
         <!-- Background Image -->
         <img src="<?php echo $heroImage; ?>" alt="Hero Image" class="absolute inset-0 w-full h-full object-cover">
 
@@ -19,7 +19,7 @@ $page = $page ?? '';
         <div class="absolute inset-0 bg-black/50"></div>
 
         <!-- Konten Teks -->
-        <div class="relative z-10 container mx-auto px-6 text-center text-white font-display">
+        <div class="relative z-10 container mx-auto px-6 mt-20 text-center text-white font-display">
             <h1 class="text-[96px] md:text-6xl lg:text-7xl font-black font-display-expanded leading-tight mb-6">
                 <?php echo $heroTitle; ?>
             </h1>
@@ -37,7 +37,7 @@ $page = $page ?? '';
                     <?php } ?>
 
                     <?php if ($ctaSecondaryText) { ?>
-                        <a href="<?php echo $ctaSecondaryLink; ?>" class="bg-white/10 smooth-corners-lg hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-3xl font-bold text-lg transition-all">
+                        <a href="<?php echo $ctaSecondaryLink; ?>" class="bg-white/10 smooth-corners-lg hover:bg-white/20 text-white border border-white/30 px-8 py-4 rounded-3xl font-bold text-lg transition-all">
                             <?php echo $ctaSecondaryText; ?>
                         </a>
                     <?php } ?>

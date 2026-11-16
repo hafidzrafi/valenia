@@ -9,8 +9,8 @@ $location = $location ?? ['embed_url' => ''];
 $call_centers = $call_centers ?? [];
 ?>
 
-<?php include __DIR__.'/../components/cursor.php'; ?>
 <?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 
@@ -18,7 +18,7 @@ $call_centers = $call_centers ?? [];
 
     <div class="flex items-center justify-center">
         <div
-            class="-translate-y-25 w-205 min-h-120 h-auto rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] overflow-hidden"
+            class="-translate-y-20 w-205 min-h-120 h-auto rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] overflow-hidden"
             style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
 
             <div
