@@ -34,13 +34,32 @@ final class DbSessionHandler implements SessionHandlerInterface
 
     public function read(string $id): string
     {
+        $hash = hash('sha256', $id);
+
         $stmt = db()->prepare(
-            'SELECT payload FROM sessions WHERE token_hash = :hash AND expires_at > now()'
+            'SELECT payload FROM sessions
+             WHERE token_hash = :hash
+               AND expires_at > now()
+               AND last_seen_at > now() - make_interval(secs => :idle)'
         );
-        $stmt->execute(['hash' => hash('sha256', $id)]);
+        $stmt->execute([
+            'hash' => $hash,
+            'idle' => SESSION_IDLE_SECONDS,
+        ]);
         $payload = $stmt->fetchColumn();
 
-        return is_string($payload) ? $payload : '';
+        if (!is_string($payload)) {
+            // Remove expired or idle rows. This path also covers anonymous
+            // sessions, which never reach load_session_user(). Passive expiry
+            // is housekeeping and is not written to audit_logs.
+            db()->prepare('DELETE FROM sessions WHERE token_hash = :hash')
+                ->execute(['hash' => $hash])
+            ;
+
+            return '';
+        }
+
+        return $payload;
     }
 
     public function write(string $id, string $data): bool

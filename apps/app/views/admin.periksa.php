@@ -16,6 +16,7 @@ $statusLabel = [
     'dilayani' => 'Dilayani',
     'selesai' => 'Selesai',
     'batal' => 'Dibatalkan',
+    'expired' => 'Kedaluwarsa',
 ][(string) $visit['status']] ?? (string) $visit['status'];
 ?>
 <div class="flex min-h-screen flex-col lg:flex-row" x-data="{ confirmOpen: false, confirmed: false }">

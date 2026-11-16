@@ -22,7 +22,8 @@ final class QueuePlaceholderTest extends DatabaseTestCase
         $stmt->execute(['patient' => $patientId, 'service' => $serviceId, 'user' => $adminId]);
         $first = $stmt->fetch();
 
-        $stmt->execute(['patient' => $patientId, 'service' => $serviceId, 'user' => $adminId]);
+        $secondPatientId = $this->createPatient('123456789023');
+        $stmt->execute(['patient' => $secondPatientId, 'service' => $serviceId, 'user' => $adminId]);
         $second = $stmt->fetch();
 
         self::assertIsArray($first);

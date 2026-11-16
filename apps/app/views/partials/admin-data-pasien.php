@@ -8,6 +8,7 @@ $statusClass = [
     'dilayani' => 'bg-amber-500 text-white',
     'selesai' => 'bg-[#10b981] text-white',
     'batal' => 'bg-rose-200 text-rose-700',
+    'expired' => 'bg-slate-300 text-slate-700',
 ];
 
 $statusLabel = [
@@ -15,6 +16,7 @@ $statusLabel = [
     'dilayani' => 'Dilayani',
     'selesai' => 'Selesai',
     'batal' => 'Dibatalkan',
+    'expired' => 'Kedaluwarsa',
 ];
 
 $status = (string) $visit['status'];

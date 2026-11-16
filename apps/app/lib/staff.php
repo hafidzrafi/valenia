@@ -67,7 +67,7 @@ function staff_summary(?array $visits = null): array
 {
     $visits ??= staff_today_visits();
     $byService = [];
-    $byStatus = ['menunggu' => 0, 'dilayani' => 0, 'selesai' => 0];
+    $byStatus = ['menunggu' => 0, 'dilayani' => 0, 'selesai' => 0, 'expired' => 0];
 
     foreach ($visits as $visit) {
         $service = (string) $visit['service_name'];
@@ -116,14 +116,25 @@ function staff_attendance_today(): array
 /**
  * Record whether a doctor is present today (one row per doctor per day).
  *
- * Returns false when the doctor id is unknown or malformed.
+ * Only active doctors may be recorded. Returns false when the doctor id is
+ * unknown, malformed, or inactive.
  */
 function set_staff_attendance(string $doctorId, bool $present, string $actorId): bool
 {
+    $pdo = db();
+    $pdo->beginTransaction();
+
     try {
-        $stmt = db()->prepare(
+        $pdo->prepare("SELECT set_config('app.actor_id', :actor, true)")
+            ->execute(['actor' => $actorId])
+        ;
+
+        $stmt = $pdo->prepare(
             'INSERT INTO doctor_attendance (doctor_id, attendance_date, is_present, recorded_by)
-             VALUES (:doctor, app_today(), :present, :actor)
+             SELECT d.id, app_today(), :present, :actor
+             FROM doctors d
+             WHERE d.id = :doctor
+               AND d.is_active
              ON CONFLICT (doctor_id, attendance_date)
              DO UPDATE SET is_present = EXCLUDED.is_present,
                            recorded_by = EXCLUDED.recorded_by'
@@ -133,7 +144,19 @@ function set_staff_attendance(string $doctorId, bool $present, string $actorId):
             'present' => $present ? 'true' : 'false',
             'actor' => $actorId,
         ]);
+
+        if (0 === $stmt->rowCount()) {
+            $pdo->rollBack();
+
+            return false;
+        }
+
+        $pdo->commit();
     } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
         app_log('warning', 'Kehadiran dokter gagal disimpan: '.$exception->getMessage());
 
         return false;
@@ -188,6 +211,7 @@ function staff_queue_activity(int $limit = 20): array
                 'dilayani' => 'Dipanggil',
                 'selesai' => 'Selesai',
                 'batal' => 'Dibatalkan',
+                'expired' => 'Kedaluwarsa',
                 default => 'Diperbarui',
             };
         }
@@ -218,7 +242,7 @@ function staff_queue_activity(int $limit = 20): array
  */
 function serve_staff_visit(string $visitId, string $actorId): array
 {
-    return transition_waiting_visit($visitId, $actorId, 'dilayani', 'Antrean tidak dapat dipanggil.');
+    return transition_waiting_visit($visitId, $actorId, false, 'Antrean tidak dapat dipanggil.');
 }
 
 /**
@@ -228,23 +252,25 @@ function serve_staff_visit(string $visitId, string $actorId): array
  */
 function cancel_staff_visit(string $visitId, string $actorId): array
 {
-    return transition_waiting_visit($visitId, $actorId, 'batal', 'Antrean tidak dapat dibatalkan.');
+    return transition_waiting_visit($visitId, $actorId, true, 'Antrean tidak dapat dibatalkan.');
 }
 
 /**
- * Shared guard for acting on a single waiting visit of today.
+ * Shared guard for acting on a single visit of today.
+ *
+ * Serve is allowed only from menunggu. Cancel is allowed from menunggu and
+ * dilayani, so staff can stop a visit that is already being served.
  *
  * @return array{ok: bool, error: ?string, queue_code: ?string}
  */
-function transition_waiting_visit(string $visitId, string $actorId, string $targetStatus, string $failure): array
+function transition_waiting_visit(string $visitId, string $actorId, bool $isCancellation, string $failure): array
 {
     if (1 !== preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $visitId)) {
         return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
     }
 
-    if (!in_array($targetStatus, ['dilayani', 'batal'], true)) {
-        return ['ok' => false, 'error' => 'Aksi tidak dikenal.', 'queue_code' => null];
-    }
+    $targetStatus = $isCancellation ? 'batal' : 'dilayani';
+    $allowedFrom = $isCancellation ? ['menunggu', 'dilayani'] : ['menunggu'];
 
     $pdo = db();
     $pdo->beginTransaction();
@@ -267,7 +293,7 @@ function transition_waiting_visit(string $visitId, string $actorId, string $targ
             return ['ok' => false, 'error' => 'Antrean tidak ditemukan.', 'queue_code' => null];
         }
 
-        if ('menunggu' !== $visit['status']) {
+        if (!in_array((string) $visit['status'], $allowedFrom, true)) {
             $pdo->rollBack();
 
             return ['ok' => false, 'error' => $failure, 'queue_code' => null];
@@ -277,8 +303,24 @@ function transition_waiting_visit(string $visitId, string $actorId, string $targ
             ->execute(['actor' => $actorId])
         ;
 
-        $update = $pdo->prepare('UPDATE visits SET status = :status WHERE id = :id');
-        $update->execute(['status' => $targetStatus, 'id' => $visitId]);
+        // PHPStan analyzes the literal call sites and reports one branch as
+        // always false. Both branches are reachable at runtime.
+        // @phpstan-ignore if.alwaysFalse
+        if ($isCancellation) {
+            $update = $pdo->prepare(
+                'UPDATE visits
+                 SET status = :status, cancelled_at = now(), cancelled_by = :actor
+                 WHERE id = :id'
+            );
+            $update->execute([
+                'status' => $targetStatus,
+                'actor' => $actorId,
+                'id' => $visitId,
+            ]);
+        } else {
+            $update = $pdo->prepare('UPDATE visits SET status = :status WHERE id = :id');
+            $update->execute(['status' => $targetStatus, 'id' => $visitId]);
+        }
 
         $pdo->commit();
 
