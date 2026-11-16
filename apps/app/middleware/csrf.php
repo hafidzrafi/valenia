@@ -44,7 +44,6 @@ Middleware::register('csrf', static function (Request $request, callable $next):
 
         if (!is_string($submitted) || !hash_equals($token, $submitted)) {
             return new Response(view('errors', ['code' => 419]), 419);
-            
         }
     }
 

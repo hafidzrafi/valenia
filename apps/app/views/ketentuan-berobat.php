@@ -8,9 +8,9 @@ $page = 'nonlanding';
 ?>
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
-    <?php include __DIR__ . '/../components/header.php'; ?>
-    <?php include __DIR__ . '/../components/cursor.php'; ?>
-    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__.'/../components/header.php'; ?>
+    <?php include __DIR__.'/../components/cursor.php'; ?>
+    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 
     <!-- ke-1 -->
@@ -43,10 +43,10 @@ $page = 'nonlanding';
             <p class="w-[50vh]">Pastikan identitas akademik anda aktif dan data yang diisi sesuai dengan dokumen resmi.</p>
             <?php
             $status_tag = 'positive';
-            $label_tag = 'Wajib';
+$label_tag = 'Wajib';
 
-            include __DIR__ . '/../components/tag.php';
-            ?>
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
         <div class="relative flex flex-col items-center">
@@ -119,11 +119,11 @@ $page = 'nonlanding';
             <h1 class="text-shadow-slate-900 font-bold  text-3xl">Ketentuan Antrean dan <br> Tiket Digital</h1>
             <p class="w-[50vh]">Tiket menjadi bukti kunjungan Anda. Simpan QR Code dan perhatikan batas pembatalan.</p>
             <?php
-            $status_tag = 'positive';
-            $label_tag = 'Wajib';
+$status_tag = 'positive';
+$label_tag = 'Wajib';
 
-            include __DIR__ . '/../components/tag.php';
-            ?>
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
     </div>
@@ -158,11 +158,11 @@ $page = 'nonlanding';
             <h1 class="text-shadow-slate-900 font-bold  text-3xl">Prosedur Kedatangan <br>dan Jam Operasional</h1>
             <p class="w-[50vh]">Datang lebih awal agar proses pemeriksaan berjalan lancar sesuai urutan antrean.</p>
             <?php
-            $status_tag = 'positive';
-            $label_tag = 'Wajib';
+$status_tag = 'positive';
+$label_tag = 'Wajib';
 
-            include __DIR__ . '/../components/tag.php';
-            ?>
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
         <div class="relative flex flex-col">
@@ -198,4 +198,4 @@ $page = 'nonlanding';
 
 </div>
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>

@@ -10,8 +10,8 @@ $page = 'nonlanding';
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
 
-    <?php include __DIR__ . '/../components/header.php'; ?>
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+    <?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
     <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
     <div id="papan-featured" class="flex justify-center scale-90 -mt-25">

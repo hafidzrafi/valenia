@@ -9,8 +9,8 @@ $location = $location ?? ['embed_url' => ''];
 $call_centers = $call_centers ?? [];
 ?>
 
-<?php include __DIR__ . '/../components/header.php'; ?>
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 

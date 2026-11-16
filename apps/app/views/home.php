@@ -22,9 +22,9 @@ ob_start();
 
 <body>
     <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
-        <?php include __DIR__ . '/../components/header.php'; ?>
-        <?php include __DIR__ . '/../components/cursor.php'; ?>
-        <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+        <?php include __DIR__.'/../components/header.php'; ?>
+        <?php include __DIR__.'/../components/cursor.php'; ?>
+        <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 
         <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
@@ -174,7 +174,7 @@ ob_start();
                 Pantau Antrean Real Time
             </h2>
             <div class="mt-16  pb-4 scale-90">
-                <?php include __DIR__ . '/../components/live-antrean.php'; ?>
+                <?php include __DIR__.'/../components/live-antrean.php'; ?>
             </div>
 
         </div>
@@ -190,7 +190,7 @@ ob_start();
                 </p>
             </div>
             <div class="mt-10 w-full">
-                <?php include __DIR__ . '/../components/3-card.php'; ?>
+                <?php include __DIR__.'/../components/3-card.php'; ?>
             </div>
         </section>
 
@@ -216,10 +216,10 @@ ob_start();
     </div>
 </body>
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>
 
 <?php
 $content = ob_get_clean();
 
-include __DIR__ . '/../views/layout.php';
+include __DIR__.'/../views/layout.php';
 ?>
