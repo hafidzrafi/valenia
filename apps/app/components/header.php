@@ -10,18 +10,31 @@
         </a>
     </div>
     <div class="flex items-center gap-12">
-        <nav class="flex items-center gap-12 text-black text-base font-display">
+        <nav class="flex items-center gap-12 max-lg:gap-6 text-black text-base font-display">
             <a href="/" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
 
             <!-- Dropdown Layanan -->
-            <div class="relative group mx-10">
-                <div class="hover:text-teal-500 transition-colors flex items-center gap-1">
+            <div class="relative group mx-10"
+            x-data="{open: false}"
+            @Click.outside="open = false"
+            >
+                <button class="hover:text-teal-500 transition-colors flex items-center gap-1"
+                @Click="open = !open"
+                :aria-expanded="open"
+                aria-haspopup="true"
+                :class="open ? 'text-teal-500' : ''"
+                >
                     Layanan
-                    <svg  width="24" height="24" fill="currentColor" viewBox="0 0 256 256" class="transition-transform duration-300 group-hover:rotate-180">
+                    <svg  width="24" height="24" fill="currentColor" viewBox="0 0 256 256" class="transition-transform duration-300 group-hover:rotate-180"
+                    :class="open ? 'rotate-180' : ''"
+                    >
                         <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
                     </svg>
-                </div>
-                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible z-50">
+                </button>
+
+                <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 lg:group-hover:visible z-50"
+                :class="open && '!opacity-100 !visible'"
+                >
                     <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2">
 
                         <form action="/form" method="post">
