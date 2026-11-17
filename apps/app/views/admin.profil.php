@@ -4,6 +4,7 @@
 /** @var string $email */
 /** @var null|string $error */
 /** @var null|string $flash */
+/** @var list<array{ikon: string, judul: string, detail: string, waktu: string}> $aktivitas */
 $active = 'profil';
 $token = $token ?? '';
 $role = $role ?? 'admin';
@@ -13,6 +14,10 @@ $adminUnit = 'Poliklinik Polinema';
 
 $error = $error ?? null;
 $flash = $flash ?? null;
+$aktif = $aktif ?? true;
+$bergabung = $bergabung ?? '-';
+$loginTerakhir = $loginTerakhir ?? '-';
+$aktivitas = $aktivitas ?? [];
 $sandiOpen = null !== $error && '' !== $error;
 $nama = '' !== $namaLengkap ? $namaLengkap : $username;
 $emailNip = '' !== $email ? $email : $username;
@@ -37,11 +42,17 @@ $inisial = [] === $kataNama
             <main class="mt-[21px]"
                   x-data="{ ubahOpen: false, sandiOpen: <?php echo $sandiOpen ? 'true' : 'false'; ?> }">
                 <?php if (null !== $flash && '' !== $flash) { ?>
+                    <?php [$flashJudul, $flashDetail] = array_pad(explode('|', $flash, 2), 2, ''); ?>
                     <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.opacity
-                         class="fixed left-1/2 top-6 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-teal-500 px-6 py-3 font-sans text-white shadow-lg"
+                         class="fixed left-1/2 top-6 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full bg-teal-700 px-6 py-3 font-sans text-white shadow-lg"
                          role="status">
                         <i class="ph ph-check text-[24px]"></i>
-                        <p class="text-sm font-semibold"><?php echo e($flash); ?></p>
+                        <div class="leading-tight">
+                            <p class="text-sm font-semibold"><?php echo e($flashJudul); ?></p>
+                            <?php if ('' !== $flashDetail) { ?>
+                                <p class="text-xs"><?php echo e($flashDetail); ?></p>
+                            <?php } ?>
+                        </div>
                     </div>
                 <?php } ?>
 
@@ -54,6 +65,24 @@ $inisial = [] === $kataNama
                         <p class="mt-2 text-sm font-semibold text-slate-800"><?php echo e($nama); ?></p>
                         <span class="rounded-full bg-teal-100 px-3 py-0.5 text-[10px] font-medium text-teal-700">Petugas <?php echo e($peran); ?></span>
                         <p class="text-[10px] text-slate-500">Poliklinik Politeknik Negeri Malang</p>
+
+                        <dl class="mt-3 w-full border-t border-slate-200 pt-3 text-left text-[11px]">
+                            <div class="flex items-center justify-between py-1">
+                                <dt class="text-slate-500">Status</dt>
+                                <dd class="flex items-center gap-1.5 font-semibold text-slate-800">
+                                    <span class="size-1.5 rounded-full <?php echo $aktif ? 'bg-emerald-500' : 'bg-slate-400'; ?>"></span>
+                                    <?php echo $aktif ? 'Aktif' : 'Nonaktif'; ?>
+                                </dd>
+                            </div>
+                            <div class="flex items-center justify-between py-1">
+                                <dt class="text-slate-500">Bergabung sejak</dt>
+                                <dd class="font-semibold text-slate-800"><?php echo e($bergabung); ?></dd>
+                            </div>
+                            <div class="flex items-center justify-between py-1">
+                                <dt class="text-slate-500">Login terakhir</dt>
+                                <dd class="font-semibold text-slate-800"><?php echo e($loginTerakhir); ?></dd>
+                            </div>
+                        </dl>
                     </section>
 
                     <div class="flex min-w-0 flex-1 flex-col gap-6">
@@ -95,6 +124,24 @@ $inisial = [] === $kataNama
                         </section>
                     </div>
                 </div>
+
+                <section class="mt-6 rounded-2xl bg-white px-6 py-5 font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)]">
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-xl font-bold text-teal-700">Aktivitas Terbaru</h2>
+                        <a href="/admin/profil/aktivitas" class="text-xs font-semibold text-teal-700 underline hover:text-teal-800">Lihat semua</a>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">Riwayat aktivitas akun Anda di sistem.</p>
+
+                    <?php if ([] === $aktivitas) { ?>
+                        <p class="mt-4 border-t border-slate-200 py-6 text-center text-sm text-slate-500">Belum ada aktivitas hari ini.</p>
+                    <?php } else { ?>
+                        <ul class="mt-3">
+                            <?php foreach ($aktivitas as $baris) { ?>
+                                <?php include __DIR__.'/../components/admin-profil-aktivitas-baris.php'; ?>
+                            <?php } ?>
+                        </ul>
+                    <?php } ?>
+                </section>
 
                 <!-- Dialog Ubah Profil (tampilan saja, belum ada fungsi simpan) -->
                 <div x-show="ubahOpen" x-transition.opacity style="display: none;"
