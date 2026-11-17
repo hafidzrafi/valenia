@@ -17,7 +17,6 @@ $flash = $flash ?? null;
 $aktif = $aktif ?? true;
 $bergabung = $bergabung ?? '-';
 $loginTerakhir = $loginTerakhir ?? '-';
-$aktivitas = $aktivitas ?? [];
 $sandiOpen = null !== $error && '' !== $error;
 $nama = '' !== $namaLengkap ? $namaLengkap : $username;
 $emailNip = '' !== $email ? $email : $username;

@@ -6,7 +6,6 @@ $role = $role ?? 'admin';
 $headerTitle = 'Profil Pengguna';
 $adminNama = 'Petugas '.ucfirst($role);
 $adminUnit = 'Poliklinik Polinema';
-$kelompok = $kelompok ?? [];
 ?>
 <div class="flex min-h-screen flex-col lg:flex-row">
     <?php include __DIR__.'/../components/admin-sidebar.php'; ?>
