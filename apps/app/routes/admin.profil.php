@@ -109,4 +109,3 @@ return [
         return redirect('/admin/profil');
     },
 ];
-
