@@ -17,6 +17,13 @@ $sandiOpen = null !== $error && '' !== $error;
 $nama = '' !== $namaLengkap ? $namaLengkap : $username;
 $emailNip = '' !== $email ? $email : $username;
 $peran = 'admin' === $role ? 'Admin' : 'Perawat';
+
+// Inisial avatar: huruf pertama kata pertama dan kata terakhir nama (maksimal 2 huruf).
+$kataNama = preg_split('/\s+/u', trim($nama), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+$hurufAwal = static fn (string $kata): string => 1 === preg_match('/./u', $kata, $cocok) ? strtoupper($cocok[0]) : '';
+$inisial = [] === $kataNama
+    ? '?'
+    : $hurufAwal($kataNama[0]).(1 < count($kataNama) ? $hurufAwal($kataNama[count($kataNama) - 1]) : '');
 ?>
 <div class="flex min-h-screen flex-col lg:flex-row">
     <?php include __DIR__.'/../components/admin-sidebar.php'; ?>
@@ -40,8 +47,9 @@ $peran = 'admin' === $role ? 'Admin' : 'Perawat';
 
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
                     <section class="flex w-full shrink-0 flex-col items-center gap-1 rounded-2xl bg-white px-5 py-6 text-center font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)] lg:w-[230px]">
-                        <span class="flex size-[52px] items-center justify-center rounded-full bg-teal-500 text-white">
-                            <i class="ph ph-user text-[30px]"></i>
+                        <span class="flex size-24 items-center justify-center rounded-full bg-teal-700 text-[34px] font-semibold tracking-wide text-white"
+                              role="img" aria-label="Avatar <?php echo e($nama); ?>">
+                            <?php echo e($inisial); ?>
                         </span>
                         <p class="mt-2 text-sm font-semibold text-slate-800"><?php echo e($nama); ?></p>
                         <span class="rounded-full bg-teal-100 px-3 py-0.5 text-[10px] font-medium text-teal-700">Petugas <?php echo e($peran); ?></span>
