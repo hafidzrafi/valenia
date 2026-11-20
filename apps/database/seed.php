@@ -92,6 +92,12 @@ if ($isProduction) {
     }
 }
 
+$resetAdmin = in_array(
+    strtolower(trim((string) env('SEED_ADMIN_RESET_PASSWORD', '0'))),
+    ['1', 'true', 'yes'],
+    true,
+);
+
 try {
     $pdo = db();
 } catch (Throwable $exception) {
@@ -152,34 +158,53 @@ try {
         }
     }
 
-    // 3) Admin user. The no-op DO UPDATE makes RETURNING id work whether the
-    //    row is newly inserted or already present. An email is only written when
-    //    SEED_ADMIN_EMAIL is provided, and an existing address is never
-    //    overwritten by a later seed run.
+    // 3) Admin user. An email is only written when SEED_ADMIN_EMAIL is
+    //    provided. A normal seed fills a missing address but never overwrites
+    //    one; a reset seed replaces the address when a new one is provided.
     $adminEmail = env('SEED_ADMIN_EMAIL');
     $adminEmail = is_string($adminEmail) && '' !== trim($adminEmail) ? strtolower(trim($adminEmail)) : null;
+
+    if (null !== $adminEmail && false === filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+        throw new RuntimeException('SEED_ADMIN_EMAIL tidak valid.');
+    }
+
+    $emailUpdate = $resetAdmin && null !== $adminEmail
+        ? 'email = EXCLUDED.email'
+        : 'email = COALESCE(users.email, EXCLUDED.email)';
 
     $upsertUser = $pdo->prepare(
         'INSERT INTO users (username, full_name, role, email) VALUES (?, ?, ?, ?)
          ON CONFLICT (username) DO UPDATE
              SET username = EXCLUDED.username,
-                 email = COALESCE(users.email, EXCLUDED.email)
+                 '.$emailUpdate.'
          RETURNING id'
     );
     $upsertUser->execute([SEED_ADMIN_USERNAME, SEED_ADMIN_FULL_NAME, SEED_ADMIN_ROLE, $adminEmail]);
     $userId = (string) $upsertUser->fetchColumn();
 
-    // 4) Credential (hashed; never overwritten on re-run).
+    // 4) Credential (hashed). A normal run never overwrites an existing
+    //    password; SEED_ADMIN_RESET_PASSWORD=1 replaces it and revokes sessions.
     $algorithm = defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT;
     $seedPassword = env('SEED_ADMIN_PASSWORD', SEED_ADMIN_PASSWORD_DEFAULT) ?? SEED_ADMIN_PASSWORD_DEFAULT;
     $passwordHash = password_hash($seedPassword, $algorithm);
 
-    $insertCredential = $pdo->prepare(
-        'INSERT INTO credentials (user_id, password_hash, must_change_password)
-         VALUES (?, ?, TRUE)
-         ON CONFLICT (user_id, provider) DO NOTHING'
-    );
-    $insertCredential->execute([$userId, $passwordHash]);
+    $credentialSql = 'INSERT INTO credentials (user_id, password_hash, must_change_password)
+                      VALUES (?, ?, TRUE)
+                      ON CONFLICT (user_id, provider) ';
+
+    $credentialSql .= $resetAdmin
+        ? 'DO UPDATE SET password_hash = EXCLUDED.password_hash,
+                       must_change_password = TRUE,
+                       failed_attempts = 0,
+                       locked_until = NULL,
+                       updated_at = now()'
+        : 'DO NOTHING';
+
+    $pdo->prepare($credentialSql)->execute([$userId, $passwordHash]);
+
+    if ($resetAdmin) {
+        $pdo->prepare('DELETE FROM sessions WHERE user_id = ?')->execute([$userId]);
+    }
 
     $pdo->commit();
 } catch (Throwable $exception) {

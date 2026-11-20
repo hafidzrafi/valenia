@@ -110,13 +110,24 @@ PHP. It lives behind an opt-in Compose profile, so a normal deploy never starts
 it:
 
 ```bash
+SEED_ADMIN_EMAIL='admin@your-domain' \
 SEED_ADMIN_PASSWORD='choose-a-strong-password' \
+SEED_ADMIN_RESET_PASSWORD=0 \
   docker compose -f docker-compose.production.yaml --profile seed run --rm seed
 ```
 
-The seeder is idempotent and never overwrites an existing password. Without
-`--force` (or without `SEED_ADMIN_PASSWORD`) it refuses to run when
-`APP_ENV=production`.
+`SEED_ADMIN_EMAIL` is optional and enables email login for the admin account.
+`SEED_ADMIN_PASSWORD` is used when the credential is first created. A normal
+seed never overwrites an existing password.
+
+Set `SEED_ADMIN_RESET_PASSWORD=1` only when you need to replace an existing
+admin password or email. That run updates the password, replaces the email
+when `SEED_ADMIN_EMAIL` is provided, clears failed attempts and lockout, deletes
+every session for the account, and forces a password change on the next login.
+Set it back to `0` afterwards.
+
+The seeder is idempotent. Without `--force` (or without
+`SEED_ADMIN_PASSWORD`) it refuses to run when `APP_ENV=production`.
 
 The `app` service exposes a container healthcheck that speaks FastCGI to the
 pool's ping endpoint (`docker/healthcheck.php`), and `proxy` waits for it to be
@@ -160,8 +171,22 @@ Adjust variables for your local PostgreSQL:
 - `DB_USER`: `valenia`
 - `DB_PASSWORD`: `valenia`
 - `APP_ENV`: `development`
-- `SEED_ADMIN_PASSWORD`: password for the initial `admin` account created by
-  `php database/seed.php` (dev only; the account must change it on first login)
+- `SEED_ADMIN_EMAIL`: optional email address for the seeded `admin` account
+- `SEED_ADMIN_PASSWORD`: password for the initial `admin` account. It is used
+  only when the credential is first created; a normal seed never replaces an
+  existing password
+- `SEED_ADMIN_RESET_PASSWORD`: set to `1` to replace an existing admin password
+  (and email when `SEED_ADMIN_EMAIL` is set), revoke its sessions, and force a
+  password change. Set it back to `0` afterwards
+
+To reset an existing local admin:
+
+```bash
+SEED_ADMIN_RESET_PASSWORD=1 \
+SEED_ADMIN_EMAIL='admin@example.test' \
+SEED_ADMIN_PASSWORD='choose-a-strong-password' \
+  php database/seed.php
+```
 
 #### 3. Migrations (local)
 
