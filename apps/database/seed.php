@@ -6,11 +6,17 @@ declare(strict_types=1);
  * Reference seeder (development bootstrap).
  *
  * Inserts master poli and a single admin account. Idempotent: safe to run
- * repeatedly (upserts use ON CONFLICT DO NOTHING). Refuses to run when
- * APP_ENV=production.
+ * repeatedly (upserts use ON CONFLICT DO NOTHING).
  *
  * Run after migrations:
  *   php database/seed.php
+ *
+ * Production bootstrap (explicit opt-in):
+ *   SEED_ADMIN_PASSWORD='...' php database/seed.php --force
+ *
+ * Reference data (poli, doctors, schedules) also ships in migration 0030, so a
+ * plain migrate is enough for the public form. This seeder additionally creates
+ * the admin account, whose password must be hashed in PHP.
  *
  * The admin password comes from the SEED_ADMIN_PASSWORD environment variable
  * (default below) and is stored hashed; the account must change it on first
@@ -66,10 +72,24 @@ const SEED_ADMIN_FULL_NAME = 'Administrator';
 const SEED_ADMIN_ROLE = 'admin';
 const SEED_ADMIN_PASSWORD_DEFAULT = 'admin12345';
 
-if ('production' === env('APP_ENV')) {
+$force = in_array('--force', $argv ?? [], true);
+$isProduction = 'production' === env('APP_ENV');
+
+if ($isProduction && !$force) {
     fwrite(STDERR, "Seeder ditolak pada lingkungan produksi.\n");
+    fwrite(STDERR, "Jalankan ulang dengan --force dan set SEED_ADMIN_PASSWORD untuk melanjutkan.\n");
 
     exit(1);
+}
+
+if ($isProduction) {
+    $adminPassword = env('SEED_ADMIN_PASSWORD');
+
+    if (!is_string($adminPassword) || '' === $adminPassword) {
+        fwrite(STDERR, "Menolak seeding produksi tanpa SEED_ADMIN_PASSWORD.\n");
+
+        exit(1);
+    }
 }
 
 try {
@@ -151,10 +171,8 @@ try {
 
     // 4) Credential (hashed; never overwritten on re-run).
     $algorithm = defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT;
-    $passwordHash = password_hash(
-        env('SEED_ADMIN_PASSWORD', SEED_ADMIN_PASSWORD_DEFAULT) ?? SEED_ADMIN_PASSWORD_DEFAULT,
-        $algorithm,
-    );
+    $seedPassword = env('SEED_ADMIN_PASSWORD', SEED_ADMIN_PASSWORD_DEFAULT) ?? SEED_ADMIN_PASSWORD_DEFAULT;
+    $passwordHash = password_hash($seedPassword, $algorithm);
 
     $insertCredential = $pdo->prepare(
         'INSERT INTO credentials (user_id, password_hash, must_change_password)

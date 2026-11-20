@@ -9,7 +9,18 @@ declare(strict_types=1);
 
 require_once __DIR__.'/lib/config.php';
 
-date_default_timezone_set(env('APP_TIMEZONE', 'Asia/Jakarta') ?? 'Asia/Jakarta');
+// Keep PHP and PostgreSQL on the same zone: db.php applies the same value to
+// the connection, and app_today() reads it. An unknown identifier falls back to
+// Asia/Jakarta instead of leaving PHP on UTC.
+$appTimezone = env('APP_TIMEZONE', 'Asia/Jakarta') ?: 'Asia/Jakarta';
+
+try {
+    new DateTimeZone($appTimezone);
+} catch (Throwable $exception) {
+    $appTimezone = 'Asia/Jakarta';
+}
+
+date_default_timezone_set($appTimezone);
 
 require_once __DIR__.'/lib/log.php';
 
