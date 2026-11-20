@@ -97,6 +97,27 @@ docker compose exec app php database/migrate.php fresh     # drop + re-apply eve
 docker compose exec app php database/seed.php              # seed services + admin (dev only)
 ```
 
+#### 2a. Production deploy (Docker Compose)
+
+`docker-compose.production.yaml` runs a one-shot `migrate` service before `app`
+starts, so every redeploy applies pending migrations automatically. Reference
+data (poli, doctors, weekly schedules) ships in migration
+`0030_seed_reference_data.sql`; a fresh database therefore serves `/form`
+without manual seeding.
+
+The admin account is created separately because its password must be hashed in
+PHP. It lives behind an opt-in Compose profile, so a normal deploy never starts
+it:
+
+```bash
+SEED_ADMIN_PASSWORD='choose-a-strong-password' \
+  docker compose -f docker-compose.production.yaml --profile seed run --rm seed
+```
+
+The seeder is idempotent and never overwrites an existing password. Without
+`--force` (or without `SEED_ADMIN_PASSWORD`) it refuses to run when
+`APP_ENV=production`.
+
 ---
 
 ### Option 2: Without Docker (local PHP CLI)
