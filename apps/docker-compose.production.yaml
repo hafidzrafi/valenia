@@ -65,6 +65,8 @@ services:
       DB_USER: ${DB_USER:-valenia}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in Dokploy}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_RESET_PASSWORD: ${SEED_ADMIN_RESET_PASSWORD:-0}
     command: ["php", "database/seed.php", "--force"]
     depends_on:
       db:
