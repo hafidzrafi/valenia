@@ -16,6 +16,7 @@ $ctaPrimaryText = $ctaPrimaryText ?? 'Mulai sekarang';
 $ctaPrimaryLink = $ctaPrimaryLink ?? '#';
 $ctaSecondaryText = $ctaSecondaryText ?? 'Pelajari lebih lanjut';
 $ctaSecondaryLink = $ctaSecondaryLink ?? '/tentang-poliklinik';
+$error = $error ?? null;
 
 ob_start();
 ?>
@@ -24,6 +25,12 @@ ob_start();
     <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
         <?php include __DIR__.'/../components/header.php'; ?>
         <?php include __DIR__.'/../components/cursor.php'; ?>
+        <?php if (null !== $error && '' !== $error) { ?>
+            <div class="relative z-20 mx-auto mt-4 w-fit max-w-[90%] rounded-2xl bg-red-50 px-5 py-3 text-sm font-medium text-red-700 shadow-lg"
+                role="alert">
+                <?php echo e((string) $error); ?>
+            </div>
+        <?php } ?>
         <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 

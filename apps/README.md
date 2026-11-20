@@ -118,6 +118,11 @@ The seeder is idempotent and never overwrites an existing password. Without
 `--force` (or without `SEED_ADMIN_PASSWORD`) it refuses to run when
 `APP_ENV=production`.
 
+The `app` service exposes a container healthcheck that speaks FastCGI to the
+pool's ping endpoint (`docker/healthcheck.php`), and `proxy` waits for it to be
+healthy. `APP_TIMEZONE` now drives both PHP and the PostgreSQL session, so
+`app_today()` and `CURRENT_DATE` agree with the application clock.
+
 ---
 
 ### Option 2: Without Docker (local PHP CLI)
