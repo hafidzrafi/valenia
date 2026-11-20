@@ -32,6 +32,7 @@ return [
             return new Response(render(app_path('app/views/home.php'), [
                 'title' => 'VALENIA',
                 'error' => $service['error'],
+                'boards' => queue_boards(),
             ]), 422);
         }
 
