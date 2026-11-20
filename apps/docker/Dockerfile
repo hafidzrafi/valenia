@@ -64,3 +64,8 @@ COPY --from=assets /srv/public/assets/app.css /srv/public/assets/app.css
 RUN chown -R app:app /srv
 
 USER app
+
+FROM caddy:2.11.7-alpine AS web
+
+COPY --from=runtime /srv/public /srv/public
+COPY docker/Caddyfile /etc/caddy/Caddyfile
