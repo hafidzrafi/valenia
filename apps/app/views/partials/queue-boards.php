@@ -1,6 +1,5 @@
 <?php
 /** @var list<array<string, mixed>> $boards */
-$boards ??= [];
 ?>
 <div class="grid gap-4 md:grid-cols-3">
     <?php foreach ($boards as $board) { ?>

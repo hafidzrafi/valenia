@@ -1,6 +1,5 @@
 <?php
 /** @var list<array<string, mixed>> $boards */
-$boards ??= [];
 ?>
 <div class="flex flex-wrap justify-center gap-6">
     <?php foreach ($boards as $board) { ?>

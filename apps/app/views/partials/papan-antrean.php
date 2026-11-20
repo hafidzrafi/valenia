@@ -15,7 +15,6 @@
  *
  * @var list<array<string, mixed>> $boards
  */
-$boards ??= [];
 $cards = array_map(
     static fn (array $board): array => [
         'code' => null !== $board['current_queue_code'] ? (string) $board['current_queue_code'] : '—',
