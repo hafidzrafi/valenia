@@ -98,6 +98,36 @@ final class ScheduleFlowTest extends DatabaseTestCase
         self::assertSame(0, $this->slotCount($doctor));
     }
 
+    public function testCreateRejectsASlotThatOverlapsAnExistingOne(): void
+    {
+        $doctor = $this->createDoctor('dr. Jadwal Bentrok', true);
+        \create_schedule_slot($doctor, 3, '09:00', '12:00', $this->adminId());
+        $this->slotIds[] = $this->lastSlotId($doctor);
+
+        $result = \create_schedule_slot($doctor, 3, '11:00', '13:00', $this->adminId());
+
+        self::assertFalse($result['ok']);
+        self::assertSame('Jadwal bertabrakan dengan slot lain di hari yang sama.', $result['error']);
+        self::assertSame(1, $this->slotCount($doctor), 'The clashing slot must not be written.');
+    }
+
+    public function testCreateAcceptsAdjacentAndDifferentDaySlots(): void
+    {
+        $doctor = $this->createDoctor('dr. Jadwal Bersebelahan', true);
+        \create_schedule_slot($doctor, 3, '09:00', '12:00', $this->adminId());
+        $this->slotIds[] = $this->lastSlotId($doctor);
+
+        $adjacent = \create_schedule_slot($doctor, 3, '12:00', '15:00', $this->adminId());
+        self::assertTrue($adjacent['ok'], (string) $adjacent['error']);
+        $this->slotIds[] = $this->lastSlotId($doctor);
+
+        $otherDay = \create_schedule_slot($doctor, 4, '09:00', '12:00', $this->adminId());
+        self::assertTrue($otherDay['ok'], (string) $otherDay['error']);
+        $this->slotIds[] = $this->lastSlotId($doctor);
+
+        self::assertSame(3, $this->slotCount($doctor));
+    }
+
     public function testDeleteRemovesTheSlotAndAuditsIt(): void
     {
         $doctor = $this->createDoctor('dr. Jadwal Hapus', true);

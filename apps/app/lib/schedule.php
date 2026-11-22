@@ -134,6 +134,26 @@ function create_schedule_slot(
             return ['ok' => false, 'error' => 'Tenaga medis tidak ditemukan atau nonaktif.'];
         }
 
+        // Half-open intervals: 12:00 next to 12:00 is adjacent, not overlapping.
+        $clash = $pdo->prepare(
+            'SELECT 1 FROM doctor_schedules
+             WHERE doctor_id = :doctor AND day_of_week = :day
+               AND start_time < :end AND end_time > :start
+             LIMIT 1'
+        );
+        $clash->execute([
+            'doctor' => $doctorId,
+            'day' => $dayOfWeek,
+            'start' => $startTime,
+            'end' => $endTime,
+        ]);
+
+        if (false !== $clash->fetchColumn()) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Jadwal bertabrakan dengan slot lain di hari yang sama.'];
+        }
+
         $insert = $pdo->prepare(
             'INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time)
              VALUES (:doctor, :day, :start, :end)
