@@ -4,15 +4,13 @@ $token = $token ?? '';
 $role = $role ?? 'admin';
 
 /**
- * Menu entries carry the roles that may see them. Entries without an href are
- * roadmap items: they stay visible, marked "Segera hadir", instead of pointing
- * at a fragment.
+ * Menu entries carry the roles that may see them.
  */
 $menu = [
     ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'ph-squares-four', 'href' => '/admin', 'roles' => ['admin', 'perawat']],
     ['key' => 'antrian', 'label' => 'Antrian', 'icon' => 'ph-users', 'href' => '/admin/antrean', 'roles' => ['admin', 'perawat']],
     ['key' => 'input-hasil', 'label' => 'Input Hasil', 'icon' => 'ph-clipboard-text', 'href' => '/admin/periksa', 'roles' => ['admin', 'perawat']],
-    ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => null, 'roles' => ['admin', 'perawat']],
+    ['key' => 'jadwal-medis', 'label' => 'Jadwal Tenaga Medis', 'icon' => 'ph-calendar-dots', 'href' => '/admin/jadwal', 'roles' => ['admin', 'perawat']],
     ['key' => 'data-master', 'label' => 'Data Master', 'icon' => 'ph-database', 'href' => '/admin/data-master', 'roles' => ['admin']],
     ['key' => 'rekap-bulanan', 'label' => 'Rekap Bulanan', 'icon' => 'ph-chart-bar', 'href' => '/admin/rekap-bulanan', 'roles' => ['admin']],
     ['key' => 'profil', 'label' => 'Profil', 'icon' => 'ph-user-circle', 'href' => '/admin/profil', 'roles' => ['admin']],
@@ -39,22 +37,13 @@ $visible = static fn (array $item): bool => in_array($role, $item['roles'], true
                     continue;
                 } ?>
                 <?php $isActive = $item['key'] === $active; ?>
-                <?php if (null === $item['href']) { ?>
-                    <div class="flex h-[50px] cursor-not-allowed items-center gap-3 px-3 text-[14px] text-slate-400"
-                        style="border-radius: 12px;" aria-disabled="true">
-                        <i class="ph <?php echo e($item['icon']); ?> shrink-0 text-[24px]"></i>
-                        <span class="min-w-0 flex-1 truncate"><?php echo e($item['label']); ?></span>
-                        <span class="shrink-0 rounded-full bg-slate-100 px-[6px] py-[2px] text-[8px] font-medium text-slate-500">Soon</span>
-                    </div>
-                <?php } else { ?>
-                    <a href="<?php echo e((string) $item['href']); ?>"
-                        class="flex h-[50px] items-center gap-[15px] px-3 text-base transition-colors <?php echo $isActive ? 'bg-teal-500 text-white' : 'text-black hover:bg-teal-50 hover:text-teal-600'; ?>"
-                        style="border-radius: 12px;"
-                        <?php echo $isActive ? 'aria-current="page"' : ''; ?>>
-                        <i class="ph <?php echo e($item['icon']); ?> text-[28px]"></i>
-                        <span><?php echo e($item['label']); ?></span>
-                    </a>
-                <?php } ?>
+                <a href="<?php echo e($item['href']); ?>"
+                    class="flex h-[50px] items-center gap-[15px] px-3 text-base transition-colors <?php echo $isActive ? 'bg-teal-500 text-white' : 'text-black hover:bg-teal-50 hover:text-teal-600'; ?>"
+                    style="border-radius: 12px;"
+                    <?php echo $isActive ? 'aria-current="page"' : ''; ?>>
+                    <i class="ph <?php echo e($item['icon']); ?> text-[28px]"></i>
+                    <span><?php echo e($item['label']); ?></span>
+                </a>
             <?php } ?>
         </nav>
 
