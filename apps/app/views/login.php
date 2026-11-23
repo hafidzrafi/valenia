@@ -59,9 +59,9 @@
                     </button>
                 </div>
 
-                <p class="mt-3 text-center text-sm font-medium text-teal-500">
+                <a class="mt-3 text-center text-sm font-medium text-teal-500">
                     Lupa Kata Sandi?
-                </p>
+                </a>
                 <?php /* No self service reset exists yet. Admins can force a reset from /admin/pengguna; a public reset flow is a separate ticket. */ ?>
             </form>
         </div>
