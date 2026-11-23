@@ -31,7 +31,7 @@
 
                 <div class="absolute left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 lg:group-hover:visible z-50"
                     :class="open && '!opacity-100 !visible'">
-                    <div class="w-52 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2">
+                    <div class="w-56 bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/20 py-2">
 
                         <form action="/form" method="post">
                             <input type="hidden" name="heroform" value="POLI UMUM">

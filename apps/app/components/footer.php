@@ -1,6 +1,6 @@
 <div class="flex flex-col relative w-full mx-auto h-100 bg-teal-500/90">
 
-    <div class="flex flex-col absolute items-start gap-3 scale-115 p-10 pl-15">
+    <div class="flex flex-col absolute items-start gap-3 scale-115 p-8 pl-20">
         <div class="flex items-center gap-3">
             <div class="size-16 relative overflow-hidden flex items-center justify-center">
                 <img src="/images/valenia-logo.svg" alt="Logo Perusahaan" class="w-full h-full object-contain brightness-0 invert" />
@@ -18,17 +18,7 @@
     </div>
 
 
-    <div class="absolute top-8 right-8 flex flex-row gap-12 text-white">
-
-        <div class="flex flex-col gap-4 w-[171px]">
-            <h3 class="text-xl font-semibold text-white">Profil</h3>
-            <ul class="flex flex-col gap-2 text-base font-medium opacity-80">
-                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
-                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
-                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
-                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
-            </ul>
-        </div>
+    <div class="absolute top-8 right-10 flex flex-row gap-12 text-white">
 
         <div class="flex flex-col gap-4 w-[171px]">
             <h3 class="text-xl font-semibold text-white">Profil</h3>

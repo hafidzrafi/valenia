@@ -75,7 +75,7 @@ $page = 'nonlanding';
 
 
     <!-- ke-2 -->
-    <section class="relative flex flex-row max-lg:flex-col justify-center gap-16 max-lg:gap-10 w-full px-35 max-lg:px-12 max-md:px-6  max-lg:py-16">
+    <section class="relative flex flex-row max-lg:flex-col max-lg:items-center justify-center gap-16 max-lg:gap-10 w-full px-35 max-lg:px-12 max-md:px-6  max-lg:py-16">
 
         <svg viewBox="0 0 200 200" class="pointer-events-none max-lg:hidden absolute w-110 left-30 top-10 opacity-30" aria-hidden="true">
             <path fill="#14B8A6" d="M39.6,-45.4C54.4,-34.8,71.6,-25.2,78.4,-10.3C85.2,4.6,81.7,24.9,69.6,35.1C57.6,45.3,37.1,45.4,19.7,49.9C2.3,54.3,-11.9,63.1,-20.7,58.9C-29.4,54.8,-32.7,37.8,-38.5,24C-44.4,10.2,-52.9,-0.3,-57.4,-16.3C-62,-32.4,-62.7,-53.9,-52.4,-65.3C-42.2,-76.7,-21.1,-78,-4.3,-72.8C12.4,-67.6,24.9,-56,39.6,-45.4Z" transform="translate(100 100)" />
@@ -131,7 +131,7 @@ $page = 'nonlanding';
 
 
     <!-- ke-3 -->
-    <section class="relative flex flex-row lg:-mt-8 max-lg:flex-col justify-center gap-16 max-lg:gap-10 w-full   max-lg:px-12 max-md:px-6  max-lg:py-16 pb-40 max-lg:pb-24">
+    <section class="relative flex flex-row lg:-mt-8 max-lg:flex-col max-lg:items-center justify-center gap-16 max-lg:gap-10 w-full   max-lg:px-12 max-md:px-6  max-lg:py-16 pb-40 max-lg:pb-24">
         
     <svg viewBox="0 0 200 200" class="pointer-events-none max-lg:hidden absolute top-0 right-0 w-190  -translate-y-52 -translate-x-30  opacity-30" aria-hidden="true">
             <path fill="#14B8A6" d="M29.6,-26.7C43.1,-23.9,62.2,-19.1,70.5,-7.2C78.8,4.7,76.3,23.6,65,32.2C53.7,40.8,33.6,39,18.6,39.4C3.6,39.8,-6.4,42.4,-17.7,41.5C-29.1,40.5,-41.7,35.9,-43.3,27.7C-44.8,19.4,-35.2,7.5,-31.4,-4.1C-27.7,-15.7,-29.8,-26.8,-25.5,-31.3C-21.2,-35.8,-10.6,-33.6,-1.3,-32.1C8,-30.5,16,-29.6,29.6,-26.7Z" transform="translate(100 100)" />
