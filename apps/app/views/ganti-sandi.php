@@ -63,7 +63,7 @@
     </div>
 
     <div>
-        <?php include __DIR__ . '/../components/subfooter.php'; ?>
+        <?php include __DIR__.'/../components/subfooter.php'; ?>
     </div>
 
 
@@ -96,5 +96,5 @@
         </div>
         <button type="submit" class="bg-slate-900 text-white rounded px-3 py-1">Simpan</button>
     </form>
-    */?>
+    */ ?>
 </div>
