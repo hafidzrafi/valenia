@@ -23,15 +23,16 @@ ob_start();
 
 <body>
     <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
-        <?php include __DIR__.'/../components/header.php'; ?>
-        <?php include __DIR__.'/../components/cursor.php'; ?>
+        <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
+        <?php include __DIR__ . '/../components/header.php'; ?>
+        <?php include __DIR__ . '/../components/cursor.php'; ?>
         <?php if (null !== $error && '' !== $error) { ?>
             <div class="relative z-20 mx-auto mt-4 w-fit max-w-[90%] rounded-2xl bg-red-50 px-5 py-3 text-sm font-medium text-red-700 shadow-lg"
                 role="alert">
                 <?php echo e((string) $error); ?>
             </div>
         <?php } ?>
-        <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
+        <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
 
         <div class="w-full h-127 relative overflow-hidden bg-teal-500/50">
@@ -181,7 +182,7 @@ ob_start();
                 Pantau Antrean Real Time
             </h2>
             <div class="mt-16  pb-4 scale-90">
-                <?php include __DIR__.'/../components/live-antrean.php'; ?>
+                <?php include __DIR__ . '/../components/live-antrean.php'; ?>
             </div>
 
         </div>
@@ -197,11 +198,11 @@ ob_start();
                 </p>
             </div>
             <div class="mt-10 w-full">
-                <?php include __DIR__.'/../components/3-card.php'; ?>
+                <?php include __DIR__ . '/../components/3-card.php'; ?>
             </div>
         </section>
 
-        <section aria-labelledby="tentang-heading" class="flex flex-col relative w-full mt-24 mx-auto  smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] bg-slate-900/70 items-center pt-20">
+        <section aria-labelledby="tentang-heading" class="flex flex-col relative w-full mt-24 mx-auto  smooth-corners-lg  bg-slate-900/70 items-center pt-20">
             <div class="flex justify-start items-center relative gap-[200px]">
                 <!-- Card Section -->
                 <div class="cards perspective-normal">
@@ -223,10 +224,10 @@ ob_start();
     </div>
 </body>
 
-<?php include __DIR__.'/../components/footer.php'; ?>
+<?php include __DIR__ . '/../components/footer.php'; ?>
 
 <?php
 $content = ob_get_clean();
 
-include __DIR__.'/../views/layout.php';
+include __DIR__ . '/../views/layout.php';
 ?>
