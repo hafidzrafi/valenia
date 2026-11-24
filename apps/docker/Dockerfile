@@ -54,6 +54,11 @@ RUN npm run css:build
 # ------------------------------------------------------------------- runtime
 FROM php-runtime AS runtime
 
+# Expose the pool's built-in ping endpoint for the container healthcheck
+# (docker/healthcheck.php speaks FastCGI directly, so no extra client package
+# is installed). Status stays disabled: it would be reachable from the proxy.
+RUN printf '\nping.path = /ping\nping.response = pong\n' >> /usr/local/etc/php-fpm.d/www.conf
+
 RUN adduser -D -u 10001 app \
     && mkdir -p /var/run/php-fpm /usr/local/var/log \
     && chown -R app:app /var/run/php-fpm /usr/local/var/log
@@ -64,3 +69,8 @@ COPY --from=assets /srv/public/assets/app.css /srv/public/assets/app.css
 RUN chown -R app:app /srv
 
 USER app
+
+FROM caddy:2.11.7-alpine AS web
+
+COPY --from=runtime /srv/public /srv/public
+COPY docker/Caddyfile /etc/caddy/Caddyfile

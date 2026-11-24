@@ -32,5 +32,20 @@ function db(): PDO
         );
     }
 
-    return $pdo = new PDO($dsn, env('DB_USER'), env('DB_PASSWORD'), $options);
+    $pdo = new PDO($dsn, env('DB_USER'), env('DB_PASSWORD'), $options);
+
+    // Align the session timezone with the application timezone. Functions such
+    // as app_today() and CURRENT_DATE read this, so PHP and PostgreSQL agree on
+    // which day "today" is. An unknown identifier falls back to Asia/Jakarta.
+    $timezone = env('APP_TIMEZONE', 'Asia/Jakarta') ?: 'Asia/Jakarta';
+
+    try {
+        new DateTimeZone($timezone);
+    } catch (Throwable $exception) {
+        $timezone = 'Asia/Jakarta';
+    }
+
+    $pdo->prepare('SELECT set_config(?, ?, false)')->execute(['TimeZone', $timezone]);
+
+    return $pdo;
 }

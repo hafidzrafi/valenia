@@ -13,8 +13,9 @@
  * right, and wrapping from the last poli back to the first counts as an
  * advance, so the loop reads as one continuous leftward flow.
  *
- * @var list<array<string, mixed>> $boards
+ * @var null|list<array<string, mixed>> $boards
  */
+$boards ??= [];
 $cards = array_map(
     static fn (array $board): array => [
         'code' => null !== $board['current_queue_code'] ? (string) $board['current_queue_code'] : '—',
