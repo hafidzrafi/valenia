@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
 /* plugin for corner smoothing*/
+@source "../../app";
 
 @plugin "tailwind-corner-smoothing";
 @plugin "tailwindcss-squircles";
