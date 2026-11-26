@@ -17,7 +17,6 @@ return [
             'doctors' => list_weekly_schedule(),
             'days' => SCHEDULE_DAYS,
             'todayDow' => (int) date('N'),
-            'attendance' => staff_attendance_today(),
             'flash' => take_staff_flash(),
         ]);
     },

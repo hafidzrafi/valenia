@@ -4,7 +4,6 @@
 /** @var list<array<string, mixed>> $doctors */
 /** @var array<int, string> $days */
 /** @var int $todayDow */
-/** @var list<array<string, mixed>> $attendance */
 /** @var null|string $flash */
 $active = 'jadwal-medis';
 $headerTitle = 'Jadwal Tenaga Medis';
@@ -31,10 +30,6 @@ $adminUnit = 'Poliklinik Polinema';
                 <?php } ?>
 
                 <?php include __DIR__.'/../components/admin-jadwal-matriks.php'; ?>
-
-                <div class="[&>section]:w-full">
-                    <?php include __DIR__.'/../components/admin-kehadiran-medis.php'; ?>
-                </div>
 
                 <?php /* Outside the cards: backdrop-blur makes a card the containing block for fixed. */ ?>
 
