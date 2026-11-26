@@ -11,7 +11,7 @@ $page = $page ?? '';
 ?>
 
 <?php if ('nonlanding' == $page) { ?>
-    <section class="relative  md:h-[60vh] w-full flex items-center justify-center border-b-3 border-gray-400 ">
+    <section class="relative  md:h-[60vh] w-full flex items-center justify-center">
         <!-- Background Image -->
         <img src="<?php echo $heroImage; ?>" alt="Hero Image" class="absolute inset-0 w-full h-full object-cover">
 
@@ -51,7 +51,7 @@ $page = $page ?? '';
 
 <?php } else { ?>
 
-    <section class="relative  md:h-screen w-full flex  items-end   border-b-2 border-gray-400 ">
+    <section class="relative  md:h-screen w-full flex  items-end">
         <!-- Background Image -->
         <img src="<?php echo $heroImage; ?>" alt="Hero Image" class="absolute inset-0 w-full h-full object-cover">
 

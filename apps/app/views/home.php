@@ -23,7 +23,7 @@ ob_start();
 
 <body>
     <div x-data class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
-        <div class="absolute inset-y-0 inset-x-0 bg-teal-100/50" aria-hidden="true"></div>
+        <div class="absolute inset-y-0 inset-x-0 bg-teal-100/70" aria-hidden="true"></div>
 
         <?php include __DIR__ . '/../components/header.php'; ?>
         <?php include __DIR__ . '/../components/cursor.php'; ?>
@@ -187,6 +187,7 @@ ob_start();
 
 
 
+
         <div class="relative w-full max-w-[85%] mx-auto  flex-shrink-0 pl-20 mb-6">
             <h2 class="text-4xl font-bold tracking-tight text-teal-700 mb-3">
                 Antrean Real Time
@@ -196,13 +197,17 @@ ob_start();
             </p>
         </div>
 
-        <div class="flex justify-center  pb-4 scale-85">
+        <div class="relative flex justify-center  pb-4 scale-85">
+            <svg viewBox="0 0 200 200" class="absolute w-90 left-[0%] top-[45%] opacity-25">
+                <path fill="#14B8A6" d="M30.4,-50.6C43.3,-45.1,60.6,-45,65.3,-37.5C70,-29.9,62.3,-15,57.7,-2.6C53.1,9.7,51.7,19.3,50.5,33.1C49.3,46.8,48.4,64.5,40,70.7C31.7,77,15.8,71.7,3.5,65.7C-8.9,59.7,-17.8,53,-26.4,46.9C-35,40.8,-43.3,35.3,-54.1,27.6C-65,19.8,-78.4,9.9,-77.1,0.8C-75.8,-8.4,-59.7,-16.8,-49.1,-24.9C-38.4,-32.9,-33.1,-40.5,-25.8,-49.2C-18.5,-57.9,-9.3,-67.7,-0.3,-67.2C8.7,-66.7,17.4,-56,30.4,-50.6Z" transform="translate(100 100)" />
+            </svg>
             <?php include __DIR__ . '/../components/live-antrean.php'; ?>
         </div>
 
 
 
         <section aria-labelledby="layanan-heading" class="mt-32 w-full relative flex flex-col items-center px-4 pb-24">
+
             <div class="pointer-events-none absolute inset-0 text-teal-700/50" aria-hidden="true">
 
 
@@ -224,28 +229,31 @@ ob_start();
                 </p>
             </div>
             <div class="mt-10 w-full">
+                <svg viewBox="0 0 200 200" class="absolute w-80 top-[55%] right-[5%] opacity-25">
+                    <path fill="#14B8A6" d="M37.1,-60.3C49.3,-57.2,61.2,-49.7,64,-39C66.8,-28.2,60.4,-14.1,59.5,-0.5C58.5,13,63.1,26,62.3,40.4C61.6,54.7,55.6,70.3,44.4,78.8C33.1,87.2,16.5,88.4,2.2,84.6C-12.2,80.8,-24.3,72,-35.2,63.3C-46.1,54.7,-55.7,46.2,-64.9,35.6C-74.2,25.1,-83.1,12.6,-82.2,0.5C-81.3,-11.5,-70.5,-23,-61,-33C-51.4,-43.1,-43.1,-51.6,-33.1,-56C-23.2,-60.4,-11.6,-60.7,0.4,-61.4C12.4,-62.2,24.9,-63.4,37.1,-60.3Z" transform="translate(100 100)" />
+                </svg>
                 <?php include __DIR__ . '/../components/3-card.php'; ?>
+
             </div>
         </section>
 
-        <section aria-labelledby="tentang-heading" class="flex flex-col relative w-full mt-24 mx-auto  smooth-corners-lg  bg-slate-900/70 items-center pt-20">
-            <div class="flex justify-start items-center relative gap-[200px]">
-                <!-- Card Section -->
-                <div class="cards perspective-normal">
-                    <div class="card w-70 h-62.5 -translate-y-20 translate-x-5 bg-[url(/images/placeholder.jpg)] bg-cover bg-center border-2 border-[#555555] smooth-corners-lg rounded-[32px] relative transform-style preserve-3d will-change-transform transition-transform duration-500 hover:translateZ-[10px] hover:rotate-x-[20deg] hover:rotate-y-[20deg] hover:outline-2 hover:outline-teal-500">
-                    </div>
-                </div>
-
-                <!-- About Section -->
-                <div class="flex flex-col items-end w-[580px] h-full space-y-4">
-                    <h2 id="tentang-heading" class="w-full text-8xl font-black font-display-expanded text-right text-white">
-                        Tentang Kami
-                    </h2>
-                    <p class="w-full text-lg text-right text-white pb-40">
-                        Poliklinik Politeknik Negeri Malang adalah unit layanan kesehatan di lingkungan kampus yang menjaga kesehatan seluruh civitas akademika. Kami menyediakan layanan pemeriksaan, pengobatan, dan konsultasi yang profesional, terjangkau, dan mengutamakan kenyamanan pasien.
-                    </p>
+        <section class="flex flex-row relative w-full py-10 mt-10 mx-auto gap-24  bg-slate-900/70 items-center justify-center">
+            <!-- Card Section -->
+            <div>
+                <div class="card w-100 h-90 bg-[url(/images/placeholder.jpg)] bg-cover bg-center rounded-2xl">
                 </div>
             </div>
+
+            <!-- About Section -->
+            <div class="flex flex-col">
+                <h2 id="tentang-heading" class="w-full text-8xl font-black  text-right text-white">
+                    Tentang Kami
+                </h2>
+                <p class="text-lg text-right text-white pb-40 max-w-xl ml-auto">
+                    Poliklinik Politeknik Negeri Malang adalah unit layanan kesehatan di lingkungan kampus yang menjaga kesehatan seluruh civitas akademika. Kami menyediakan layanan pemeriksaan, pengobatan, dan konsultasi yang profesional, terjangkau, dan mengutamakan kenyamanan pasien.
+                </p>
+            </div>
+
         </section>
     </div>
 </body>
