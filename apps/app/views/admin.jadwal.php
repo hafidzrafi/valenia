@@ -23,7 +23,7 @@ $adminUnit = 'Poliklinik Polinema';
 
             <main class="mt-[21px] flex flex-col gap-6">
                 <?php if (!empty($flash)) { ?>
-                    <p class="flex items-center gap-2 rounded-2xl border-l-4 border-teal-600 bg-white/85 px-4 py-3 text-sm font-medium text-teal-900 shadow-[0_2px_8px_rgba(40,120,105,0.15)]" role="status">
+                    <p class="flex items-center gap-2 rounded-2xl border border-teal-600/40 bg-teal-50 px-4 py-3 text-sm font-medium text-teal-900 shadow-[0_2px_8px_rgba(40,120,105,0.15)]" role="status">
                         <i class="ph ph-check-circle text-[18px] text-teal-700" aria-hidden="true"></i>
                         <?php echo e($flash); ?>
                     </p>
