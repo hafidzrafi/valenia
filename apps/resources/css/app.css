@@ -8,6 +8,16 @@
 /* Scan server-rendered PHP for utility classes */
 @source "../../app";
 
+
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+
+
 /* Optional design tokens (Tailwind v4 @theme).
  *
  * Single type system per the Figma file: SF Pro everywhere. Real SF Pro
@@ -28,3 +38,4 @@
 @utility font-display-expanded {
   font-stretch: expanded;
 }
+

@@ -13,7 +13,7 @@ $heroImage = '/images/landingpage.jpg';
 $heroTitle = 'Layanan Poliklinik';
 $heroDesc = 'Politeknik Negeri Malang';
 $ctaPrimaryText = $ctaPrimaryText ?? 'Mulai sekarang';
-$ctaPrimaryLink = $ctaPrimaryLink ?? '#';
+$ctaPrimaryLink = $ctaPrimaryLink ?? '#layanan-heading';
 $ctaSecondaryText = $ctaSecondaryText ?? 'Pelajari lebih lanjut';
 $ctaSecondaryLink = $ctaSecondaryLink ?? '/tentang-poliklinik';
 $error = $error ?? null;
@@ -22,8 +22,9 @@ ob_start();
 ?>
 
 <body>
-    <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
+    <div x-data class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
         <div class="absolute inset-y-0 inset-x-0 bg-teal-100/50" aria-hidden="true"></div>
+
         <?php include __DIR__ . '/../components/header.php'; ?>
         <?php include __DIR__ . '/../components/cursor.php'; ?>
         <?php if (null !== $error && '' !== $error) { ?>
@@ -38,10 +39,28 @@ ob_start();
             <path fill="#14B8A6" d="M43.5,-78.1C54.7,-68.8,61.1,-53.9,64.1,-39.9C67,-26,66.6,-13,68.9,1.3C71.2,15.7,76.3,31.3,71.6,42.3C66.9,53.3,52.5,59.6,38.9,65C25.3,70.4,12.7,75,0.6,74C-11.5,73.1,-23.1,66.5,-32.3,58.5C-41.4,50.6,-48.3,41.2,-57.3,31.2C-66.2,21.2,-77.3,10.6,-78.5,-0.7C-79.8,-12,-71.1,-24,-62.5,-34.7C-54,-45.4,-45.5,-54.8,-35.1,-64.6C-24.7,-74.3,-12.3,-84.5,1.9,-87.7C16.1,-91,32.2,-87.4,43.5,-78.1Z" transform="translate(100 100)" />
         </svg>
 
-
+        <svg viewBox="0 0 200 200" class="absolute w-80 opacity-30 right-15 mt-5">
+            <path fill="#14B8A6" d="M33.1,-57.4C44.5,-50.7,56.3,-45.1,62.3,-35.7C68.2,-26.3,68.2,-13.1,68.2,0C68.2,13.2,68.3,26.3,65,40.3C61.7,54.3,55.1,69.1,43.7,74.3C32.3,79.5,16.2,75.1,2.8,70.2C-10.5,65.3,-21,59.9,-31.3,54C-41.6,48.2,-51.8,42,-57.9,32.9C-64,23.8,-66.1,11.9,-67.8,-0.9C-69.4,-13.8,-70.6,-27.6,-66.4,-40.2C-62.3,-52.7,-52.9,-64,-40.9,-70.3C-29,-76.6,-14.5,-78,-1.8,-74.8C10.9,-71.7,21.7,-64.1,33.1,-57.4Z" transform="translate(100 100)" />
+        </svg>
 
         <div class="w-full h-135 relative overflow-hidden bg-teal-700/70">
+            <div class="pointer-events-none absolute inset-0 text-teal-700/50" aria-hidden="true">
 
+                <i class="ph ph-dna absolute top-[12%] left-[6%] text-7xl -rotate-12"></i>
+                <i class="ph ph-stethoscope absolute top-[42%] left-[3%] text-6xl rotate-6"></i>
+                <i class="ph ph-hospital absolute bottom-[8%] left-[8%] text-7xl -rotate-6"></i>
+                <i class="ph ph-pill absolute bottom-[30%] left-[19%] text-5xl rotate-45"></i>
+
+                <i class="ph ph-first-aid absolute top-[10%] right-[8%] text-9xl rotate-12"></i>
+                <i class="ph ph-tooth absolute top-[48%] right-[4%] text-6xl -rotate-12"></i>
+                <i class="ph ph-heartbeat absolute bottom-[10%] right-[10%] text-7xl rotate-6"></i>
+                <i class="ph ph-chats-circle absolute bottom-[34%] right-[20%] text-5xl -rotate-6"></i>
+
+                <i class="ph ph-plus absolute top-[28%] left-[26%] text-3xl"></i>
+                <i class="ph ph-plus absolute top-[22%] right-[28%] text-4xl"></i>
+                <i class="ph ph-thermometer absolute top-[8%] left-[34%] text-5xl rotate-12"></i>
+                <i class="ph ph-syringe absolute bottom-[6%] right-[34%] text-5xl -rotate-45"></i>
+            </div>
             <div
                 x-data="{ shown: true }"
                 x-init="
@@ -89,7 +108,14 @@ ob_start();
         </div>
 
         <div class="relative  w-full max-w-[85%] mx-auto  p-20 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15 mb-6">
+            <div class="pointer-events-none absolute inset-0 text-teal-700/50" aria-hidden="true">
 
+
+                <i class="ph ph-stethoscope absolute top-[40%] left-[0%] text-6xl rotate-8"></i>
+
+                <i class="ph ph-first-aid absolute top-[28%] right-[5%] text-7xl rotate-12"></i>
+                <i class="ph ph-syringe absolute top-[48%] right-[3%] text-6xl -rotate-12"></i>
+            </div>
 
             <div class="text-left   rounded-4xl">
                 <h2 class="text-4xl font-bold tracking-tight text-teal-700 mb-3">
@@ -177,6 +203,18 @@ ob_start();
 
 
         <section aria-labelledby="layanan-heading" class="mt-32 w-full relative flex flex-col items-center px-4 pb-24">
+            <div class="pointer-events-none absolute inset-0 text-teal-700/50" aria-hidden="true">
+
+
+                <i class="ph ph-stethoscope absolute top-[7%] left-[20%] text-6xl -rotate-8"></i>
+                <i class="ph ph-first-aid absolute top-[6%] right-[20%] text-7xl rotate-12"></i>
+
+                <i class="ph ph-plus absolute top-[21%] left-[10%] text-3xl"></i>
+                <i class="ph ph-plus absolute top-[21%] right-[10%] text-4xl"></i>
+            </div>
+
+
+
             <div class="w-full text-center">
                 <h2 id="layanan-heading" class="mb-4 text-6xl font-black font-display-expanded text-center text-teal-700">
                     Layanan Kesehatan
