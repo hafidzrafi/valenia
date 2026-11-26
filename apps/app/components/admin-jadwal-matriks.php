@@ -33,11 +33,11 @@ $totalSlots = array_sum(array_map(
         </button>
     </div>
 
-    <div class="-mx-2 overflow-x-auto px-2">
-        <table class="w-full min-w-[880px] table-fixed border-collapse text-left text-xs text-slate-800">
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[900px] table-fixed border-collapse text-left text-xs text-slate-800">
             <caption class="sr-only">Jadwal praktik mingguan per tenaga medis</caption>
             <colgroup>
-                <col class="w-[190px]">
+                <col class="w-[200px]">
                 <?php foreach (array_keys($days) as $ignored) { ?>
                     <col>
                 <?php } ?>
@@ -73,8 +73,8 @@ $totalSlots = array_sum(array_map(
                 <?php foreach ($doctors as $doctor) { ?>
                     <tr class="group border-t border-teal-900/10 transition-colors hover:bg-teal-50/40">
                         <th scope="row" class="sticky left-0 z-10 border-r border-teal-900/10 bg-white px-3 py-2 text-left align-top shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">
-                            <span class="block text-[13px] font-semibold leading-snug text-slate-900"><?php echo e($doctor['full_name']); ?></span>
-                            <span class="mt-0.5 block text-xs font-normal leading-snug text-slate-600"><?php echo e($doctor['service_name']); ?></span>
+                            <span class="block whitespace-nowrap text-[13px] font-semibold leading-snug text-slate-900"><?php echo e($doctor['full_name']); ?></span>
+                            <span class="mt-0.5 block whitespace-nowrap text-xs font-normal leading-snug text-slate-600"><?php echo e($doctor['service_name']); ?></span>
                         </th>
 
                         <?php foreach (array_keys($days) as $dayNumber) { ?>
@@ -85,20 +85,18 @@ $totalSlots = array_sum(array_map(
                             <td class="border-l border-teal-900/10 px-1 py-2 align-top <?php echo $isToday ? 'bg-teal-600/[0.06]' : ''; ?>">
                                 <div class="flex flex-col gap-1">
                                     <?php foreach ($slots as $slot) { ?>
-                                        <span class="flex items-center justify-between gap-1 rounded-full bg-teal-100 px-2 py-1 text-[11px] font-semibold text-teal-900">
-                                            <span class="whitespace-nowrap tabular-nums"><?php echo e($slot['start_time'].'-'.$slot['end_time']); ?></span>
-                                            <button type="button"
-                                                    @click="hapus = <?php echo e((string) json_encode([
-                                                        'id' => $slot['id'],
-                                                        'nama' => $doctor['full_name'],
-                                                        'hari' => $days[$dayNumber],
-                                                        'jam' => $slot['start_time'].'-'.$slot['end_time'],
-                                                    ])); ?>"
-                                                    class="shrink-0 rounded-full p-0.5 text-teal-800 transition-colors hover:bg-teal-300 hover:text-teal-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700"
-                                                    aria-label="Hapus jadwal <?php echo e($doctor['full_name']); ?> hari <?php echo e($days[$dayNumber]); ?> pukul <?php echo e($slot['start_time']); ?> sampai <?php echo e($slot['end_time']); ?>">
-                                                <i class="ph ph-x text-[10px]" aria-hidden="true"></i>
-                                            </button>
-                                        </span>
+                                        <button type="button"
+                                                @click="hapus = <?php echo e((string) json_encode([
+                                                    'id' => $slot['id'],
+                                                    'nama' => $doctor['full_name'],
+                                                    'hari' => $days[$dayNumber],
+                                                    'jam' => $slot['start_time'].'-'.$slot['end_time'],
+                                                ])); ?>"
+                                                class="w-full whitespace-nowrap rounded-full bg-teal-100 px-2 py-1 text-center text-[11px] font-semibold tabular-nums text-teal-900 transition-colors hover:bg-rose-100 hover:text-rose-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+                                                title="Hapus jadwal"
+                                                aria-label="Hapus jadwal <?php echo e($doctor['full_name']); ?> hari <?php echo e($days[$dayNumber]); ?> pukul <?php echo e($slot['start_time']); ?> sampai <?php echo e($slot['end_time']); ?>">
+                                            <?php echo e($slot['start_time'].'-'.$slot['end_time']); ?>
+                                        </button>
                                     <?php } ?>
 
                                     <button type="button"
