@@ -19,7 +19,7 @@ $adminUnit = 'Poliklinik Polinema';
     <div class="flex min-h-screen min-w-0 flex-1 flex-col"
          style="background: radial-gradient(circle at 85% 15%, rgba(160,215,205,0.7) 0%, transparent 50%), linear-gradient(135deg, #a9dcb0 0%, #88cebb 50%, #3fa896 100%);">
 
-        <div class="mx-auto flex w-full max-w-[1240px] flex-1 flex-col px-8 pb-10 xl:px-10">
+        <div class="mx-auto flex w-full max-w-[1080px] flex-1 flex-col px-8 pb-10">
             <?php include __DIR__.'/../components/admin-header.php'; ?>
 
             <main class="mt-[21px] flex flex-col gap-6">

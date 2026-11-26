@@ -2,6 +2,9 @@
 /**
  * Weekly schedule matrix: one row per active doctor, one column per ISO weekday.
  * The row action and each slot chip open a modal defined in the page view.
+ *
+ * The doctor column is sticky so it stays visible when the table scrolls
+ * sideways.
  */
 /** @var list<array<string, mixed>> $doctors */
 /** @var array<int, string> $days */
@@ -12,7 +15,7 @@ $totalSlots = array_sum(array_map(
     $doctors,
 ));
 ?>
-<section class="rounded-[40px] border-2 border-white/60 bg-white/70 p-6 font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)] backdrop-blur-md">
+<section class="rounded-[40px] border-2 border-white/60 bg-white p-6 font-sans shadow-[0_5px_18px_rgba(40,120,105,0.18)]">
     <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
             <h2 class="font-display text-[28px] font-semibold leading-[34px] text-[#379a89]">Jadwal Mingguan</h2>
@@ -34,14 +37,14 @@ $totalSlots = array_sum(array_map(
         <table class="w-full min-w-[880px] table-fixed border-collapse text-left text-xs text-slate-800">
             <caption class="sr-only">Jadwal praktik mingguan per tenaga medis</caption>
             <colgroup>
-                <col class="w-[168px]">
+                <col class="w-[190px]">
                 <?php foreach (array_keys($days) as $ignored) { ?>
                     <col>
                 <?php } ?>
             </colgroup>
             <thead>
                 <tr class="border-b border-teal-900/15">
-                    <th scope="col" class="sticky left-0 z-10 bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-[0.06em] text-slate-600">Tenaga Medis</th>
+                    <th scope="col" class="sticky left-0 z-10 whitespace-nowrap border-b border-teal-900/15 bg-white px-3 pt-4 pb-3 text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">Tenaga Medis</th>
                     <?php foreach ($days as $dayNumber => $dayLabel) { ?>
                         <?php $isToday = $dayNumber === $todayDow; ?>
                         <th scope="col" class="px-1 py-2 text-center">
@@ -62,8 +65,8 @@ $totalSlots = array_sum(array_map(
                 <?php } ?>
 
                 <?php foreach ($doctors as $doctor) { ?>
-                    <tr class="group border-t border-teal-900/10 transition-colors hover:bg-white/45">
-                        <th scope="row" class="sticky left-0 z-10 bg-white/95 px-3 py-3 text-left align-top">
+                    <tr class="group border-t border-teal-900/10 transition-colors hover:bg-teal-50/40">
+                        <th scope="row" class="sticky left-0 z-10 bg-white px-3 py-2 text-left align-top shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">
                             <span class="block text-[13px] font-semibold leading-snug text-slate-900"><?php echo e($doctor['full_name']); ?></span>
                             <span class="mt-0.5 block text-xs font-normal leading-snug text-slate-600"><?php echo e($doctor['service_name']); ?></span>
                         </th>
