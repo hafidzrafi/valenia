@@ -1,4 +1,4 @@
-<div class="fixed max-lg:absolute top-0 left-1/2 -translate-x-1/2 z-50 w-[80%] max-lg:w-full max-lg:rounded-[0px] mt-6 h-20 px-8 py-4 max-lg:mt-0 max-lg:py-11 bg-gradient-to-br from-white/90 to-white/60 rounded-full shadow-[0px_6px_6px_0px_rgba(0,0,0,0.1)] outline-2 outline-offset-[-4px] outline-white/50 backdrop-blur-xl flex justify-between items-center">
+<div class="fixed max-lg:absolute top-0 left-1/2 -translate-x-1/2 z-50 w-[70%] max-lg:w-full max-lg:rounded-[0px] mt-6 h-20 px-8 py-4 max-lg:mt-0 max-lg:py-11 bg-gradient-to-br from-white/90 to-white/60 rounded-full shadow-[0px_6px_6px_0px_rgba(0,0,0,0.1)] outline-2 outline-offset-[-4px] outline-white/50 backdrop-blur-xl flex justify-between items-center">
     <div class="flex items-center gap-3">
         <a href="/" class="flex flex-row gap-2">
             <div class="size-16 relative   flex items-center justify-center">
@@ -14,7 +14,7 @@
             <a href="/" class="hover:text-teal-500 transition-colors mx-10">Beranda</a>
 
             <!-- Dropdown Layanan -->
-            <div class="relative group mx-10 max-lg:mx-5"
+            <div class="relative group mx-5 max-lg:mx-5"
                 x-data="{open: false}"
                 @Click.outside="open = false">
                 <button class="hover:text-teal-500 transition-colors flex items-center gap-1"
@@ -68,7 +68,7 @@
             </div>
 
             <!-- Dropdown Template -->
-            <div class="relative group mx-10 max-lg:mx-5"
+            <div class="relative group mx-5 max-lg:mx-5"
                 x-data="{open: false}"
                 @Click.outside="open = false">
 

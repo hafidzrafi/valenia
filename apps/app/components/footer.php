@@ -18,10 +18,19 @@
     </div>
 
 
-    <div class="absolute top-8 right-10 flex flex-row gap-12 text-white">
+    <div class="absolute top-10 right-20 grid grid-cols-2 gap-20 text-white">
 
-        <div class="flex flex-col gap-4 w-[171px]">
-            <h3 class="text-xl font-semibold text-white">Profil</h3>
+        <div class="flex flex-col gap-4">
+            <h3 class="text-xl font-semibold">Profil</h3>
+            <ul class="flex flex-col gap-2 text-base font-medium opacity-80">
+                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
+                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
+                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
+                <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
+            </ul>
+        </div>
+        <div class="flex flex-col gap-4">
+            <h3 class="text-xl font-semibold">Profil</h3>
             <ul class="flex flex-col gap-2 text-base font-medium opacity-80">
                 <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
                 <li><a href="#" class="hover:underline">Raja Lorem Ipsum</a></li>
@@ -39,18 +48,3 @@
             <p class="text-center text-white">2026.PBL-Kelompok1</p>
         </div>
     </div>
-
-    <!-- kode radit -->
-    <?php /* $u = current_user(); ?>
-        <?php if ($u === null): ?>
-            <a href="/login" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-display transition-colors">Masuk</a>
-        <?php else: ?>
-            <?php if (($u['role'] ?? '') === 'admin'): ?>
-                <a href="/admin" class="smooth-corners-md rounded-3xl px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-display transition-colors">Admin</a>
-            <?php endif; ?>
-            <span class="text-white text-base font-display"><?= e($u['username']) ?></span>
-            <form method="POST" action="/logout" class="inline">
-                <?php echo csrf_field(); ?>
-                <button type="submit" class="smooth-corners-md rounded-3xl px-5 py-3 bg-slate-900 hover:bg-slate-700 text-white text-base font-display transition-colors">Keluar</button>
-            </form>
-        <?php endif;  */ ?>
