@@ -44,11 +44,17 @@ $totalSlots = array_sum(array_map(
             </colgroup>
             <thead>
                 <tr class="border-b border-teal-900/15">
-                    <th scope="col" class="sticky left-0 z-10 whitespace-nowrap border-b border-teal-900/15 bg-white px-3 pt-4 pb-3 text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">Tenaga Medis</th>
+                    <th scope="col" class="sticky left-0 z-10 whitespace-nowrap border-b border-r border-teal-900/15 bg-white px-3 pt-4 pb-3 text-xs font-semibold uppercase tracking-[0.06em] text-slate-600 shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">Tenaga Medis</th>
                     <?php foreach ($days as $dayNumber => $dayLabel) { ?>
-                        <?php $isToday = $dayNumber === $todayDow; ?>
-                        <th scope="col" class="px-1 py-2 text-center">
-                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.06em] <?php echo $isToday ? 'bg-teal-700 text-white' : 'text-slate-600'; ?>"
+                        <?php
+                        $isToday = $dayNumber === $todayDow;
+                        $dayLabelClass = 'text-slate-600';
+                        if ($isToday) {
+                            $dayLabelClass = 'bg-teal-700 text-white';
+                        }
+                        ?>
+                        <th scope="col" class="border-l border-teal-900/10 px-1 py-2 text-center">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.06em] <?php echo $dayLabelClass; ?>"
                                 <?php echo $isToday ? 'aria-current="date"' : ''; ?>><?php echo e($dayLabel); ?></span>
                         </th>
                     <?php } ?>
@@ -66,7 +72,7 @@ $totalSlots = array_sum(array_map(
 
                 <?php foreach ($doctors as $doctor) { ?>
                     <tr class="group border-t border-teal-900/10 transition-colors hover:bg-teal-50/40">
-                        <th scope="row" class="sticky left-0 z-10 bg-white px-3 py-2 text-left align-top shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">
+                        <th scope="row" class="sticky left-0 z-10 border-r border-teal-900/10 bg-white px-3 py-2 text-left align-top shadow-[6px_0_10px_-8px_rgba(40,120,105,0.45)]">
                             <span class="block text-[13px] font-semibold leading-snug text-slate-900"><?php echo e($doctor['full_name']); ?></span>
                             <span class="mt-0.5 block text-xs font-normal leading-snug text-slate-600"><?php echo e($doctor['service_name']); ?></span>
                         </th>
@@ -76,7 +82,7 @@ $totalSlots = array_sum(array_map(
                             $slots = $doctor['slots'][$dayNumber] ?? [];
                             $isToday = $dayNumber === $todayDow;
                             ?>
-                            <td class="px-1 py-2 align-top <?php echo $isToday ? 'bg-teal-600/[0.06]' : ''; ?>">
+                            <td class="border-l border-teal-900/10 px-1 py-2 align-top <?php echo $isToday ? 'bg-teal-600/[0.06]' : ''; ?>">
                                 <div class="flex flex-col gap-1">
                                     <?php foreach ($slots as $slot) { ?>
                                         <span class="flex items-center justify-between gap-1 rounded-full bg-teal-100 px-2 py-1 text-[11px] font-semibold text-teal-900">
