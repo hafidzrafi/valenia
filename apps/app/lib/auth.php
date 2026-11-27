@@ -508,6 +508,69 @@ function list_users(): array
 }
 
 /**
+ * Normalise and check the fields every account write shares.
+ *
+ * The length limits mirror the column widths in 0001_core_auth.sql, so an
+ * over-long value fails here with a readable message instead of surfacing a
+ * Postgres 22001 as a generic failure.
+ *
+ * @return array{ok: bool, error: ?string, values: array{username: string, full_name: string, role: string, email: ?string}}
+ */
+function prepare_account_fields(string $username, string $fullName, string $role, string $email): array
+{
+    $email = strtolower(trim($email));
+
+    $values = [
+        'username' => trim($username),
+        'full_name' => trim($fullName),
+        'role' => $role,
+        'email' => '' === $email ? null : $email,
+    ];
+
+    $fail = static fn (string $error): array => ['ok' => false, 'error' => $error, 'values' => $values];
+
+    if ('' === $values['username'] || '' === $values['full_name']) {
+        return $fail('Nama pengguna dan nama lengkap wajib diisi.');
+    }
+
+    if (mb_strlen($values['username']) > 40) {
+        return $fail('Nama pengguna maksimal 40 karakter.');
+    }
+
+    if (mb_strlen($values['full_name']) > 120) {
+        return $fail('Nama lengkap maksimal 120 karakter.');
+    }
+
+    if (null !== $values['email'] && false === filter_var($values['email'], FILTER_VALIDATE_EMAIL)) {
+        return $fail('Format surel tidak valid.');
+    }
+
+    if ('admin' !== $role && 'perawat' !== $role) {
+        return $fail('Peran tidak dikenal.');
+    }
+
+    return ['ok' => true, 'error' => null, 'values' => $values];
+}
+
+/**
+ * Map a Postgres unique violation to a message naming the field that clashed.
+ *
+ * @return null|array{ok: false, error: string} null when the exception is not a duplicate key
+ */
+function duplicate_account_error(Throwable $exception): ?array
+{
+    if (!$exception instanceof PDOException || '23505' !== $exception->getCode()) {
+        return null;
+    }
+
+    if (str_contains($exception->getMessage(), 'users_email_unique_idx')) {
+        return ['ok' => false, 'error' => 'Surel sudah dipakai.'];
+    }
+
+    return ['ok' => false, 'error' => 'Nama pengguna sudah dipakai.'];
+}
+
+/**
  * Create an account (admin only). Returns ['ok' => bool, 'error' => ?string].
  * New accounts must change their password on first login.
  *
@@ -515,21 +578,13 @@ function list_users(): array
  */
 function create_user(string $username, string $fullName, string $role, string $password, string $actorId, string $email = ''): array
 {
-    $username = trim($username);
-    $fullName = trim($fullName);
-    $email = strtolower(trim($email));
+    $fields = prepare_account_fields($username, $fullName, $role, $email);
 
-    if ('' === $username || '' === $fullName) {
-        return ['ok' => false, 'error' => 'Nama pengguna dan nama lengkap wajib diisi.'];
+    if (!$fields['ok']) {
+        return ['ok' => false, 'error' => $fields['error']];
     }
 
-    if ('' !== $email && false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        return ['ok' => false, 'error' => 'Format surel tidak valid.'];
-    }
-
-    if ('admin' !== $role && 'perawat' !== $role) {
-        return ['ok' => false, 'error' => 'Peran tidak dikenal.'];
-    }
+    $baru = $fields['values'];
 
     if (strlen($password) < AUTH_PASSWORD_MIN_LENGTH) {
         return ['ok' => false, 'error' => 'Kata sandi minimal 8 karakter.'];
@@ -543,10 +598,10 @@ function create_user(string $username, string $fullName, string $role, string $p
             'INSERT INTO users (username, full_name, role, email) VALUES (:u, :n, :r, :e) RETURNING id'
         );
         $ins->execute([
-            'u' => $username,
-            'n' => $fullName,
-            'r' => $role,
-            'e' => '' === $email ? null : $email,
+            'u' => $baru['username'],
+            'n' => $baru['full_name'],
+            'r' => $baru['role'],
+            'e' => $baru['email'],
         ]);
         $userId = (string) $ins->fetchColumn();
 
@@ -555,19 +610,88 @@ function create_user(string $username, string $fullName, string $role, string $p
              VALUES (:user, :hash, TRUE)'
         )->execute(['user' => $userId, 'hash' => hash_password($password)]);
 
-        audit_log('users', $userId, 'INSERT', $actorId, null, json_encode(['username' => $username, 'role' => $role, 'email' => $email ?: null]) ?: null);
+        audit_log('users', $userId, 'INSERT', $actorId, null, json_encode($baru) ?: null);
         $pdo->commit();
     } catch (Throwable $exception) {
         $pdo->rollBack();
 
-        if ($exception instanceof PDOException && '23505' === $exception->getCode()) {
-            $message = $exception->getMessage();
+        $duplicate = duplicate_account_error($exception);
 
-            if (str_contains($message, 'users_email_unique_idx')) {
-                return ['ok' => false, 'error' => 'Surel sudah dipakai.'];
-            }
+        if (null !== $duplicate) {
+            return $duplicate;
+        }
 
-            return ['ok' => false, 'error' => 'Nama pengguna sudah dipakai.'];
+        throw $exception;
+    }
+
+    return ['ok' => true, 'error' => null];
+}
+
+/**
+ * Update the editable fields of an account (admin only).
+ *
+ * Refuses a role change on the acting admin's own account: that is the only way
+ * an admin can leave the system without one, since a session always belongs to
+ * an active admin. Returns ['ok' => bool, 'error' => ?string].
+ *
+ * @return array{ok: bool, error: ?string}
+ */
+function update_user(string $userId, string $username, string $fullName, string $role, string $email, string $actorId): array
+{
+    $fields = prepare_account_fields($username, $fullName, $role, $email);
+
+    if (!$fields['ok']) {
+        return ['ok' => false, 'error' => $fields['error']];
+    }
+
+    $baru = $fields['values'];
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $sel = $pdo->prepare('SELECT id, username, full_name, role, email FROM users WHERE id = :id FOR UPDATE');
+        $sel->execute(['id' => $userId]);
+        $current = $sel->fetch();
+
+        if (!is_array($current)) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Akun tidak ditemukan.'];
+        }
+
+        if ($userId === $actorId && $baru['role'] !== (string) $current['role']) {
+            $pdo->rollBack();
+
+            return ['ok' => false, 'error' => 'Peran akun sendiri tidak dapat diubah.'];
+        }
+
+        $pdo->prepare(
+            'UPDATE users SET username = :u, full_name = :n, role = :r, email = :e WHERE id = :id'
+        )->execute([
+            'u' => $baru['username'],
+            'n' => $baru['full_name'],
+            'r' => $baru['role'],
+            'e' => $baru['email'],
+            'id' => $userId,
+        ]);
+
+        audit_log(
+            'users',
+            $userId,
+            'UPDATE',
+            $actorId,
+            json_encode($current) ?: null,
+            json_encode($baru) ?: null,
+        );
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        $pdo->rollBack();
+
+        $duplicate = duplicate_account_error($exception);
+
+        if (null !== $duplicate) {
+            return $duplicate;
         }
 
         throw $exception;
@@ -644,6 +768,25 @@ function set_user_active(string $userId, bool $active, string $actorId): array
     }
 
     return ['ok' => true, 'error' => null];
+}
+
+/**
+ * Random temporary password for an admin-triggered reset.
+ *
+ * The alphabet drops characters that are easy to misread when the password is
+ * copied from the screen by hand: I, l, O, 0, 1.
+ */
+function generate_temporary_password(int $length = 12): string
+{
+    $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    $max = strlen($alphabet) - 1;
+    $password = '';
+
+    for ($i = 0; $i < $length; ++$i) {
+        $password .= $alphabet[random_int(0, $max)];
+    }
+
+    return $password;
 }
 
 /**
