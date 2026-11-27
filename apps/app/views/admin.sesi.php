@@ -5,13 +5,11 @@
 /** @var null|string $flash */
 /** @var null|string $error */
 $active = 'sesi';
-$token = $token ?? '';
 $role = $role ?? 'admin';
 $headerTitle = 'Kelola Sesi';
 $headerSubtitle = 'Pantau dan cabut sesi login yang sedang aktif.';
 $adminNama = 'Petugas '.ucfirst($role);
 $adminUnit = 'Poliklinik Polinema';
-$sessions = $sessions ?? [];
 $current = $current ?? null;
 $flash = $flash ?? null;
 $error = $error ?? null;
