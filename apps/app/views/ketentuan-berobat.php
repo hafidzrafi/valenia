@@ -8,11 +8,12 @@ $page = 'nonlanding';
 ?>
 <div class="relative  min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
 
-    <div class="absolute inset-y-0 inset-x-20 max-lg:inset-x-12 max-md:inset-x-4 bg-teal-100/80" aria-hidden="true"></div>
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
     <?php include __DIR__ . '/../components/header.php'; ?>
     <?php include __DIR__ . '/../components/cursor.php'; ?>
     <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+
 
 
     <!-- ke-1 -->
@@ -26,9 +27,13 @@ $page = 'nonlanding';
             <path fill="#14B8A6" d="M36.3,-55C44.1,-44.3,45.5,-29.8,49,-16.5C52.6,-3.2,58.4,8.8,56.6,19.6C54.8,30.4,45.4,40,34.7,48.4C24,56.9,12,64.1,1.4,62.2C-9.3,60.4,-18.6,49.4,-25.3,39.7C-32.1,30,-36.3,21.6,-44.1,11.1C-51.9,0.7,-63.3,-11.8,-66.1,-27.1C-68.9,-42.4,-63,-60.5,-50.5,-69.7C-38.1,-78.8,-19,-79.1,-2.4,-75.8C14.2,-72.5,28.5,-65.6,36.3,-55Z" transform="translate(100 100)" />
         </svg>
 
-        <i class="pointer-events-none max-lg:hidden absolute ph ph-first-aid text-7xl right-30 top-5 text-teal-500/30 rotate-10" aria-hidden="true"></i>
-        <i class="pointer-events-none max-lg:hidden absolute ph ph-pill text-5xl right-30 bottom-8 text-teal-500/30" aria-hidden="true"></i>
-        <i class="pointer-events-none max-lg:hidden absolute ph ph-stethoscope text-5xl left-35 bottom-10 text-teal-500/30 -rotate-10" aria-hidden="true"></i>
+        <div class="pointer-events-none absolute inset-0 text-teal-700/30" aria-hidden="true">
+            <i class="ph ph-first-aid absolute right-1/2 translate-x-130 text-7xl"></i>
+            <i class="ph ph-pill absolute text-5xl right-1/2 translate-x-140 top-[10%]  "></i>
+            <i class="ph ph-stethoscope absolute text-5xl left-1/2 -translate-x-162 -rotate-10"></i>
+        </div>
+
+
 
         <div class="sticky top-35 max-lg:static flex flex-col gap-5 w-full h-80 max-w-md rounded-3xl p-8 max-md:p-6 bg-white">
             <i class="-m-10 -translate-x-6 translate-y-6 shrink-0 ph ph-flower text-5xl text-right text-teal-500/30" aria-hidden="true"></i>
@@ -132,8 +137,8 @@ $page = 'nonlanding';
 
     <!-- ke-3 -->
     <section class="relative flex flex-row lg:-mt-8 max-lg:flex-col max-lg:items-center justify-center gap-16 max-lg:gap-10 w-full   max-lg:px-12 max-md:px-6  max-lg:py-16 pb-40 max-lg:pb-24">
-        
-    <svg viewBox="0 0 200 200" class="pointer-events-none max-lg:hidden absolute top-0 right-0 w-190  -translate-y-52 -translate-x-30  opacity-30" aria-hidden="true">
+
+        <svg viewBox="0 0 200 200" class="pointer-events-none max-lg:hidden absolute top-0 right-0 w-190  -translate-y-52 -translate-x-30  opacity-30" aria-hidden="true">
             <path fill="#14B8A6" d="M29.6,-26.7C43.1,-23.9,62.2,-19.1,70.5,-7.2C78.8,4.7,76.3,23.6,65,32.2C53.7,40.8,33.6,39,18.6,39.4C3.6,39.8,-6.4,42.4,-17.7,41.5C-29.1,40.5,-41.7,35.9,-43.3,27.7C-44.8,19.4,-35.2,7.5,-31.4,-4.1C-27.7,-15.7,-29.8,-26.8,-25.5,-31.3C-21.2,-35.8,-10.6,-33.6,-1.3,-32.1C8,-30.5,16,-29.6,29.6,-26.7Z" transform="translate(100 100)" />
         </svg>
 

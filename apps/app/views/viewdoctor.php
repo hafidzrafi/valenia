@@ -8,7 +8,7 @@ $attendance = $attendance ?? [];
 $page = 'nonlanding';
 ?>
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
-    <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
     <?php include __DIR__.'/../components/header.php'; ?>
 <?php include __DIR__.'/../components/cursor.php'; ?>

@@ -1,4 +1,4 @@
-<div class="fixed max-lg:absolute top-0 left-1/2 -translate-x-1/2 z-50 w-[70%] max-lg:w-full max-lg:rounded-[0px] mt-6 h-20 px-8 py-4 max-lg:mt-0 max-lg:py-11 bg-gradient-to-br from-white/90 to-white/60 rounded-full shadow-[0px_6px_6px_0px_rgba(0,0,0,0.1)] outline-2 outline-offset-[-4px] outline-white/50 backdrop-blur-xl flex justify-between items-center">
+<div class="fixed max-lg:absolute top-0 left-1/2 -translate-x-1/2 z-50 w-[70%] max-lg:w-full max-lg:rounded-[0px] mt-6 h-20 px-8 py-4 max-lg:mt-0 max-lg:py-11 bg-gradient-to-br from-white/90 to-white/60 rounded-full shadow-md shadow-gray-500 backdrop-blur-xl flex justify-between items-center">
     <div class="flex items-center gap-3">
         <a href="/" class="flex flex-row gap-2">
             <div class="size-16 relative   flex items-center justify-center">

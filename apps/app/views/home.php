@@ -23,7 +23,7 @@ ob_start();
 
 <body>
     <div x-data class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
-        <div class="absolute inset-y-0 inset-x-0 bg-teal-100/70" aria-hidden="true"></div>
+        <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
         <?php include __DIR__ . '/../components/header.php'; ?>
         <?php include __DIR__ . '/../components/cursor.php'; ?>
@@ -240,7 +240,7 @@ ob_start();
         <section class="flex flex-row relative w-full py-10 mt-10 mx-auto gap-24  bg-slate-900/70 items-center justify-center">
             <!-- Card Section -->
             <div>
-                <div class="card w-100 h-90 bg-[url(/images/placeholder.jpg)] bg-cover bg-center rounded-2xl">
+                <div class="card w-100 h-85 bg-[url(/images/poliklinikhome.webp)] bg-cover bg-center rounded-2xl">
                 </div>
             </div>
 

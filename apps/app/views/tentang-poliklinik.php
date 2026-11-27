@@ -7,21 +7,22 @@ $showCta = false;
 $page = 'nonlanding';
 ?>
 <div class="relative bg-cover bg-center bg-no-repeat " style="background-image: url('/images/background.png');">
-    <div class="absolute inset-y-0 inset-x-20 bg-teal-100/80" aria-hidden="true"></div>
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
-    <?php include __DIR__.'/../components/header.php'; ?>
-    <?php include __DIR__.'/../components/cursor.php'; ?>
-    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/cursor.php'; ?>
+    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
     <div class="relative w-full h-410 overflow-hidden">
+        
+        <i class="ph ph-first-aid absolute text-7xl z-10 text-teal-500/30 left-1/2 -translate-x-140 top-[2%] -rotate-10"></i>
 
-        <i class="ph ph-first-aid absolute text-7xl z-10 text-teal-500/30 left-20 m-10 -rotate-10"></i>
 
-        <svg viewBox="0 0 200 200" class="absolute opacity-30 w-100 h-100  right-18 -translate-y-12">
-            <path fill="#14B8A6" d="M38.5,-50.8C50.6,-44.2,61.5,-33.9,65.6,-21.3C69.6,-8.8,66.7,6,60.3,17.8C54,29.6,44.1,38.4,33.5,45.1C22.9,51.7,11.4,56.2,-3.3,60.7C-18,65.2,-35.9,69.7,-50.1,64.2C-64.3,58.6,-74.7,43.2,-71.8,28.8C-68.9,14.5,-52.6,1.4,-44.1,-11.1C-35.6,-23.6,-35,-35.4,-28.9,-43.9C-22.9,-52.5,-11.4,-57.7,0.9,-59C13.2,-60.2,26.4,-57.4,38.5,-50.8Z" transform="translate(100 100)" />
-        </svg>
 
         <div class="relative flex top-25 mb-40 items-center justify-center">
+            <svg viewBox="0 0 200 200" class="absolute opacity-30 w-100   right-[8%] bottom-[30%]">
+                <path fill="#14B8A6" d="M38.5,-50.8C50.6,-44.2,61.5,-33.9,65.6,-21.3C69.6,-8.8,66.7,6,60.3,17.8C54,29.6,44.1,38.4,33.5,45.1C22.9,51.7,11.4,56.2,-3.3,60.7C-18,65.2,-35.9,69.7,-50.1,64.2C-64.3,58.6,-74.7,43.2,-71.8,28.8C-68.9,14.5,-52.6,1.4,-44.1,-11.1C-35.6,-23.6,-35,-35.4,-28.9,-43.9C-22.9,-52.5,-11.4,-57.7,0.9,-59C13.2,-60.2,26.4,-57.4,38.5,-50.8Z" transform="translate(100 100)" />
+            </svg>
             <div class="w-full max-w-4xl    flex flex-row items-center justify-center gap-18 p-8  rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20">
                 <img src="/images/kontak.jpg" alt="" class="h-75 rounded-2xl">
                 <div class="w-95 h-75 flex flex-col gap-6 ">
@@ -130,4 +131,4 @@ $page = 'nonlanding';
 
 
 </div>
-<?php include __DIR__.'/../components/footer.php'; ?>
+<?php include __DIR__ . '/../components/footer.php'; ?>
