@@ -21,7 +21,7 @@ $identityType = (string) ($patient['identity_type'] ?? '-');
 $activeQueue = isset($active['queue_code']) ? (string) $active['queue_code'] : '—';
 $activeService = (string) ($active['service_name'] ?? '-');
 $activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
-$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
+$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])) . ' WIB' : '-';
 $activeStatus = (string) ($active['status'] ?? '');
 $activeTicketToken = (string) ($active['ticket_token'] ?? '');
 $activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128) : null;
@@ -29,7 +29,7 @@ $activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128
 $selectedQueue = isset($selected['queue_code']) ? (string) $selected['queue_code'] : '—';
 $selectedService = (string) ($selected['service_name'] ?? '-');
 $selectedDate = isset($selected['created_at']) ? date('d M Y', strtotime((string) $selected['created_at'])) : '-';
-$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])).' WIB' : '-';
+$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])) . ' WIB' : '-';
 $selectedStatus = (string) ($selected['status'] ?? '');
 $selectedIsActive = (bool) ($selected['is_active'] ?? false);
 $selectedTicketToken = (string) ($selected['ticket_token'] ?? '');
@@ -54,21 +54,25 @@ $progressSteps = match ($activeStatus) {
     default => ['current', 'wait', 'wait', 'wait'],
 };
 
-include __DIR__.'/../components/background-img.php';
 
 $heroImage = '/images/portalpasien.webp';
 $heroTitle = 'Portal Pasien';
 $heroDesc = 'Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA';
 $showCta = false;
+$page = 'nonlanding';
 ?>
-<?php include __DIR__.'/../components/header.php'; ?>
-<?php include __DIR__.'/../components/cursor.php'; ?>
+<?php include __DIR__ . '/../components/header.php'; ?>
+<?php include __DIR__ . '/../components/cursor.php'; ?>
+
 <div class="overflow-hidden">
-    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 </div>
 
+<div class="relative  min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
 
-<body>
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
+
+
     <?php if (null !== $flash) { ?>
         <p class="mx-auto mt-4 w-fit rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700"><?php echo e($flash); ?></p>
     <?php } ?>
@@ -121,14 +125,14 @@ $showCta = false;
                         <p class="text-sm text-black"><?php echo e($identityNumber); ?></p>
                         <div class="mt-3"><?php
                                             $status_tag = 'positive';
-$label_tag = 'Aktif';
+                                            $label_tag = 'Aktif';
 
-include __DIR__.'/../components/tag.php'; ?>
+                                            include __DIR__ . '/../components/tag.php'; ?>
                         </div>
                     </div>
                 </div>
 
-                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400"></div>
+                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400 bg-[url(/images/guest.png)] bg-cover bg-center "></div>
             </div>
 
             <div class="mt-7 w-full border-t border-gray-400 pt-3">
@@ -138,30 +142,30 @@ include __DIR__.'/../components/tag.php'; ?>
             <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-6">
                 <?php foreach ([1, 2, 3, 4] as $index) { ?>
                     <?php if ($index > 1) { ?>
-                        <span class=" w-[42px] h-[2px] bg-gray-500"></span>
+                        <span class=" w-[42px] h-[1px] bg-gray-500"></span>
                     <?php } ?>
 
                     <div class="flex justify-center items-center">
                         <?php
                         $status_step = $progressSteps[$index - 1];
-                    $step_text = (string) $index;
+                        $step_text = (string) $index;
 
-                    include __DIR__.'/../components/step.php'; ?>
+                        include __DIR__ . '/../components/step.php'; ?>
                     </div>
                 <?php } ?>
 
             </div>
-            <div class=" flex flex-row gap-10 items-center justify-center h-4 w-112">
-                <p class=" flex-grow  text-xs font-medium text-center  text-black">
+            <div class=" flex flex-row gap-10 -translate-x-2">
+                <p class=" flex-grow  text-xs font-medium   text-black">
                     Terdaftar
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-2  text-black">
+                <p class=" flex-grow  text-xs font-medium  text-black">
                     Menunggu
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-2.5  text-black">
+                <p class=" flex-grow  text-xs font-medium  text-black">
                     Dilayani
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-1  text-black">
+                <p class=" flex-grow  text-xs font-medium translate-x-4 text-black">
                     Selesai
                 </p>
             </div>
@@ -170,7 +174,7 @@ include __DIR__.'/../components/tag.php'; ?>
 
     </div>
 
-    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] rounded-bl-none rounded-br-none bg-slate-900/70 items-center pt-15 pb-12">
+    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto  bg-slate-900/70 items-center pt-15 pb-12">
         <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Sedang Dilayani</h1>
 
         <div id="served-boards"
@@ -178,12 +182,12 @@ include __DIR__.'/../components/tag.php'; ?>
             hx-trigger="every 10s"
             hx-swap="innerHTML"
             class="mt-10">
-            <?php include __DIR__.'/partials/served-boards.php'; ?>
+            <?php include __DIR__ . '/partials/served-boards.php'; ?>
         </div>
         <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
     </section>
 
-    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto smooth-corners-lg rounded-tl-none rounded-tr-none rounded-bl-[90px] rounded-br-[90px] bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
+    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto  bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
         <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
 
 
@@ -197,7 +201,7 @@ include __DIR__.'/../components/tag.php'; ?>
 
                     <?php foreach ($history as $visit) { ?>
                         <?php
-                    [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
+                        [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
                         $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
                         ?>
                         <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
@@ -209,7 +213,7 @@ include __DIR__.'/../components/tag.php'; ?>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
                             <div class="flex justify-end scale-90">
-                                <?php include __DIR__.'/../components/tag.php'; ?>
+                                <?php include __DIR__ . '/../components/tag.php'; ?>
                             </div>
                         </a>
                     <?php } ?>
@@ -218,18 +222,18 @@ include __DIR__.'/../components/tag.php'; ?>
 
                 <?php
                 $pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
-$selectedVisitId = $selectedVisitId ?? null;
+                $selectedVisitId = $selectedVisitId ?? null;
 
-$pagerLink = static function (int $target) use ($selectedVisitId): string {
-    $query = ['page' => (string) $target];
+                $pagerLink = static function (int $target) use ($selectedVisitId): string {
+                    $query = ['page' => (string) $target];
 
-    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
-        $query['visit'] = $selectedVisitId;
-    }
+                    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+                        $query['visit'] = $selectedVisitId;
+                    }
 
-    return '/portal-pasien?'.http_build_query($query);
-};
-?>
+                    return '/portal-pasien?' . http_build_query($query);
+                };
+                ?>
 
                 <div class="rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-sm flex flex-row items-center justify-center space-x-2">
 
@@ -293,9 +297,9 @@ $pagerLink = static function (int $target) use ($selectedVisitId): string {
                     <?php if (null !== $selected) { ?>
                         <div data-testid="selected-visit-status" class="mt-4">
                             <?php $status_tag = $selectedTag;
-                        $label_tag = $selectedLabel;
+                            $label_tag = $selectedLabel;
 
-                        include __DIR__.'/../components/tag.php'; ?>
+                            include __DIR__ . '/../components/tag.php'; ?>
                         </div>
                     <?php } ?>
 
@@ -342,7 +346,25 @@ $pagerLink = static function (int $target) use ($selectedVisitId): string {
 
     </section>
 
+</div>
 
-</body>
 
-<?php include __DIR__.'/../components/footer.php'; ?>
+<?php include __DIR__ . '/../components/footer.php'; ?>
+
+<!-- can yall convert this into alpinejs? i found this code on stackoverflow QNA -->
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        if (scrollpos) {
+            window.scrollTo({
+                top: parseInt(scrollpos),
+                behavior: 'instant'
+            });
+            sessionStorage.removeItem('scrollpos');
+        }
+    });
+
+    window.addEventListener("beforeunload", function(e) {
+        sessionStorage.setItem('scrollpos', window.scrollY);
+    });
+</script>

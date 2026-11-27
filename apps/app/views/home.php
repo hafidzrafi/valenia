@@ -108,14 +108,7 @@ ob_start();
         </div>
 
         <div class="relative  w-full max-w-[85%] mx-auto  p-20 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-15 mb-6">
-            <div class="pointer-events-none absolute inset-0 text-teal-700/50" aria-hidden="true">
-
-
-                <i class="ph ph-stethoscope absolute top-[40%] left-[0%] text-6xl rotate-8"></i>
-
-                <i class="ph ph-first-aid absolute top-[28%] right-[5%] text-7xl rotate-12"></i>
-                <i class="ph ph-syringe absolute top-[48%] right-[3%] text-6xl -rotate-12"></i>
-            </div>
+            
 
             <div class="text-left   rounded-4xl">
                 <h2 class="text-4xl font-bold tracking-tight text-teal-700 mb-3">
@@ -245,11 +238,11 @@ ob_start();
             </div>
 
             <!-- About Section -->
-            <div class="flex flex-col">
+            <div class="flex flex-col gap-4 items-end">
                 <h2 id="tentang-heading" class="w-full text-8xl font-black  text-right text-white">
                     Tentang Kami
                 </h2>
-                <p class="text-lg text-right text-white pb-40 max-w-xl ml-auto">
+                <p class="text-base text-right text-white pb-40 max-w-xl">
                     Poliklinik Politeknik Negeri Malang adalah unit layanan kesehatan di lingkungan kampus yang menjaga kesehatan seluruh civitas akademika. Kami menyediakan layanan pemeriksaan, pengobatan, dan konsultasi yang profesional, terjangkau, dan mengutamakan kenyamanan pasien.
                 </p>
             </div>

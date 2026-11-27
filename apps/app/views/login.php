@@ -66,8 +66,4 @@
             </form>
         </div>
     </div>
-
-    <div>
-        <?php include __DIR__.'/../components/subfooter.php'; ?>
-    </div>
 </div>
