@@ -1,17 +1,19 @@
 <?php
+
 /** @var string $token */
 /** @var null|string $error */
 /** @var null|string $username */
 ?>
 <div class="flex min-h-screen flex-col" style="background: url('/images/background.png') center / cover no-repeat;">
-
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
+    
     <div class="flex w-full justify-center pt-8">
-        <?php include __DIR__.'/../components/login-nav.php'; ?>
+        <?php include __DIR__ . '/../components/login-nav.php'; ?>
     </div>
 
     <div class="flex flex-1 items-center justify-center px-4 py-10">
-        <div class="w-[340px] rounded-[64px] border border-white/40
-                    bg-gradient-to-br from-white/80 to-white/60 px-8 pb-10 pt-9 backdrop-blur-[10px]"
+        <div class="w-[340px] rounded-4xl border border-white/40
+                    bg-gradient-to-br from-white/90 to-white/70 px-8 pb-10 pt-9 backdrop-blur-[10px]"
             style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
 
             <h1 class="text-center font-display text-[32px] font-bold leading-tight text-slate-700">

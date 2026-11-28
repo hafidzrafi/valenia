@@ -5,65 +5,104 @@ $heroTitle = 'Jadwal Dokter';
 $heroDesc = 'Informasi jam praktik dan ketersediaan dokter Poliklinik';
 $showCta = false;
 $attendance = $attendance ?? [];
+$schedules = $schedules ?? [];
 $page = 'nonlanding';
+$hari = [
+    1 => 'Senin',
+    2 => 'Selasa',
+    3 => 'Rabu',
+    4 => 'Kamis',
+    5 => 'Jumat',
+    6 => 'Sabtu',
+    7 => 'Minggu',
+];
 ?>
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
-    <?php include __DIR__.'/../components/header.php'; ?>
-<?php include __DIR__.'/../components/cursor.php'; ?>
-    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/cursor.php'; ?>
+    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
 
     <div id="papan-featured" class="flex justify-center scale-90 -mt-25">
-        <?php include __DIR__.'/../views/partials/papan-antrean.php'; ?>
+        <?php include __DIR__ . '/../views/partials/papan-antrean.php'; ?>
     </div>
 
     <div class="flex justify-center w-full mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-5xl">
 
-            <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
-                <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl">
-                    <i class="ph ph-stethoscope text-[48px]"></i>
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-2xl font-bold text-gray-700">Poli Umum</h3>
-                    <div class="mt-2">
-                        <p class="text-sm font-semibold text-gray-500 uppercase ">Jadwal Operasional</p>
-                        <p class="text-lg font-medium ">Senin - Jum'at</p>
-                        <p class="text-base font-medium">08:00 - 15:00</p>
+            <?php if ([] === $schedules) { ?>
+                <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
+                    <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl">
+                        <i class="ph ph-stethoscope text-[48px]"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-700">Poli Umum</h3>
+                        <div class="mt-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase ">Jadwal Operasional</p>
+                            <p class="text-lg font-medium ">Senin - Jum'at</p>
+                            <p class="text-base font-medium">08:00 - 15:00</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-
-            <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
-                <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl">
-                    <i class="ph ph-tooth text-[48px]"></i>
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-2xl font-bold text-gray-700">Poli Gigi</h3>
-                    <div class="mt-2">
-                        <p class="text-sm font-semibold text-gray-500 uppercase">Jadwal Operasional</p>
-                        <p class="text-lg font-medium ">Senin - Jum’at</p>
-                        <p class="text-base font-medium">08:00 - 15:00</p>
+                <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
+                    <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl">
+                        <i class="ph ph-tooth text-[48px]"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-700">Poli Gigi</h3>
+                        <div class="mt-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase">Jadwal Operasional</p>
+                            <p class="text-lg font-medium ">Senin - Jum’at</p>
+                            <p class="text-base font-medium">08:00 - 15:00</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-
-            <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
-                <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2x1">
-                    <i class="ph ph-brain text-[48px]"></i>
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-2xl font-bold text-gray-700">Konseling</h3>
-                    <div class="mt-2">
-                        <p class="text-sm font-semibold text-gray-500 uppercase">Jadwal Operasional</p>
-                        <p class="text-lg font-medium">Selasa & Jum’at</p>
-                        <p class="text-base font-medium">09:00 - 13:00</p>
+                <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
+                    <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2x1">
+                        <i class="ph ph-brain text-[48px]"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-700">Konseling</h3>
+                        <div class="mt-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase">Jadwal Operasional</p>
+                            <p class="text-lg font-medium">Selasa & Jum’at</p>
+                            <p class="text-base font-medium">09:00 - 13:00</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php } ?>
+
+            <?php foreach ($schedules as $medis) { ?>
+                <?php
+                $start = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
+                $end = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
+                $hours = ('' !== $start && '' !== $end) ? $start . ' - ' . $end : '-';
+                $serviceName = (string) $medis['service_name'];
+                $serviceicon = [
+                    'Poli Umum' => 'ph ph-stethoscope text-[48px]',
+                    'Poli Gigi' => 'ph ph-tooth text-[48px]',
+                    'Konseling/Psikologi' => 'ph ph-brain text-[48px]',
+                ];
+                $icons = $serviceicon[$serviceName];
+                ?>
+
+                <div class="flex items-center p-6 gap-6 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105">
+                    <div class="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl">
+                        <i class="<? echo ($icons) ?>"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <h3 class="text-2xl font-bold text-gray-700"><? echo ($serviceName) ?></h3>
+                        <div class="mt-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase">Jadwal Operasional</p>
+                            <p class="text-lg font-medium ">Senin - Jum’at</p>
+                            <p class="text-base font-medium"><? echo ($hours) ?></p>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
         </div>
     </div>
 
@@ -86,7 +125,7 @@ $page = 'nonlanding';
                     $present = (bool) $medis['is_present'];
                     $start = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
                     $end = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
-                    $hours = ('' !== $start && '' !== $end) ? $start.' - '.$end : '-';
+                    $hours = ('' !== $start && '' !== $end) ? $start . ' - ' . $end : '-';
                     ?>
                     <div class="flex flex-col items-center overflow-hidden  gap-4 rounded-4xl bg-gradient-to-br from-white/80 to-white/50 backdrop-blur-md border border-white/20 transition-all duration-200 hover:scale-105  hover:border-teal-500">
 
@@ -98,9 +137,9 @@ $page = 'nonlanding';
                             'Poli Gigi' => 'bg-green-100 text-green-800 border-gray-300',
                             'Konseling/Psikologi' => 'bg-purple-100 text-purple-800 border-gray-300',
                         ];
-                    $serviceName = (string) $medis['service_name'];
-                    $serviceClass = $serviceColors[$serviceName] ?? 'bg-gray-100 text-gray-800 border-gray-300';
-                    ?>
+                        $serviceName = (string) $medis['service_name'];
+                        $serviceClass = $serviceColors[$serviceName] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                        ?>
 
                         <span class="w-40 h-8 truncate text-sm flex justify-center items-center font-semibold rounded-full border transition-colors <?php echo e($serviceClass); ?>">
                             <?php echo e($serviceName); ?>
@@ -136,4 +175,4 @@ $page = 'nonlanding';
 
 </div>
 
-<?php include __DIR__.'/../components/footer.php'; ?>
+<?php include __DIR__ . '/../components/footer.php'; ?>
