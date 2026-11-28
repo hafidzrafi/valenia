@@ -9,9 +9,9 @@ $page = 'nonlanding';
 <div class="relative bg-cover bg-center bg-no-repeat " style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
-    <?php include __DIR__ . '/../components/header.php'; ?>
-    <?php include __DIR__ . '/../components/cursor.php'; ?>
-    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__.'/../components/header.php'; ?>
+    <?php include __DIR__.'/../components/cursor.php'; ?>
+    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
     <div class="relative w-full h-410 overflow-hidden">
         
@@ -131,4 +131,4 @@ $page = 'nonlanding';
 
 
 </div>
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>

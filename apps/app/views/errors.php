@@ -20,7 +20,7 @@ $desc = $desc ?? match ($code) {
 
 <div class="relative bg-cover bg-center bg-no-repeat " style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-14 inset-x-20 bg-teal-100/60 rounded-4xl" aria-hidden="true"></div>
-    <?php include __DIR__ . '/../components/cursor.php'; ?>
+    <?php include __DIR__.'/../components/cursor.php'; ?>
 
     <div class="relative min-h-screen flex items-center overflow-hidden">
 
@@ -52,7 +52,7 @@ $desc = $desc ?? match ($code) {
 
         <h1 class="absolute  left-1/2 translate-x-20 text-[11rem] font-black tracking-tight text-teal-700/30 rotate-8 pointer-events-none"><?php echo $code; ?></h1>
         <div class="z-1">
-            <?php include __DIR__ . '/../components/subfooter.php'; ?>
+            <?php include __DIR__.'/../components/subfooter.php'; ?>
         </div>
 
 

@@ -15,7 +15,7 @@ $error = $error ?? null;
 ob_start();
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <body>
     <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
@@ -80,18 +80,18 @@ ob_start();
                         <div class="flex justify-center items-center">
                             <?php
                             $status_step = 'current';
-                            $step_text = '1';
+$step_text = '1';
 
-                            include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
                         </div>
                         <span class=" w-[3px] h-[50px] bg-gray-500"></span>
 
                         <div class="flex justify-center items-center">
                             <?php
-                            $status_step = 'wait';
-                            $step_text = '2';
+$status_step = 'wait';
+$step_text = '2';
 
-                            include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
 
 
 
@@ -100,10 +100,10 @@ ob_start();
 
                         <div class=" flex justify-center items-center">
                             <?php
-                            $status_step = 'wait';
-                            $step_text = '3';
+$status_step = 'wait';
+$step_text = '3';
 
-                            include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
 
                         </div>
 
@@ -297,5 +297,5 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-include __DIR__ . '/../views/layout.php';
+include __DIR__.'/../views/layout.php';
 ?>

@@ -4,17 +4,17 @@ $services = [];
 
 foreach ($attendance as $medis) {
     $serviceName = (string) $medis['service_name'];
-    $present     = (bool) $medis['is_present'];
-    $start       = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
-    $end         = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
-    $hours = ('' !== $start && '' !== $end) ? $start . ' - ' . $end : '-';
+    $present = (bool) $medis['is_present'];
+    $start = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
+    $end = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
+    $hours = ('' !== $start && '' !== $end) ? $start.' - '.$end : '-';
 
     // create the group the first time for each service
     if (!isset($services[$serviceName])) {
         $services[$serviceName] = [
             'service_name' => $serviceName,
             'is_available' => false,
-            'hours'        => $hours,
+            'hours' => $hours,
             'doctor_count' => 0,
         ];
     }
@@ -23,7 +23,7 @@ foreach ($attendance as $medis) {
         $group = &$services[$serviceName];
 
         $group['is_available'] = true;
-        $group['doctor_count']++;
+        ++$group['doctor_count'];
         $group['hours'] = $hours;
 
         if ('' !== $start && ('' === $group['start'] || $start < $group['start'])) {
@@ -52,7 +52,7 @@ foreach ($attendance as $medis) {
             $status = 'negative';
             $labelfortag = 'Tutup';
 
-            if ($isavailable && $jam !== '-') {
+            if ($isavailable && '-' !== $jam) {
                 $status = 'positive';
                 $labelfortag = 'Buka';
             }
@@ -79,18 +79,18 @@ foreach ($attendance as $medis) {
             ?>
 
             <form action="/form" method="post">
-                <input type="hidden" name="heroform" value="<? echo ($valueform) ?>">
+                <input type="hidden" name="heroform" value="<?php echo $valueform; ?>">
                 <?php echo csrf_field(); ?>
                 <button type="submit" class="w-full text-left">
-                    <div class="flex flex-col w-80 h-110 bg-[linear-gradient(180deg,rgba(102,102,102,0)_50.48%,rgba(0,0,0,0.7)_78.85%),url(<? echo ($imageform) ?>)] bg-cover bg-center p-4 transition-all transform hover:scale-110 hover:outline hover:outline-4 hover:outline-teal-500 hover:shadow-2xl hover:shadow-teal-700/75 shadow-md shadow-gray-500 active:scale-100">
+                    <div class="flex flex-col w-80 h-110 bg-[linear-gradient(180deg,rgba(102,102,102,0)_50.48%,rgba(0,0,0,0.7)_78.85%),url(<?php echo $imageform; ?>)] bg-cover bg-center p-4 transition-all transform hover:scale-110 hover:outline hover:outline-4 hover:outline-teal-500 hover:shadow-2xl hover:shadow-teal-700/75 shadow-md shadow-gray-500 active:scale-100">
                         <div class="mt-auto">
-                            <h3 class="text-4xl font-bold m-2 text-white"><? echo ($nameform) ?></h3>
+                            <h3 class="text-4xl font-bold m-2 text-white"><?php echo $nameform; ?></h3>
                             <div class="scale-80 left-0 -translate-x-4">
                                 <?php
                                 $status_tag = $status;
-                                $label_tag = $labelfortag;
+            $label_tag = $labelfortag;
 
-                                include __DIR__ . '/../components/tag.php'; ?>
+            include __DIR__.'/../components/tag.php'; ?>
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@ foreach ($attendance as $medis) {
 </div>
 
 <!-- backup code -->
-<?php /* 
+<?php /*
  <form action="/form" method="post">
             <input type="hidden" name="heroform" value="POLI UMUM">
             <?php echo csrf_field(); ?>

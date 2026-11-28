@@ -1,14 +1,13 @@
 <?php
 
-
 $draft = $draft ?? [];
 $error = $error ?? null;
 $heroform = $draft['service_name'] ?? 'Default';
 $isform = true;
 
-include __DIR__ . '/../components/background-img.php';
+include __DIR__.'/../components/background-img.php';
 ?>
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
@@ -75,16 +74,16 @@ include __DIR__ . '/../components/background-img.php';
                         <?php
                         $status_step = 'done';
 
-                        include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
                     </div>
                     <span class=" w-[3px] h-[50px] bg-gray-500"></span>
 
                     <div class="flex justify-center items-center">
                         <?php
-                        $status_step = 'current';
-                        $step_text = '2';
+$status_step = 'current';
+$step_text = '2';
 
-                        include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
 
 
 
@@ -93,10 +92,10 @@ include __DIR__ . '/../components/background-img.php';
 
                     <div class=" flex justify-center items-center">
                         <?php
-                        $status_step = 'wait';
-                        $step_text = '3';
+$status_step = 'wait';
+$step_text = '3';
 
-                        include __DIR__ . '/../components/step.php'; ?>
+include __DIR__.'/../components/step.php'; ?>
 
                     </div>
 

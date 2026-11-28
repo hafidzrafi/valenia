@@ -10,9 +10,9 @@ $page = 'nonlanding';
 
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
-    <?php include __DIR__ . '/../components/header.php'; ?>
-    <?php include __DIR__ . '/../components/cursor.php'; ?>
-    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__.'/../components/header.php'; ?>
+    <?php include __DIR__.'/../components/cursor.php'; ?>
+    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
 
 
@@ -50,9 +50,10 @@ $page = 'nonlanding';
 
             <?php
             $status_tag = 'positive';
-            $label_tag = 'Wajib';
-            include __DIR__ . '/../components/tag.php';
-            ?>
+$label_tag = 'Wajib';
+
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
         <div class="relative flex flex-col items-center w-full max-w-md">
@@ -125,10 +126,11 @@ $page = 'nonlanding';
             <p>Tiket menjadi bukti kunjungan Anda. Simpan QR Code dan perhatikan batas pembatalan.</p>
 
             <?php
-            $status_tag = 'positive';
-            $label_tag = 'Wajib';
-            include __DIR__ . '/../components/tag.php';
-            ?>
+$status_tag = 'positive';
+$label_tag = 'Wajib';
+
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
     </section>
@@ -164,10 +166,11 @@ $page = 'nonlanding';
             <p>Datang lebih awal agar proses pemeriksaan berjalan lancar sesuai urutan antrean.</p>
 
             <?php
-            $status_tag = 'positive';
-            $label_tag = 'Wajib';
-            include __DIR__ . '/../components/tag.php';
-            ?>
+$status_tag = 'positive';
+$label_tag = 'Wajib';
+
+include __DIR__.'/../components/tag.php';
+?>
         </div>
 
         <div class="relative flex flex-col gap-8 items-center w-full max-w-md">
@@ -195,4 +198,4 @@ $page = 'nonlanding';
 
 </div>
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>

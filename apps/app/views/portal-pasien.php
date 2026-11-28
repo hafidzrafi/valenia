@@ -21,7 +21,7 @@ $identityType = (string) ($patient['identity_type'] ?? '-');
 $activeQueue = isset($active['queue_code']) ? (string) $active['queue_code'] : '—';
 $activeService = (string) ($active['service_name'] ?? '-');
 $activeDate = isset($active['created_at']) ? date('d M Y', strtotime((string) $active['created_at'])) : '-';
-$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])) . ' WIB' : '-';
+$activeTime = isset($active['created_at']) ? date('H:i', strtotime((string) $active['created_at'])).' WIB' : '-';
 $activeStatus = (string) ($active['status'] ?? '');
 $activeTicketToken = (string) ($active['ticket_token'] ?? '');
 $activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128) : null;
@@ -29,7 +29,7 @@ $activeQrSvg = '' !== $activeTicketToken ? ticket_qr_svg($activeTicketToken, 128
 $selectedQueue = isset($selected['queue_code']) ? (string) $selected['queue_code'] : '—';
 $selectedService = (string) ($selected['service_name'] ?? '-');
 $selectedDate = isset($selected['created_at']) ? date('d M Y', strtotime((string) $selected['created_at'])) : '-';
-$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])) . ' WIB' : '-';
+$selectedTime = isset($selected['created_at']) ? date('H:i', strtotime((string) $selected['created_at'])).' WIB' : '-';
 $selectedStatus = (string) ($selected['status'] ?? '');
 $selectedIsActive = (bool) ($selected['is_active'] ?? false);
 $selectedTicketToken = (string) ($selected['ticket_token'] ?? '');
@@ -54,18 +54,17 @@ $progressSteps = match ($activeStatus) {
     default => ['current', 'wait', 'wait', 'wait'],
 };
 
-
 $heroImage = '/images/portalpasien.webp';
 $heroTitle = 'Portal Pasien';
 $heroDesc = 'Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA';
 $showCta = false;
 $page = 'nonlanding';
 ?>
-<?php include __DIR__ . '/../components/header.php'; ?>
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/header.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <div class="overflow-hidden">
-    <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+    <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 </div>
 
 <div class="relative  min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
@@ -125,9 +124,9 @@ $page = 'nonlanding';
                         <p class="text-sm text-black"><?php echo e($identityNumber); ?></p>
                         <div class="mt-3"><?php
                                             $status_tag = 'positive';
-                                            $label_tag = 'Aktif';
+$label_tag = 'Aktif';
 
-                                            include __DIR__ . '/../components/tag.php'; ?>
+include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     </div>
                 </div>
@@ -148,9 +147,9 @@ $page = 'nonlanding';
                     <div class="flex justify-center items-center">
                         <?php
                         $status_step = $progressSteps[$index - 1];
-                        $step_text = (string) $index;
+                    $step_text = (string) $index;
 
-                        include __DIR__ . '/../components/step.php'; ?>
+                    include __DIR__.'/../components/step.php'; ?>
                     </div>
                 <?php } ?>
 
@@ -182,7 +181,7 @@ $page = 'nonlanding';
             hx-trigger="every 10s"
             hx-swap="innerHTML"
             class="mt-10">
-            <?php include __DIR__ . '/partials/served-boards.php'; ?>
+            <?php include __DIR__.'/partials/served-boards.php'; ?>
         </div>
         <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
     </section>
@@ -201,7 +200,7 @@ $page = 'nonlanding';
 
                     <?php foreach ($history as $visit) { ?>
                         <?php
-                        [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
+                    [$status_tag, $label_tag] = $statusMap[$visit['status']] ?? ['disabled', ucfirst((string) $visit['status'])];
                         $isSelected = is_array($selected) && (string) $selected['id'] === (string) $visit['id'];
                         ?>
                         <a href="/portal-pasien?visit=<?php echo e((string) $visit['id']); ?>"
@@ -213,7 +212,7 @@ $page = 'nonlanding';
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('d M Y', strtotime((string) $visit['created_at']))); ?></p>
                             <p class="text-sm font-medium text-black text-center"><?php echo e(date('H:i', strtotime((string) $visit['created_at']))); ?> WIB</p>
                             <div class="flex justify-end scale-90">
-                                <?php include __DIR__ . '/../components/tag.php'; ?>
+                                <?php include __DIR__.'/../components/tag.php'; ?>
                             </div>
                         </a>
                     <?php } ?>
@@ -222,18 +221,18 @@ $page = 'nonlanding';
 
                 <?php
                 $pagination = $pagination ?? ['page' => 1, 'per_page' => 5, 'total' => count($history), 'pages' => 1];
-                $selectedVisitId = $selectedVisitId ?? null;
+$selectedVisitId = $selectedVisitId ?? null;
 
-                $pagerLink = static function (int $target) use ($selectedVisitId): string {
-                    $query = ['page' => (string) $target];
+$pagerLink = static function (int $target) use ($selectedVisitId): string {
+    $query = ['page' => (string) $target];
 
-                    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
-                        $query['visit'] = $selectedVisitId;
-                    }
+    if (is_string($selectedVisitId) && '' !== $selectedVisitId) {
+        $query['visit'] = $selectedVisitId;
+    }
 
-                    return '/portal-pasien?' . http_build_query($query);
-                };
-                ?>
+    return '/portal-pasien?'.http_build_query($query);
+};
+?>
 
                 <div class="rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[20px] border border-gray-300/50 p-4 shadow-sm flex flex-row items-center justify-center space-x-2">
 
@@ -297,9 +296,9 @@ $page = 'nonlanding';
                     <?php if (null !== $selected) { ?>
                         <div data-testid="selected-visit-status" class="mt-4">
                             <?php $status_tag = $selectedTag;
-                            $label_tag = $selectedLabel;
+                        $label_tag = $selectedLabel;
 
-                            include __DIR__ . '/../components/tag.php'; ?>
+                        include __DIR__.'/../components/tag.php'; ?>
                         </div>
                     <?php } ?>
 
@@ -349,7 +348,7 @@ $page = 'nonlanding';
 </div>
 
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>
 
 <!-- can yall convert this into alpinejs? i found this code on stackoverflow QNA -->
 <script>

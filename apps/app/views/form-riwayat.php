@@ -11,11 +11,9 @@ $isform = true;
 $old = $old ?? [];
 $error = $error ?? null;
 
-
-
 ?>
 
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">

@@ -17,7 +17,7 @@ $ticketDate = isset($ticket['created_at']) ? date('d M Y', strtotime((string) $t
 $ticketToken = (string) ($ticket['ticket_token'] ?? '');
 $qrSvg = ticket_qr_svg($ticketToken, 180);
 ?>
-<?php include __DIR__ . '/../components/cursor.php'; ?>
+<?php include __DIR__.'/../components/cursor.php'; ?>
 
 <div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>

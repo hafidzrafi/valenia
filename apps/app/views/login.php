@@ -8,7 +8,7 @@
     <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
     
     <div class="flex w-full justify-center pt-8">
-        <?php include __DIR__ . '/../components/login-nav.php'; ?>
+        <?php include __DIR__.'/../components/login-nav.php'; ?>
     </div>
 
     <div class="flex flex-1 items-center justify-center px-4 py-10">

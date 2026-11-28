@@ -25,15 +25,15 @@ ob_start();
     <div x-data class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
         <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
-        <?php include __DIR__ . '/../components/header.php'; ?>
-        <?php include __DIR__ . '/../components/cursor.php'; ?>
+        <?php include __DIR__.'/../components/header.php'; ?>
+        <?php include __DIR__.'/../components/cursor.php'; ?>
         <?php if (null !== $error && '' !== $error) { ?>
             <div class="relative z-20 mx-auto mt-4 w-fit max-w-[90%] rounded-2xl bg-red-50 px-5 py-3 text-sm font-medium text-red-700 shadow-lg"
                 role="alert">
                 <?php echo e((string) $error); ?>
             </div>
         <?php } ?>
-        <?php include __DIR__ . '/../components/big-hero-card-landing.php'; ?>
+        <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 
         <svg viewBox="0 0 200 200" class="absolute w-50 opacity-30 m-10 left-30">
             <path fill="#14B8A6" d="M43.5,-78.1C54.7,-68.8,61.1,-53.9,64.1,-39.9C67,-26,66.6,-13,68.9,1.3C71.2,15.7,76.3,31.3,71.6,42.3C66.9,53.3,52.5,59.6,38.9,65C25.3,70.4,12.7,75,0.6,74C-11.5,73.1,-23.1,66.5,-32.3,58.5C-41.4,50.6,-48.3,41.2,-57.3,31.2C-66.2,21.2,-77.3,10.6,-78.5,-0.7C-79.8,-12,-71.1,-24,-62.5,-34.7C-54,-45.4,-45.5,-54.8,-35.1,-64.6C-24.7,-74.3,-12.3,-84.5,1.9,-87.7C16.1,-91,32.2,-87.4,43.5,-78.1Z" transform="translate(100 100)" />
@@ -194,7 +194,7 @@ ob_start();
             <svg viewBox="0 0 200 200" class="absolute w-90 left-[0%] top-[45%] opacity-25">
                 <path fill="#14B8A6" d="M30.4,-50.6C43.3,-45.1,60.6,-45,65.3,-37.5C70,-29.9,62.3,-15,57.7,-2.6C53.1,9.7,51.7,19.3,50.5,33.1C49.3,46.8,48.4,64.5,40,70.7C31.7,77,15.8,71.7,3.5,65.7C-8.9,59.7,-17.8,53,-26.4,46.9C-35,40.8,-43.3,35.3,-54.1,27.6C-65,19.8,-78.4,9.9,-77.1,0.8C-75.8,-8.4,-59.7,-16.8,-49.1,-24.9C-38.4,-32.9,-33.1,-40.5,-25.8,-49.2C-18.5,-57.9,-9.3,-67.7,-0.3,-67.2C8.7,-66.7,17.4,-56,30.4,-50.6Z" transform="translate(100 100)" />
             </svg>
-            <?php include __DIR__ . '/../components/live-antrean.php'; ?>
+            <?php include __DIR__.'/../components/live-antrean.php'; ?>
         </div>
 
 
@@ -225,7 +225,7 @@ ob_start();
                 <svg viewBox="0 0 200 200" class="absolute w-80 top-[55%] right-[5%] opacity-25">
                     <path fill="#14B8A6" d="M37.1,-60.3C49.3,-57.2,61.2,-49.7,64,-39C66.8,-28.2,60.4,-14.1,59.5,-0.5C58.5,13,63.1,26,62.3,40.4C61.6,54.7,55.6,70.3,44.4,78.8C33.1,87.2,16.5,88.4,2.2,84.6C-12.2,80.8,-24.3,72,-35.2,63.3C-46.1,54.7,-55.7,46.2,-64.9,35.6C-74.2,25.1,-83.1,12.6,-82.2,0.5C-81.3,-11.5,-70.5,-23,-61,-33C-51.4,-43.1,-43.1,-51.6,-33.1,-56C-23.2,-60.4,-11.6,-60.7,0.4,-61.4C12.4,-62.2,24.9,-63.4,37.1,-60.3Z" transform="translate(100 100)" />
                 </svg>
-                <?php include __DIR__ . '/../components/3-card.php'; ?>
+                <?php include __DIR__.'/../components/3-card.php'; ?>
 
             </div>
         </section>
@@ -251,10 +251,10 @@ ob_start();
     </div>
 </body>
 
-<?php include __DIR__ . '/../components/footer.php'; ?>
+<?php include __DIR__.'/../components/footer.php'; ?>
 
 <?php
 $content = ob_get_clean();
 
-include __DIR__ . '/../views/layout.php';
+include __DIR__.'/../views/layout.php';
 ?>

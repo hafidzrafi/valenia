@@ -18,10 +18,10 @@ return [
         )->fetchAll();
 
         return view('viewdoctor', [
-            'title'      => 'Jadwal Dokter',
-            'boards'     => queue_boards(),
+            'title' => 'Jadwal Dokter',
+            'boards' => queue_boards(),
             'attendance' => staff_attendance_today(),
-            'schedules'  => $schedules,
+            'schedules' => $schedules,
         ]);
     },
 ];
