@@ -1,13 +1,14 @@
 <?php
 
 $services = [];
+$attendance = $attendance ?? [];
 
 foreach ($attendance as $medis) {
     $serviceName = (string) $medis['service_name'];
     $present = (bool) $medis['is_present'];
     $start = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
     $end = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
-    $hours = ('' !== $start && '' !== $end) ? $start.' - '.$end : '-';
+    $hours = ('' !== $start && '' !== $end) ? $start . ' - ' . $end : '-';
 
     // create the group the first time for each service
     if (!isset($services[$serviceName])) {
@@ -20,20 +21,9 @@ foreach ($attendance as $medis) {
     }
 
     if ($present) {
-        $group = &$services[$serviceName];
-
-        $group['is_available'] = true;
-        ++$group['doctor_count'];
-        $group['hours'] = $hours;
-
-        if ('' !== $start && ('' === $group['start'] || $start < $group['start'])) {
-            $group['start'] = $start;
-        }
-        if ('' !== $end && ('' === $group['end'] || $end > $group['end'])) {
-            $group['end'] = $end;
-        }
-
-        unset($group);
+        $services[$serviceName]['is_available'] = true;
+        ++$services[$serviceName]['doctor_count'];
+        $services[$serviceName]['hours'] = $hours;
     }
 }
 ?>
@@ -88,9 +78,9 @@ foreach ($attendance as $medis) {
                             <div class="scale-80 left-0 -translate-x-4">
                                 <?php
                                 $status_tag = $status;
-            $label_tag = $labelfortag;
+                                $label_tag = $labelfortag;
 
-            include __DIR__.'/../components/tag.php'; ?>
+                                include __DIR__ . '/../components/tag.php'; ?>
                             </div>
                         </div>
                     </div>
