@@ -8,7 +8,7 @@ foreach ($attendance as $medis) {
     $present = (bool) $medis['is_present'];
     $start = null !== ($medis['start_time'] ?? null) ? substr((string) $medis['start_time'], 0, 5) : '';
     $end = null !== ($medis['end_time'] ?? null) ? substr((string) $medis['end_time'], 0, 5) : '';
-    $hours = ('' !== $start && '' !== $end) ? $start . ' - ' . $end : '-';
+    $hours = ('' !== $start && '' !== $end) ? $start.' - '.$end : '-';
 
     // create the group the first time for each service
     if (!isset($services[$serviceName])) {
@@ -78,9 +78,9 @@ foreach ($attendance as $medis) {
                             <div class="scale-80 left-0 -translate-x-4">
                                 <?php
                                 $status_tag = $status;
-                                $label_tag = $labelfortag;
+            $label_tag = $labelfortag;
 
-                                include __DIR__ . '/../components/tag.php'; ?>
+            include __DIR__.'/../components/tag.php'; ?>
                             </div>
                         </div>
                     </div>
