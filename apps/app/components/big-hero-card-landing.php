@@ -11,7 +11,7 @@ $page = $page ?? '';
 ?>
 
 <?php if ('nonlanding' == $page) { ?>
-    <section class="relative  md:h-[60vh] w-full flex items-center justify-center border-b-3 border-gray-400 ">
+    <section class="relative  md:h-[60vh] w-full flex items-center justify-center">
         <!-- Background Image -->
         <img src="<?php echo $heroImage; ?>" alt="Hero Image" class="absolute inset-0 w-full h-full object-cover">
 
@@ -20,7 +20,7 @@ $page = $page ?? '';
 
         <!-- Konten Teks -->
         <div class="relative z-10 container mx-auto px-6 mt-20 text-center text-white font-display">
-            <h1 class="text-[96px] md:text-6xl lg:text-7xl font-black font-display-expanded leading-tight mb-6">
+            <h1 class=" md:text-6xl lg:text-7xl font-extrabold font-display-expanded leading-tight mb-6">
                 <?php echo $heroTitle; ?>
             </h1>
             <p class="text-lg md:text-2xl max-w-3xl mx-auto mb-10 opacity-90">
@@ -31,7 +31,9 @@ $page = $page ?? '';
             <?php if ($showCta) { ?>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <?php if ($ctaPrimaryText) { ?>
-                        <a href="<?php echo $ctaPrimaryLink; ?>" class="bg-teal-500 smooth-corners-lg  hover:bg-teal-700 text-white px-8 py-4 rounded-3xl font-bold text-lg transition-all transform hover:scale-105">
+                        <a href="<?php echo $ctaPrimaryLink; ?>" class="bg-teal-500 smooth-corners-lg  hover:bg-teal-700 text-white px-8 py-4 rounded-3xl font-bold text-lg transition-all transform hover:scale-105"
+
+                        >
                             <?php echo $ctaPrimaryText; ?>
                         </a>
                     <?php } ?>
@@ -49,7 +51,7 @@ $page = $page ?? '';
 
 <?php } else { ?>
 
-    <section class="relative  md:h-screen w-full  flex items-center justify-center border-b-2 border-gray-400 ">
+    <section class="relative  md:h-screen w-full flex  items-end">
         <!-- Background Image -->
         <img src="<?php echo $heroImage; ?>" alt="Hero Image" class="absolute inset-0 w-full h-full object-cover">
 
@@ -57,17 +59,20 @@ $page = $page ?? '';
         <div class="absolute inset-0 bg-black/50"></div>
 
         <!-- Konten Teks -->
-        <div class="relative z-10 container mx-auto px-6 text-center text-white font-display">
-            <h1 class="text-[96px] md:text-6xl lg:text-7xl font-black font-display-expanded leading-tight mb-6">
+        <div class="relative z-10 ml-18 mb-30   text-left text-white">
+            <h1 class="text-8xl tracking-tight font-bold">
                 <?php echo $heroTitle; ?>
             </h1>
-            <p class="text-lg md:text-2xl max-w-3xl mx-auto mb-10 opacity-90">
+            <h2 class="text-6xl font-bold mb-4">
                 <?php echo $heroDesc; ?>
+            </h2>
+            <p class="text-lg mb-10">
+                Daftar antrean, pantau giliran secara real time, dan lihat <br> riwayat kunjungan Anda dari satu aplikasi.
             </p>
 
             <!-- Tombol CTA  -->
             <?php if ($showCta) { ?>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <div class="flex flex-col sm:flex-row gap-4">
                     <?php if ($ctaPrimaryText) { ?>
                         <a href="<?php echo $ctaPrimaryLink; ?>" class="bg-teal-500 smooth-corners-lg  hover:bg-teal-700 text-white px-8 py-4 rounded-3xl font-bold text-lg transition-all transform hover:scale-105">
                             <?php echo $ctaPrimaryText; ?>

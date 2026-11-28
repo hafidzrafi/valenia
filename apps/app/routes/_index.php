@@ -8,5 +8,6 @@ return [
     'GET' => static fn (Request $request): string => render(app_path('app/views/home.php'), [
         'title' => 'VALENIA',
         'boards' => queue_boards(),
+        'attendance' => staff_attendance_today(),
     ]),
 ];

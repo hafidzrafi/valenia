@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Home page (VALENIA-29) — standalone full page served at "/".
- *
- * IMPORTANT: this is a complete <html> document, not a content partial. Render
- * it via render(app_path('app/views/home.php'), [...]) from the route. Do NOT use
- * view('home'), which would wrap it in layout.php and emit two <html> documents.
- */
 $draft = $draft ?? [];
 $error = $error ?? null;
 $heroform = $draft['service_name'] ?? 'Default';
@@ -16,7 +9,9 @@ include __DIR__.'/../components/background-img.php';
 ?>
 <?php include __DIR__.'/../components/cursor.php'; ?>
 
-<body>
+<div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
+
     <div class="mt-13 right-110   absolute">
         <nav class="w-85 h-10 gap-2.5 pl-2.5 flex items-center absolute smooth-corners-lg rounded-full bg-gradient-to-br from-white/90 to-white/60 border-2 border-white/50 backdrop-blur-[36.6px]" style="box-shadow: 3px 6px 5px 0 rgba(0,0,0,0.1);">
             <ol class="flex items-center space-x-2">
@@ -41,9 +36,9 @@ include __DIR__.'/../components/background-img.php';
     </div>
 
 
-    <div class="min-h-screen flex flex-col">
+    <div class="relative min-h-screen flex flex-col">
         <div class="grow flex items-center justify-center">
-            <div class="w-280 h-88  flex flex-col smooth-corners-lg rounded-[64px] bg-white">
+            <div class="w-280 h-88  flex flex-col smooth-corners-lg rounded-2xl bg-white">
                 <h1 class="text-[47px] pt-5 pr-15 -mb-2.5 flex justify-end font-bold text-slate-900"> AMBIL ANTREAN </h1>
                 <span class="mx-auto translate-x-78 mt-1 w-[375px] h-[5px] mb-3 flex justify-end items-center right-0 bg-slate-900"></span>
                 <p class="pr-15.5 flex justify-end text-right  text-[16px] text-black">Periksa kembali data pendaftaran, klik tombol <br>
@@ -110,9 +105,9 @@ include __DIR__.'/../components/step.php'; ?>
 
             </div>
 
-            <div class="absolute left-25">
+            <div class="absolute right-1/2 -translate-x-30">
                 <div
-                    class="w-115 h-130 rounded-[64px] bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]"
+                    class="w-115 h-130 rounded-4xl bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-[10px]"
                     style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
                     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Konfirmasi Pendaftaran</h1>
 
@@ -151,7 +146,7 @@ include __DIR__.'/../components/step.php'; ?>
                     </div>
 
                     <form class="flex flex-col gap-6 items-center mt-10" method="POST" action="/muncul-qr"
-                        onsubmit="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir'); localStorage.removeItem('keluhan');">
+                        onsubmit="localStorage.clear();">
                         <?php echo csrf_field(); ?>
                         <div class="flex flex-row gap-6 justify-center">
                         </div>
@@ -172,11 +167,5 @@ include __DIR__.'/../components/step.php'; ?>
 
         </div>
 
-        <div>
-            <?php include __DIR__.'/../components/subfooter.php'; ?>
-        </div>
     </div>
-
-</body>
-
-
+</div>

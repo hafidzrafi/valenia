@@ -54,21 +54,24 @@ $progressSteps = match ($activeStatus) {
     default => ['current', 'wait', 'wait', 'wait'],
 };
 
-include __DIR__.'/../components/background-img.php';
-
 $heroImage = '/images/portalpasien.webp';
 $heroTitle = 'Portal Pasien';
 $heroDesc = 'Pantau status antrean dan riwayat kunjungan Poliklinik VALENIA';
 $showCta = false;
+$page = 'nonlanding';
 ?>
 <?php include __DIR__.'/../components/header.php'; ?>
 <?php include __DIR__.'/../components/cursor.php'; ?>
+
 <div class="overflow-hidden">
     <?php include __DIR__.'/../components/big-hero-card-landing.php'; ?>
 </div>
 
+<div class="relative  min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
 
-<body>
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
+
+
     <?php if (null !== $flash) { ?>
         <p class="mx-auto mt-4 w-fit rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700"><?php echo e($flash); ?></p>
     <?php } ?>
@@ -128,7 +131,7 @@ include __DIR__.'/../components/tag.php'; ?>
                     </div>
                 </div>
 
-                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400"></div>
+                <div class="h-[120px] w-[120px] shrink-0 rounded-full border border-gray-400 bg-[url(/images/guest.png)] bg-cover bg-center "></div>
             </div>
 
             <div class="mt-7 w-full border-t border-gray-400 pt-3">
@@ -138,7 +141,7 @@ include __DIR__.'/../components/tag.php'; ?>
             <div class=" flex flex-row gap-10 items-center justify-center h-15 w-100 mt-6">
                 <?php foreach ([1, 2, 3, 4] as $index) { ?>
                     <?php if ($index > 1) { ?>
-                        <span class=" w-[42px] h-[2px] bg-gray-500"></span>
+                        <span class=" w-[42px] h-[1px] bg-gray-500"></span>
                     <?php } ?>
 
                     <div class="flex justify-center items-center">
@@ -151,17 +154,17 @@ include __DIR__.'/../components/tag.php'; ?>
                 <?php } ?>
 
             </div>
-            <div class=" flex flex-row gap-10 items-center justify-center h-4 w-112">
-                <p class=" flex-grow  text-xs font-medium text-center  text-black">
+            <div class=" flex flex-row gap-10 -translate-x-2">
+                <p class=" flex-grow  text-xs font-medium   text-black">
                     Terdaftar
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-2  text-black">
+                <p class=" flex-grow  text-xs font-medium  text-black">
                     Menunggu
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-2.5  text-black">
+                <p class=" flex-grow  text-xs font-medium  text-black">
                     Dilayani
                 </p>
-                <p class=" flex-grow  text-xs font-medium text-center -translate-x-1  text-black">
+                <p class=" flex-grow  text-xs font-medium translate-x-4 text-black">
                     Selesai
                 </p>
             </div>
@@ -170,7 +173,7 @@ include __DIR__.'/../components/tag.php'; ?>
 
     </div>
 
-    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto smooth-corners-lg rounded-tl-[90px] rounded-tr-[90px] rounded-bl-none rounded-br-none bg-slate-900/70 items-center pt-15 pb-12">
+    <section aria-label="Sedang dilayani" class="flex flex-col relative w-full mt-5 mx-auto  bg-slate-900/70 items-center pt-15 pb-12">
         <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Sedang Dilayani</h1>
 
         <div id="served-boards"
@@ -183,7 +186,7 @@ include __DIR__.'/../components/tag.php'; ?>
         <p class="mt-6 text-sm text-white/80">Nomor yang dilayani saat ini per poli</p>
     </section>
 
-    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto smooth-corners-lg rounded-tl-none rounded-tr-none rounded-bl-[90px] rounded-br-[90px] bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
+    <section aria-label="Riwayat kunjungan" class="flex flex-col relative w-full mt-0 mx-auto  bg-slate-900/70 items-center pt-12 pb-15 border-t border-white/10">
         <h1 class="text-4xl flex justify-center font-black font-display-expanded text-white mt-5">Riwayat Kunjungan</h1>
 
 
@@ -342,7 +345,25 @@ $pagerLink = static function (int $target) use ($selectedVisitId): string {
 
     </section>
 
+</div>
 
-</body>
 
 <?php include __DIR__.'/../components/footer.php'; ?>
+
+<!-- can yall convert this into alpinejs? i found this code on stackoverflow QNA -->
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        if (scrollpos) {
+            window.scrollTo({
+                top: parseInt(scrollpos),
+                behavior: 'instant'
+            });
+            sessionStorage.removeItem('scrollpos');
+        }
+    });
+
+    window.addEventListener("beforeunload", function(e) {
+        sessionStorage.setItem('scrollpos', window.scrollY);
+    });
+</script>

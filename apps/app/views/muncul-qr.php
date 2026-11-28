@@ -16,25 +16,22 @@ $ticketTime = isset($ticket['created_at']) ? date('H:i', strtotime((string) $tic
 $ticketDate = isset($ticket['created_at']) ? date('d M Y', strtotime((string) $ticket['created_at'])) : '-';
 $ticketToken = (string) ($ticket['ticket_token'] ?? '');
 $qrSvg = ticket_qr_svg($ticketToken, 180);
-
-include __DIR__.'/../components/background-img.php';
 ?>
 <?php include __DIR__.'/../components/cursor.php'; ?>
 
-<body>
-
-
+<div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
     <div class="min-h-screen flex flex-col">
         <div class="grow flex items-center justify-center">
 
             <div class="absolute">
                 <div
-                    class="w-115 h-130 rounded-[64px] bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]"
+                    class="w-115 h-130 rounded-4xl bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-[10px]"
                     style="box-shadow: 10px 15px 10px 0 rgba(0,0,0,0.1);">
                     <h1 class="text-[32px] pt-5 flex justify-center -mb-2.5 font-bold text-slate-900">Pendaftaran Berhasil!</h1>
 
-                    <div class="flex flex-row justify-center items-center mt-10 gap-8">
+                    <div class="flex flex-row justify-center items-center mt-10 gap-6">
                         <div class="flex h-[180px] w-[180px] items-center justify-center rounded-2xl bg-white p-1">
                             <?php if (null !== $qrSvg) { ?>
                                 <?php echo $qrSvg; ?>
@@ -58,7 +55,7 @@ include __DIR__.'/../components/background-img.php';
 
                     <div class="flex flex-col gap-6 items-center mt-4">
                         <div class="flex flex-row gap-6 justify-center items-center scale-90">
-                            <a href="/portal-pasien" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500 bg-white flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
+                            <a href="/portal-pasien" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl border-2 text-teal-500 border-teal-500  flex flex-row gap-2 items-center justify-center hover:bg-teal-500 hover:text-white">
                                 <p class="text-base font-semibold">Cek Riwayat</p>
                             </a>
                             <a href="/muncul-qr?download=1" class="w-[188px] h-[59px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-700">
@@ -72,12 +69,5 @@ include __DIR__.'/../components/background-img.php';
             </div>
 
         </div>
-
-        <div>
-            <?php include __DIR__.'/../components/subfooter.php'; ?>
-        </div>
     </div>
-
-</body>
-
-
+</div>

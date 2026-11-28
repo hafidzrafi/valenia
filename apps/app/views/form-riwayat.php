@@ -11,114 +11,105 @@ $isform = true;
 $old = $old ?? [];
 $error = $error ?? null;
 
-include __DIR__.'/../components/background-img.php';
-
 ?>
 
 <?php include __DIR__.'/../components/cursor.php'; ?>
 
 
+<div class="relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/background.png');">
+    <div class="absolute inset-y-0 inset-x-0 bg-teal-100/60" aria-hidden="true"></div>
 
+    <div class="relative w-full  min-h-screen flex flex-col items-center justify-center">
+        <div
+            class=" w-[340px] min-h-[480px] rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px]  px-6 pb-8"
+            style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
 
-<div class="min-h-screen flex flex-col justify-center items-center">
+            <h1 class="text-3xl pt-6 flex justify-center font-bold text-slate-900">Portal Pasien</h1>
+            <p class="text-sm text-center mt-3">Masukkan NIM/NIP dan tanggal lahir <br> untuk cek riwayat</p>
 
+            <?php if (null !== $error) { ?>
+                <p class="mt-4 rounded-2xl bg-red-50 px-4 py-2 text-center text-sm text-red-600"><?php echo e($error); ?></p>
+            <?php } ?>
 
+            <form class="flex flex-col gap-2 items-center mt-6" method="POST" action="/portal-pasien">
 
-    <div
-        class="w-[340px] min-h-[480px] rounded-4xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-[10px] mt-14 px-6 pb-8"
-        style="box-shadow: -10px 15px 10px 0 rgba(0,0,0,0.1);">
+                <?php echo csrf_field(); ?>
 
-        <h1 class="text-3xl pt-6 flex justify-center font-bold text-slate-900">Portal Pasien</h1>
-        <p class="text-sm text-center mt-3">Masukkan NIM/NIP dan tanggal lahir <br> untuk cek riwayat</p>
-
-        <?php if (null !== $error) { ?>
-            <p class="mt-4 rounded-2xl bg-red-50 px-4 py-2 text-center text-sm text-red-600"><?php echo e($error); ?></p>
-        <?php } ?>
-
-        <form class="flex flex-col gap-2 items-center mt-6" method="POST" action="/portal-pasien">
-
-            <?php echo csrf_field(); ?>
-
-            <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[250px] relative gap-1"
-                x-data="{ 
+                <div class="flex flex-col justify-start items-start flex-grow-0 flex-shrink-0 w-[250px] relative gap-1"
+                    x-data="{ 
                                 nimNip: localStorage.getItem('nim_nip') || '', 
                                 touched: false, 
                                 isValid: true 
                                 }">
-                <label for="nim_nip" class="flex-grow-0 flex-shrink-0 text-sm font-medium text-left text-black">NIM / NIP</label>
-                <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2"
-                    :class="{
+                    <label for="nim_nip" class="flex-grow-0 flex-shrink-0 text-sm font-medium text-left text-black">NIM / NIP</label>
+                    <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2"
+                        :class="{
                                      'border-gray-500': !touched,
                                      'border-red-500': touched && !isValid
                                     }">
-                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="nim_nip" name="nim_nip" required placeholder="Masukkan NIM / NIP..."
-                        class="w-full text-xs font-medium text-left bg-transparent p-2 smooth-corners-lg rounded-2xl  border-[1.5px] focus:outline-none focus:border-teal-500 focus:text-gray-500"
-                        :class="{
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="nim_nip" name="nim_nip" required placeholder="Masukkan NIM / NIP..."
+                            class="w-full text-xs font-medium text-left bg-transparent p-2 smooth-corners-lg rounded-2xl  border-[1.5px] focus:outline-none focus:border-teal-500 focus:text-gray-500"
+                            :class="{
                                     'text-gray-500': true,
                                     'text-red-500': touched && !isValid
                                     }"
-                        x-model="nimNip"
-                        @input="localStorage.setItem('nim_nip', nimNip)"
-                        @blur="touched = true; isValid = nimNip != '' && /^\d*$/.test(nimNip)">
+                            x-model="nimNip"
+                            @input="localStorage.setItem('nim_nip', nimNip)"
+                            @blur="touched = true; isValid = nimNip != '' && /^\d*$/.test(nimNip)">
+                    </div>
+
+                    <div class="h-4">
+                        <span class="text-xs text-red-500"
+                            x-show="touched && (nimNip === '' || !/^\d*$/.test(nimNip))"
+                            x-transition>
+                            <span x-show="nimNip === ''">Wajib diisi</span>
+                            <span x-show="nimNip !== '' && !/^\d*$/.test(nimNip)">Hanya bisa diisi angka</span>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="h-4">
-                    <span class="text-xs text-red-500"
-                        x-show="touched && (nimNip === '' || !/^\d*$/.test(nimNip))"
-                        x-transition>
-                        <span x-show="nimNip === ''">Wajib diisi</span>
-                        <span x-show="nimNip !== '' && !/^\d*$/.test(nimNip)">Hanya bisa diisi angka</span>
-                    </span>
-                </div>
-            </div>
-
-            <div class="flex flex-col justify-start items-start w-[250px] relative gap-1"
-                x-data="{ tanggalLahir: localStorage.getItem('tanggal_lahir') || '', touched: false }">
-                <label for="tanggal_lahir" class="text-sm font-medium text-left text-black">Tanggal Lahir</label>
-                <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2"
-                    :class="{
+                <div class="flex flex-col justify-start items-start w-[250px] relative gap-1"
+                    x-data="{ tanggalLahir: localStorage.getItem('tanggal_lahir') || '', touched: false }">
+                    <label for="tanggal_lahir" class="text-sm font-medium text-left text-black">Tanggal Lahir</label>
+                    <div class="flex justify-start items-center self-stretch flex-grow-0 flex-shrink-0 relative overflow-hidden gap-2"
+                        :class="{
                                     'border-gray-500': !touched,
                                     'border-red-500': touched && tanggalLahir === ''                          
                                     }">
 
-                    <input type="date" id="tanggal_lahir" name="tanggal_lahir" required
-                        class="w-full text-xs font-medium text-left bg-transparent p-2 smooth-corners-lg rounded-2xl border-gray-500 text-gray-500  border-[1.5px] focus:outline-none focus:border-teal-500 focus:text-gray-500"
-                        :class="{
+                        <input type="date" id="tanggal_lahir" name="tanggal_lahir" required
+                            class="w-full text-xs font-medium text-left bg-transparent p-2 smooth-corners-lg rounded-2xl border-gray-500 text-gray-500  border-[1.5px] focus:outline-none focus:border-teal-500 focus:text-gray-500"
+                            :class="{
                                         'text-red-500': touched && tanggalLahir === ''
                                         }"
-                        x-model="tanggalLahir"
-                        @input="localStorage.setItem('tanggal_lahir', tanggalLahir)"
-                        @blur="touched = true">
+                            x-model="tanggalLahir"
+                            @input="localStorage.setItem('tanggal_lahir', tanggalLahir)"
+                            @blur="touched = true">
 
+                    </div>
+                    <div class="h-4">
+                        <span class="text-xs text-red-500"
+                            x-show="touched && tanggalLahir === ''"
+                            x-transition>Wajib diisi</span>
+                    </div>
                 </div>
-                <div class="h-4">
-                    <span class="text-xs text-red-500"
-                        x-show="touched && tanggalLahir === ''"
-                        x-transition>Wajib diisi</span>
+
+                <div class="flex justify-end w-[250px]">
+                    <a href="#" class="text-teal-500 text-sm -mt-4 font-medium hover:text-teal-700 hover:underline">Bantuan?</a>
                 </div>
-            </div>
 
-            <div class="flex justify-end w-[250px]">
-                <a href="#" class="text-teal-500 text-sm -mt-4 font-medium hover:text-teal-700 hover:underline">Bantuan?</a>
-            </div>
+                <div class="flex flex-col items-center gap-2 mt-6 w-full">
+                    <button type="submit" class="w-[188px] h-[52px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-600 transition-colors shadow-md">
+                        <p class="text-base font-semibold text-white">Cari</p>
+                        <i class="ph ph-magnifying-glass text-white text-[18px]"></i>
+                    </button>
 
-            <div class="flex flex-col items-center gap-2 mt-6 w-full">
-                <button type="submit" class="w-[188px] h-[52px] smooth-corners-md rounded-3xl bg-teal-500 flex flex-row gap-2 items-center justify-center hover:bg-teal-600 transition-colors shadow-md">
-                    <p class="text-base font-semibold text-white">Cari</p>
-                    <i class="ph ph-magnifying-glass text-white text-[18px]"></i>
-                </button>
-
-                <a href="/" class="text-sm font-medium text-slate-500 hover:text-teal-600 hover:underline"
-                    onclick="localStorage.removeItem('nim_nip'); localStorage.removeItem('tanggal_lahir');">
-                    Batal
-                </a>
-            </div>
-        </form>
+                    <a href="/" class="text-sm font-medium text-slate-500 hover:text-teal-600 hover:underline"
+                        onclick="localStorage.clear();">
+                        Batal
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-
-
-    <div>
-        <?php include __DIR__.'/../components/subfooter.php'; ?>
-    </div>
-
 </div>

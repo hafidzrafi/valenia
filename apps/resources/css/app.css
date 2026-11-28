@@ -1,11 +1,22 @@
 @import "tailwindcss" source(none);
 /* plugin for corner smoothing*/
+@source "../../app";
 
 @plugin "tailwind-corner-smoothing";
 @plugin "tailwindcss-squircles";
 
 /* Scan server-rendered PHP for utility classes */
 @source "../../app";
+
+
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+
 
 /* Optional design tokens (Tailwind v4 @theme).
  *
@@ -14,8 +25,12 @@
  * self-hosted under Apple's license, so there is no webfont binary).
  */
 @theme {
-  --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; */
+
+  /*Changing font into Inter so it support all browser*/
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Expanded width for display headings (Figma uses expanded Black).
@@ -23,3 +38,4 @@
 @utility font-display-expanded {
   font-stretch: expanded;
 }
+
